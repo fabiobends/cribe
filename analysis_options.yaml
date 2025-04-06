@@ -2,7 +2,6 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
-    - always_specify_types
     - avoid_null_checks_in_equality_operators
     - avoid_print
     - avoid_redundant_argument_values
