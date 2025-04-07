@@ -1,9 +1,10 @@
 import 'base_repository.dart';
+import '../../domain/models/counter_model.dart';
 
 class CounterRepository extends BaseRepository {
-  int _count = 0;
+  CounterModel _counter = const CounterModel(value: 0);
 
-  int get count => _count;
+  CounterModel get counter => _counter;
 
   @override
   Future<void> initialize() async {
@@ -16,10 +17,10 @@ class CounterRepository extends BaseRepository {
   }
 
   Future<void> increment() async {
-    _count++;
+    _counter = _counter.increment();
   }
 
   Future<void> decrement() async {
-    _count--;
+    _counter = _counter.decrement();
   }
 }

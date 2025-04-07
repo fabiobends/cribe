@@ -1,19 +1,21 @@
 import '../../core/base/base_view_model.dart';
 import '../../../data/repositories/counter_repository.dart';
+import '../../../domain/models/counter_model.dart';
 
 class CounterViewModel extends BaseViewModel {
   final CounterRepository _repository;
-  int _count = 0;
+  CounterModel _counter = const CounterModel(value: 0);
 
   CounterViewModel(this._repository);
 
-  int get count => _count;
+  CounterModel get counter => _counter;
+  int get count => _counter.value;
 
   Future<void> increment() async {
     setLoading(true);
     try {
       await _repository.increment();
-      _count = _repository.count;
+      _counter = _repository.counter;
       notifyListeners();
     } catch (e) {
       setError(e.toString());
@@ -26,7 +28,7 @@ class CounterViewModel extends BaseViewModel {
     setLoading(true);
     try {
       await _repository.decrement();
-      _count = _repository.count;
+      _counter = _repository.counter;
       notifyListeners();
     } catch (e) {
       setError(e.toString());
