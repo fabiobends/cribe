@@ -8,9 +8,9 @@ class ColorUtils {
     final f = 1 - percent / 100;
     return Color.fromARGB(
       (color.a * 255).round(),
-      255 * (color.r + ((1 - color.r) * f)).round(),
-      255 * (color.g + ((1 - color.g) * f)).round(),
-      255 * (color.b + ((1 - color.b) * f)).round(),
+      (color.r * 255 + ((255 - color.r * 255) * f)).round(),
+      (color.g * 255 + ((255 - color.g * 255) * f)).round(),
+      (color.b * 255 + ((255 - color.b * 255) * f)).round(),
     );
   }
 
@@ -66,11 +66,11 @@ class ColorUtils {
         onPrimary: getContrastingColor(primaryColor),
         secondary: secondaryColor,
         onSecondary: getContrastingColor(secondaryColor),
-        surface: lighten(primaryColor, 20),
+        surface: lighten(primaryColor, 5),
         onSurface: getContrastingColor(lighten(primaryColor, 95)),
         // Using surface instead of background as per deprecation notice
-        surfaceDim: lighten(primaryColor, 30),
-        surfaceBright: lighten(primaryColor, 40),
+        surfaceDim: lighten(primaryColor, 15),
+        surfaceBright: lighten(primaryColor, 25),
         onSurfaceVariant: getContrastingColor(lighten(primaryColor, 98)),
         error: Colors.red,
         outline: darken(primaryColor, 30),
