@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
 
 /// Utility class for color manipulation
 class ColorUtils {
@@ -8,10 +7,10 @@ class ColorUtils {
     assert(percent >= 0 && percent <= 100);
     final f = 1 - percent / 100;
     return Color.fromARGB(
-      color.alpha,
-      (color.red + ((255 - color.red) * f)).round(),
-      (color.green + ((255 - color.green) * f)).round(),
-      (color.blue + ((255 - color.blue) * f)).round(),
+      (color.a * 255).round(),
+      255 * (color.r + ((1 - color.r) * f)).round(),
+      255 * (color.g + ((1 - color.g) * f)).round(),
+      255 * (color.b + ((1 - color.b) * f)).round(),
     );
   }
 
@@ -20,10 +19,10 @@ class ColorUtils {
     assert(percent >= 0 && percent <= 100);
     final f = 1 - percent / 100;
     return Color.fromARGB(
-      color.alpha,
-      (color.red * f).round(),
-      (color.green * f).round(),
-      (color.blue * f).round(),
+      (color.a * 255).round(),
+      (color.r * 255 * f).round(),
+      (color.g * 255 * f).round(),
+      (color.b * 255 * f).round(),
     );
   }
 
@@ -31,9 +30,9 @@ class ColorUtils {
   static Color getContrastingColor(Color backgroundColor) {
     // Calculate the perceptive luminance (perceived brightness)
     // See: https://www.w3.org/TR/WCAG20-TECHS/G18.html
-    final double luminance = (0.299 * backgroundColor.red +
-            0.587 * backgroundColor.green +
-            0.114 * backgroundColor.blue) /
+    final double luminance = (0.299 * backgroundColor.r * 255 +
+            0.587 * backgroundColor.g * 255 +
+            0.114 * backgroundColor.b * 255) /
         255;
 
     return luminance > 0.5 ? Colors.black : Colors.white;
@@ -41,7 +40,10 @@ class ColorUtils {
 
   /// Creates a color scheme based on primary and secondary colors
   static ColorScheme createColorScheme(
-      Color primaryColor, Color secondaryColor, bool isDark) {
+    Color primaryColor,
+    Color secondaryColor,
+    bool isDark,
+  ) {
     if (isDark) {
       return ColorScheme.dark(
         primary: primaryColor,
