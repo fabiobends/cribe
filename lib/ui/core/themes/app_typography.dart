@@ -1,5 +1,5 @@
+import 'package:cribe/ui/core/themes/theme_config.dart';
 import 'package:flutter/material.dart';
-import 'theme_config.dart';
 
 /// AppTypography class provides a centralized place for all typography definitions.
 /// To change the app's font family or text styles, just modify the values in ThemeConfig.

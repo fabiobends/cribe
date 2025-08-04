@@ -1,0 +1,4 @@
+enum StorageKey {
+  accessToken,
+  refreshToken,
+}
