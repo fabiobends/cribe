@@ -2,11 +2,14 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
+    - always_use_package_imports
     - avoid_null_checks_in_equality_operators
     - avoid_print
     - avoid_redundant_argument_values
     - avoid_relative_lib_imports
+    - avoid_web_libraries_in_flutter
     - avoid_unnecessary_containers
+    - directives_ordering
     - prefer_const_constructors
     - prefer_const_literals_to_create_immutables
     - prefer_final_fields

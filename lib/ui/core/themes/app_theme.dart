@@ -1,8 +1,8 @@
+import 'package:cribe/ui/core/themes/app_colors.dart';
+import 'package:cribe/ui/core/themes/app_typography.dart';
+import 'package:cribe/ui/core/themes/color_utils.dart';
+import 'package:cribe/ui/core/themes/theme_config.dart';
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
-import 'app_typography.dart';
-import 'color_utils.dart';
-import 'theme_config.dart';
 
 class AppTheme {
   // Get the base colors
@@ -63,7 +63,7 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: colorScheme.surfaceDim,
         elevation: _elevation,
         shape: RoundedRectangleBorder(
@@ -124,7 +124,7 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: colorScheme.surfaceDim,
         elevation: _elevation,
         shape: RoundedRectangleBorder(

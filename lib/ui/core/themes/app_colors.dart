@@ -1,6 +1,6 @@
+import 'package:cribe/ui/core/themes/color_utils.dart';
+import 'package:cribe/ui/core/themes/theme_config.dart';
 import 'package:flutter/material.dart';
-import 'theme_config.dart';
-import 'color_utils.dart';
 
 /// AppColors class provides a centralized place for all color definitions.
 /// To change the app's color scheme, just modify the values in ThemeConfig.

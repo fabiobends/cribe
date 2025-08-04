@@ -1,4 +1,4 @@
 abstract class BaseService {
-  Future<void> initialize();
+  Future<void> init();
   Future<void> dispose();
 }
