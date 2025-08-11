@@ -69,106 +69,93 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    final screenHeight = mediaQuery.size.height -
+        mediaQuery.padding.top -
+        mediaQuery.padding.bottom;
+    final contentHeight = isLandscape ? null : screenHeight;
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Consumer<LoginViewModel>(
-              builder: (context, viewModel, child) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 48),
-                    Center(
-                      child: Container(
-                        height: 120,
-                        width: 120,
-                        decoration: BoxDecoration(
-                          color:
-                              theme.colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Icon(
-                          Icons.account_circle_outlined,
-                          size: 60,
-                          color: theme.colorScheme.primary,
-                        ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: SizedBox(
+            height: contentHeight,
+            child: Form(
+              key: _formKey,
+              child: Consumer<LoginViewModel>(
+                builder: (context, viewModel, child) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(
+                        height: 100,
+                        width: 100,
+                        child: Placeholder(),
                       ),
-                    ),
-                    const SizedBox(height: 48),
-                    Text(
-                      'Welcome Back',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Sign in to your account',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
-                    TextInput(
-                      label: 'Email',
-                      hint: 'Enter your email',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      enabled: !viewModel.isLoading,
-                      validator: viewModel.validateEmail,
-                    ),
-                    const SizedBox(height: 16),
-                    TextInput(
-                      label: 'Password',
-                      hint: 'Enter your password',
-                      controller: _passwordController,
-                      obscureText: true,
-                      enabled: !viewModel.isLoading,
-                      validator: viewModel.validatePassword,
-                    ),
-                    const SizedBox(height: 24),
-                    Button(
-                      text: 'Sign In',
-                      onPressed: _onLoginPressed,
-                      isLoading: viewModel.isLoading,
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Don't have an account?",
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.7),
-                          ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Sign in to your account',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.7),
                         ),
-                        TextButton(
-                          onPressed:
-                              !viewModel.isLoading ? _navigateToRegister : null,
-                          child: Text(
-                            'Sign Up',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 32),
+                      TextInput(
+                        label: 'Email',
+                        hint: 'Enter your email',
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        enabled: !viewModel.isLoading,
+                        validator: viewModel.validateEmail,
+                      ),
+                      const SizedBox(height: 16),
+                      TextInput(
+                        label: 'Password',
+                        hint: 'Enter your password',
+                        controller: _passwordController,
+                        obscureText: true,
+                        enabled: !viewModel.isLoading,
+                        validator: viewModel.validatePassword,
+                      ),
+                      const SizedBox(height: 24),
+                      Button(
+                        text: 'Sign In',
+                        onPressed: _onLoginPressed,
+                        isLoading: viewModel.isLoading,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Don't have an account?",
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.7),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 48),
-                  ],
-                );
-              },
+                          TextButton(
+                            onPressed: !viewModel.isLoading
+                                ? _navigateToRegister
+                                : null,
+                            child: Text(
+                              'Sign Up',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
