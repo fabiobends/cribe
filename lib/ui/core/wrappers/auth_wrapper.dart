@@ -49,42 +49,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              height: 120,
-              width: 120,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                Icons.account_circle_outlined,
-                size: 60,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'Cribe',
-              style: theme.textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 48),
-            CircularProgressIndicator(
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Loading...',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
-            ),
-          ],
+        child: CircularProgressIndicator(
+          color: theme.colorScheme.primary,
         ),
       ),
     );

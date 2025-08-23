@@ -1,6 +1,9 @@
+import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/ui/auth/view_model/register_view_model.dart';
-import 'package:cribe/ui/core/shared/button.dart';
-import 'package:cribe/ui/core/shared/text_input.dart';
+import 'package:cribe/ui/core/shared/styled_button.dart';
+import 'package:cribe/ui/core/shared/styled_text.dart';
+import 'package:cribe/ui/core/shared/styled_text_button.dart';
+import 'package:cribe/ui/core/shared/styled_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -21,6 +24,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _firstNameFocusNode = FocusNode();
+  final _lastNameFocusNode = FocusNode();
+  final _emailFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
+  final _confirmPasswordFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -37,6 +45,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _firstNameFocusNode.dispose();
+    _lastNameFocusNode.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
@@ -86,66 +99,77 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.large),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'Create Account',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
-                  ),
+                const StyledText(
+                  text: 'Create Account',
+                  variant: TextVariant.headline,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Sign up to get started',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
+                const SizedBox(height: Spacing.small),
+                const StyledText(
+                  text: 'Sign up to get started',
+                  variant: TextVariant.subtitle,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 32),
-                TextInput(
-                  label: 'First Name',
-                  hint: 'John',
-                  controller: _firstNameController,
-                  keyboardType: TextInputType.name,
-                  enabled: !_viewModel.isLoading,
-                  validator: _viewModel.validateFirstName,
+                const SizedBox(height: Spacing.extraLarge),
+                Column(
+                  spacing: 4,
+                  children: [
+                    StyledTextField(
+                      label: 'First Name',
+                      hint: 'John',
+                      controller: _firstNameController,
+                      keyboardType: TextInputType.name,
+                      enabled: !_viewModel.isLoading,
+                      validator: _viewModel.validateFirstName,
+                      focusNode: _firstNameFocusNode,
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) =>
+                          _lastNameFocusNode.requestFocus(),
+                    ),
+                    StyledTextField(
+                      label: 'Last Name',
+                      hint: 'Doe',
+                      controller: _lastNameController,
+                      keyboardType: TextInputType.name,
+                      enabled: !_viewModel.isLoading,
+                      validator: _viewModel.validateLastName,
+                      focusNode: _lastNameFocusNode,
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) => _emailFocusNode.requestFocus(),
+                    ),
+                    StyledTextField(
+                      label: 'Email',
+                      hint: 'john.doe@example.com',
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      enabled: !_viewModel.isLoading,
+                      validator: _viewModel.validateEmail,
+                      focusNode: _emailFocusNode,
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) =>
+                          _passwordFocusNode.requestFocus(),
+                    ),
+                    StyledTextField(
+                      label: 'Password',
+                      hint: 'Create a password',
+                      controller: _passwordController,
+                      obscureText: true,
+                      enabled: !_viewModel.isLoading,
+                      validator: _viewModel.validatePassword,
+                      focusNode: _passwordFocusNode,
+                      textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) =>
+                          _confirmPasswordFocusNode.requestFocus(),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                TextInput(
-                  label: 'Last Name',
-                  hint: 'Doe',
-                  controller: _lastNameController,
-                  keyboardType: TextInputType.name,
-                  enabled: !_viewModel.isLoading,
-                  validator: _viewModel.validateLastName,
-                ),
-                const SizedBox(height: 16),
-                TextInput(
-                  label: 'Email',
-                  hint: 'john.doe@example.com',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  enabled: !_viewModel.isLoading,
-                  validator: _viewModel.validateEmail,
-                ),
-                const SizedBox(height: 16),
-                TextInput(
-                  label: 'Password',
-                  hint: 'Create a password',
-                  controller: _passwordController,
-                  obscureText: true,
-                  enabled: !_viewModel.isLoading,
-                  validator: _viewModel.validatePassword,
-                ),
-                const SizedBox(height: 16),
-                TextInput(
+                StyledTextField(
                   label: 'Confirm Password',
                   hint: 'Confirm your password',
                   controller: _confirmPasswordController,
@@ -155,37 +179,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _passwordController.text,
                     value,
                   ),
+                  focusNode: _confirmPasswordFocusNode,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _onRegisterPressed(),
                 ),
-                const SizedBox(height: 24),
-                Button(
+                const SizedBox(height: Spacing.large),
+                StyledButton(
                   text: 'Create Account',
                   onPressed: _onRegisterPressed,
                   isLoading: _viewModel.isLoading,
+                  variant: ButtonVariant.primary,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: Spacing.large),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Already have an account?',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
+                    const StyledText(
+                      text: 'Already have an account?',
+                      variant: TextVariant.body,
                     ),
-                    TextButton(
-                      onPressed: _viewModel.isLoading ? null : _navigateBack,
-                      child: Text(
-                        'Sign In',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                    const SizedBox(width: Spacing.small),
+                    StyledTextButton(
+                      text: 'Sign In',
+                      onPressed: _navigateBack,
+                      isEnabled: !_viewModel.isLoading,
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: Spacing.large),
               ],
             ),
           ),

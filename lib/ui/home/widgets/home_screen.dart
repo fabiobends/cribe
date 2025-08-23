@@ -1,5 +1,6 @@
+import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/enums/ui_state.dart';
-import 'package:cribe/ui/core/shared/button.dart';
+import 'package:cribe/ui/core/shared/styled_button.dart';
 import 'package:cribe/ui/home/view_model/home_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -53,59 +54,24 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
-        title: const Text('Cribe'),
+        title: const Text('Home'),
         automaticallyImplyLeading: false, // Remove back button
       ),
       body: SafeArea(
         child: Consumer<HomeViewModel>(
           builder: (context, viewModel, child) {
             return Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(Spacing.large),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 48),
-                  Center(
-                    child: Container(
-                      height: 120,
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Icon(
-                        Icons.home,
-                        size: 60,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 48),
-                  Text(
-                    'Home',
-                    style: theme.textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Welcome to Cribe!',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
                   const Spacer(),
-                  Button(
+                  StyledButton(
                     text: 'Logout',
                     onPressed: _onLogoutPressed,
                     isLoading: viewModel.isLoading,
+                    variant: ButtonVariant.primary,
                   ),
-                  const SizedBox(height: 24),
                 ],
               ),
             );

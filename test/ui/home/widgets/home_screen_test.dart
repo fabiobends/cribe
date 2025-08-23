@@ -1,5 +1,5 @@
 import 'package:cribe/core/enums/ui_state.dart';
-import 'package:cribe/ui/core/shared/button.dart';
+import 'package:cribe/ui/core/shared/styled_button.dart';
 import 'package:cribe/ui/home/view_model/home_view_model.dart';
 import 'package:cribe/ui/home/widgets/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -35,12 +35,12 @@ void main() {
 
   group('HomeScreen', () {
     group('UI elements', () {
-      testWidgets('should display "Cribe" title in AppBar', (tester) async {
+      testWidgets('should display "Home" title in AppBar', (tester) async {
         // Act
         await tester.pumpWidget(createTestWidget());
 
         // Assert
-        expect(find.text('Cribe'), findsOneWidget);
+        expect(find.text('Home'), findsOneWidget);
         expect(find.byType(AppBar), findsOneWidget);
       });
 
@@ -50,31 +50,7 @@ void main() {
 
         // Assert
         expect(find.text('Logout'), findsOneWidget);
-        expect(find.byType(Button), findsOneWidget);
-      });
-
-      testWidgets('should display "Home" heading', (tester) async {
-        // Act
-        await tester.pumpWidget(createTestWidget());
-
-        // Assert
-        expect(find.text('Home'), findsOneWidget); // In body only
-      });
-
-      testWidgets('should display welcome message', (tester) async {
-        // Act
-        await tester.pumpWidget(createTestWidget());
-
-        // Assert
-        expect(find.text('Welcome to Cribe!'), findsOneWidget);
-      });
-
-      testWidgets('should display home icon', (tester) async {
-        // Act
-        await tester.pumpWidget(createTestWidget());
-
-        // Assert
-        expect(find.byIcon(Icons.home), findsOneWidget);
+        expect(find.byType(StyledButton), findsOneWidget);
       });
     });
 
@@ -114,9 +90,8 @@ void main() {
         await tester.pumpWidget(createTestWidget());
 
         // Assert
-        final button =
-            tester.widget<ElevatedButton>(find.byType(ElevatedButton));
-        expect(button.onPressed, isNull);
+        final button = tester.widget<StyledButton>(find.byType(StyledButton));
+        expect(button.isLoading, isTrue);
       });
 
       testWidgets('should show CircularProgressIndicator when loading',
@@ -129,7 +104,8 @@ void main() {
 
         // Assert
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
-        expect(find.text('Logout'), findsNothing);
+        // Text is still present but transparent when loading
+        expect(find.text('Logout'), findsOneWidget);
       });
     });
 

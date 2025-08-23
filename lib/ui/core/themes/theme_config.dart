@@ -1,3 +1,4 @@
+import 'package:cribe/core/constants/spacing.dart';
 import 'package:flutter/material.dart';
 
 /// ThemeConfig provides a simple way to change the app's theme colors.
@@ -13,7 +14,7 @@ class ThemeConfig {
   static const String fontFamily = 'Roboto';
 
   // Border radius - Change this to update the entire app's border radius
-  static const double borderRadius = 8.0;
+  static const double borderRadius = Spacing.small;
 
   // Elevation - Change this to update the entire app's elevation
   static const double elevation = 0.0;

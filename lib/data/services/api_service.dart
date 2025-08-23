@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cribe/core/enums/api_path.dart';
+import 'package:cribe/core/constants/api_path.dart';
 import 'package:cribe/core/enums/storage_key.dart';
 import 'package:cribe/data/model/auth/refresh_token_response.dart';
 import 'package:cribe/data/services/base_service.dart';
@@ -185,7 +185,7 @@ class ApiService extends BaseService {
         response.statusCode == 401 && _tokens.refreshToken.isNotEmpty;
     if (shouldRefresh) {
       final response = await post<RefreshTokenResponse>(
-        ApiPath.refreshToken.path,
+        ApiPath.refreshToken,
         RefreshTokenResponse.fromJson,
         body: {'refreshToken': _tokens.refreshToken},
       );

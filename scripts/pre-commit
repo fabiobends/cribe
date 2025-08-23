@@ -26,6 +26,9 @@ for file in $STAGED_FILES; do
         exit 1
     fi
     
+    # Apply automatic fixes (including trailing commas)
+    dart fix --apply "$file"
+    
     # Analyze single file
     flutter analyze "$file"
     
