@@ -1,4 +1,4 @@
-import 'package:cribe/core/enums/api_path.dart';
+import 'package:cribe/core/constants/api_path.dart';
 import 'package:cribe/data/model/auth/login_request.dart';
 import 'package:cribe/data/model/auth/login_response.dart';
 import 'package:cribe/data/model/auth/register_request.dart';
@@ -47,7 +47,7 @@ void main() {
 
         Future<ApiResponse<LoginResponse>> mockLoginCall() =>
             mockApiService.post<LoginResponse>(
-              ApiPath.login.path,
+              ApiPath.login,
               LoginResponse.fromJson,
               body: loginRequest.toJson(),
             );
@@ -75,7 +75,7 @@ void main() {
 
         Future<ApiResponse<LoginResponse>> mockLoginCall() =>
             mockApiService.post<LoginResponse>(
-              ApiPath.login.path,
+              ApiPath.login,
               LoginResponse.fromJson,
               body: loginRequest.toJson(),
             );
@@ -121,7 +121,7 @@ void main() {
 
         Future<ApiResponse<RegisterResponse>> mockRegisterCall() =>
             mockApiService.post<RegisterResponse>(
-              ApiPath.register.path,
+              ApiPath.register,
               RegisterResponse.fromJson,
               body: registerRequest.toJson(),
             );
@@ -159,7 +159,7 @@ void main() {
 
         Future<ApiResponse<RegisterResponse>> mockRegisterCall() =>
             mockApiService.post<RegisterResponse>(
-              ApiPath.register.path,
+              ApiPath.register,
               RegisterResponse.fromJson,
               body: registerRequest.toJson(),
             );

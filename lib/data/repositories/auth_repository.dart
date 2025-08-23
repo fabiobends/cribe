@@ -1,4 +1,4 @@
-import 'package:cribe/core/enums/api_path.dart';
+import 'package:cribe/core/constants/api_path.dart';
 import 'package:cribe/data/model/auth/login_request.dart';
 import 'package:cribe/data/model/auth/login_response.dart';
 import 'package:cribe/data/model/auth/register_request.dart';
@@ -17,7 +17,7 @@ class AuthRepository {
   ) async {
     final request = LoginRequest(email: email, password: password);
     final response = await _apiService.post(
-      ApiPath.login.path,
+      ApiPath.login,
       LoginResponse.fromJson,
       body: request.toJson(),
     );
@@ -43,7 +43,7 @@ class AuthRepository {
       lastName: lastName,
     );
     return await _apiService.post(
-      ApiPath.register.path,
+      ApiPath.register,
       RegisterResponse.fromJson,
       body: request.toJson(),
     );

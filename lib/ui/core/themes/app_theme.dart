@@ -47,7 +47,9 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: colorScheme.secondary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(_borderRadius),
           ),
@@ -108,7 +110,9 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: colorScheme.secondary,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(_borderRadius),
           ),

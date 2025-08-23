@@ -3,8 +3,8 @@ import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
 import 'package:cribe/ui/auth/view_model/login_view_model.dart';
 import 'package:cribe/ui/auth/widgets/login_screen.dart';
-import 'package:cribe/ui/core/shared/button.dart';
-import 'package:cribe/ui/core/shared/text_input.dart';
+import 'package:cribe/ui/core/shared/styled_button.dart';
+import 'package:cribe/ui/core/shared/styled_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -48,15 +48,14 @@ void main() {
       await tester.pumpAndSettle(); // Wait for any animations
 
       // Assert
-      expect(find.text('Welcome Back'), findsOneWidget);
       expect(find.text('Sign in to your account'), findsOneWidget);
-      expect(find.byIcon(Icons.account_circle_outlined), findsOneWidget);
+      expect(find.byType(Placeholder), findsOneWidget);
 
       // Check for text fields by type
-      expect(find.byType(TextInput), findsNWidgets(2));
+      expect(find.byType(StyledTextField), findsNWidgets(2));
 
       // Check for button
-      expect(find.byType(Button), findsOneWidget);
+      expect(find.byType(StyledButton), findsOneWidget);
     });
 
     testWidgets('should have email field with correct properties',
@@ -65,9 +64,9 @@ void main() {
       await tester.pumpWidget(createTestWidget());
       await tester.pumpAndSettle();
 
-      // Act - Find the email field (first TextInput)
-      final emailFields = find.byType(TextInput);
-      final emailField = tester.widget<TextInput>(emailFields.first);
+      // Act - Find the email field (first StyledTextField)
+      final emailFields = find.byType(StyledTextField);
+      final emailField = tester.widget<StyledTextField>(emailFields.first);
 
       // Assert
       expect(emailField.label, equals('Email'));
@@ -81,9 +80,9 @@ void main() {
       // Arrange
       await tester.pumpWidget(createTestWidget());
 
-      // Act - Find the password field (second TextInput)
-      final textFields = find.byType(TextInput);
-      final passwordField = tester.widget<TextInput>(textFields.at(1));
+      // Act - Find the password field (second StyledTextField)
+      final textFields = find.byType(StyledTextField);
+      final passwordField = tester.widget<StyledTextField>(textFields.at(1));
 
       // Assert
       expect(passwordField.label, equals('Password'));
@@ -101,8 +100,8 @@ void main() {
       await tester.pump();
 
       // Assert - Should show validation errors
-      expect(find.text('Please enter your email'), findsOneWidget);
-      expect(find.text('Please enter your password'), findsOneWidget);
+      expect(find.text('Email is required'), findsOneWidget);
+      expect(find.text('Password is required'), findsOneWidget);
     });
 
     testWidgets('should show email validation error for invalid email',
@@ -111,13 +110,13 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       // Act - Enter invalid email
-      final emailField = find.byType(TextFormField).first;
+      final emailField = find.byType(TextField).first;
       await tester.enterText(emailField, 'invalid-email');
       await tester.tap(find.text('Sign In'));
       await tester.pump();
 
       // Assert
-      expect(find.text('Please enter a valid email'), findsOneWidget);
+      expect(find.text('Please enter a valid email address'), findsOneWidget);
     });
 
     testWidgets('should show password validation error for short password',
@@ -126,7 +125,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       // Act - Enter valid email and short password
-      final textFields = find.byType(TextFormField);
+      final textFields = find.byType(TextField);
       await tester.enterText(textFields.first, 'test@example.com');
       await tester.enterText(textFields.at(1), '123');
       await tester.tap(find.text('Sign In'));
@@ -134,7 +133,7 @@ void main() {
 
       // Assert
       expect(
-        find.text('Password must be at least 6 characters'),
+        find.text('Password must be at least 8 characters'),
         findsOneWidget,
       );
     });
@@ -155,7 +154,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       // Act - Fill in valid credentials
-      final textFields = find.byType(TextFormField);
+      final textFields = find.byType(TextField);
       await tester.enterText(textFields.first, 'test@example.com');
       await tester.enterText(textFields.at(1), 'password123');
       await tester.tap(find.text('Sign In'));
@@ -176,9 +175,10 @@ void main() {
       await tester.pump();
 
       // Assert - Check that fields are disabled
-      final emailField = tester.widget<TextInput>(find.byType(TextInput).first);
+      final emailField =
+          tester.widget<StyledTextField>(find.byType(StyledTextField).first);
       final passwordField =
-          tester.widget<TextInput>(find.byType(TextInput).at(1));
+          tester.widget<StyledTextField>(find.byType(StyledTextField).at(1));
 
       expect(emailField.enabled, isFalse);
       expect(passwordField.enabled, isFalse);
@@ -192,7 +192,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       // Act - Fill credentials and submit
-      final textFields = find.byType(TextFormField);
+      final textFields = find.byType(TextField);
       await tester.enterText(textFields.first, 'test@example.com');
       await tester.enterText(textFields.at(1), 'wrongpassword');
       await tester.tap(find.text('Sign In'));

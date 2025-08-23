@@ -25,7 +25,6 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        Provider<ApiService>.value(value: apiService),
         Provider<StorageService>.value(value: storageService),
         ChangeNotifierProvider<LoginViewModel>(
           create: (context) => LoginViewModel(AuthRepository(apiService)),
