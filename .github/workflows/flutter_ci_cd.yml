@@ -9,12 +9,19 @@ on:
       - main
 
 jobs:
+
   sanitize:
     runs-on: ubuntu-latest
+    environment: Production
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
+
+      - name: Setup .env file
+        run: |
+          echo "API_URL=${{ vars.API_URL }}" > .env
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -31,9 +38,15 @@ jobs:
   test:
     needs: sanitize
     runs-on: ubuntu-latest
+    environment: Production
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+
+      - name: Setup .env file
+        run: |
+          echo "API_URL=${{ vars.API_URL }}" > .env
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -51,6 +64,7 @@ jobs:
   build-android:
     needs: test
     runs-on: ubuntu-latest
+    environment: Production
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -77,9 +91,11 @@ jobs:
   build-ios:
     needs: test
     runs-on: macos-latest
+    environment: Production
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
