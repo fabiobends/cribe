@@ -1,4 +1,4 @@
-import 'package:cribe/core/enums/ui_state.dart';
+import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/data/model/auth/register_response.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';

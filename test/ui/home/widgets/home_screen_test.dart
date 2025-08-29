@@ -1,4 +1,4 @@
-import 'package:cribe/core/enums/ui_state.dart';
+import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/ui/core/shared/styled_button.dart';
 import 'package:cribe/ui/home/view_model/home_view_model.dart';
 import 'package:cribe/ui/home/widgets/home_screen.dart';

@@ -1,4 +1,4 @@
-import 'package:cribe/core/services/validation_service.dart';
+import 'package:cribe/data/services/validation_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

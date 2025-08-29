@@ -1,4 +1,4 @@
-import 'package:cribe/core/enums/storage_key.dart';
+import 'package:cribe/core/constants/storage_key.dart';
 import 'package:cribe/data/services/base_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

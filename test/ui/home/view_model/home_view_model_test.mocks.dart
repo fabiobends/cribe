@@ -5,7 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
-import 'package:cribe/core/enums/storage_key.dart' as _i8;
+import 'package:cribe/core/constants/storage_key.dart' as _i8;
 import 'package:cribe/data/model/auth/login_response.dart' as _i5;
 import 'package:cribe/data/model/auth/register_response.dart' as _i6;
 import 'package:cribe/data/repositories/auth_repository.dart' as _i3;
