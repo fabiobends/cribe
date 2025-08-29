@@ -1,5 +1,5 @@
-import 'package:cribe/core/enums/storage_key.dart';
-import 'package:cribe/core/enums/ui_state.dart';
+import 'package:cribe/core/constants/storage_key.dart';
+import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/storage_service.dart';
 import 'package:flutter/foundation.dart';

@@ -1,5 +1,5 @@
 import 'package:cribe/core/constants/spacing.dart';
-import 'package:cribe/core/enums/ui_state.dart';
+import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/ui/auth/view_model/login_view_model.dart';
 import 'package:cribe/ui/auth/widgets/register_screen.dart';
 import 'package:cribe/ui/core/shared/styled_button.dart';
