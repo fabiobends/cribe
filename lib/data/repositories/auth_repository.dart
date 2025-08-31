@@ -4,7 +4,6 @@ import 'package:cribe/data/model/auth/login_response.dart';
 import 'package:cribe/data/model/auth/register_request.dart';
 import 'package:cribe/data/model/auth/register_response.dart';
 import 'package:cribe/data/services/api_service.dart';
-import 'package:cribe/domain/models/auth_tokens.dart';
 
 class AuthRepository {
   final ApiService _apiService;
@@ -22,7 +21,7 @@ class AuthRepository {
       body: request.toJson(),
     );
     _apiService.setTokens(
-      AuthTokens(
+      LoginResponse(
         accessToken: response.data.accessToken,
         refreshToken: response.data.refreshToken,
       ),

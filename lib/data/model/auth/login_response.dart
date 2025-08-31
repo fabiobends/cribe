@@ -15,3 +15,5 @@ class LoginResponse {
     );
   }
 }
+
+typedef AuthTokens = LoginResponse;

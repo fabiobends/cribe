@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cribe/core/constants/api_path.dart';
-import 'package:cribe/core/constants/storage_key.dart';
+import 'package:cribe/core/constants/storage_keys.dart';
+import 'package:cribe/data/model/auth/login_response.dart';
 import 'package:cribe/data/model/auth/refresh_token_response.dart';
 import 'package:cribe/data/services/base_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
-import 'package:cribe/domain/models/auth_tokens.dart';
 
 class ApiResponse<T> {
   final T data;
@@ -31,8 +31,8 @@ class ApiException implements Exception {
 }
 
 class ApiService extends BaseService {
-  final String _baseUrl;
-  final AuthTokens _tokens = AuthTokens(
+  final String Function() _baseUrlResolver;
+  AuthTokens _tokens = AuthTokens(
     accessToken: '',
     refreshToken: '',
   );
@@ -42,15 +42,18 @@ class ApiService extends BaseService {
   ApiService({
     required String apiUrl,
     required StorageService storageService,
-  })  : _baseUrl = apiUrl,
+    String Function()? baseUrlResolver,
+  })  : _baseUrlResolver = baseUrlResolver ?? (() => apiUrl),
         _storageService = storageService;
+
+  String get baseUrl => _baseUrlResolver();
 
   @override
   Future<void> init() async {
     final accessToken = _storageService.getValue(StorageKey.accessToken);
     final refreshToken = _storageService.getValue(StorageKey.refreshToken);
     setTokens(
-      AuthTokens(
+      LoginResponse(
         accessToken: accessToken,
         refreshToken: refreshToken,
       ),
@@ -69,8 +72,10 @@ class ApiService extends BaseService {
       StorageKey.refreshToken,
       tokens.refreshToken,
     );
-    _tokens.accessToken = tokens.accessToken;
-    _tokens.refreshToken = tokens.refreshToken;
+    _tokens = AuthTokens(
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+    );
   }
 
   Future<ApiResponse<T>> get<T>(
@@ -78,7 +83,7 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson,
   ) async {
     try {
-      final uri = Uri.parse('$_baseUrl/$path');
+      final uri = Uri.parse('$baseUrl/$path');
       final httpRequest = await _httpClient.getUrl(uri);
       _addHeaders(httpRequest);
       return _refreshAndProcessResponse(httpRequest, fromJson);
@@ -96,7 +101,7 @@ class ApiService extends BaseService {
     Map<String, dynamic>? body,
   }) async {
     try {
-      final uri = Uri.parse('$_baseUrl/$path');
+      final uri = Uri.parse('$baseUrl/$path');
       final httpRequest = await _httpClient.postUrl(uri);
       _addHeaders(httpRequest);
       _addBody(httpRequest, body);
@@ -112,7 +117,7 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson,
   ) async {
     try {
-      final uri = Uri.parse('$_baseUrl/$path');
+      final uri = Uri.parse('$baseUrl/$path');
       final httpRequest = await _httpClient.deleteUrl(uri);
       _addHeaders(httpRequest);
       return _refreshAndProcessResponse(httpRequest, fromJson);
@@ -130,7 +135,7 @@ class ApiService extends BaseService {
     Map<String, dynamic>? body,
   }) async {
     try {
-      final uri = Uri.parse('$_baseUrl/$path');
+      final uri = Uri.parse('$baseUrl}/$path');
       final httpRequest = await _httpClient.putUrl(uri);
       _addHeaders(httpRequest);
       _addBody(httpRequest, body);
@@ -149,7 +154,7 @@ class ApiService extends BaseService {
     Map<String, dynamic>? body,
   }) async {
     try {
-      final uri = Uri.parse('$_baseUrl/$path');
+      final uri = Uri.parse('$baseUrl/$path');
       final httpRequest = await _httpClient.patchUrl(uri);
       _addHeaders(httpRequest);
       _addBody(httpRequest, body);
@@ -163,7 +168,10 @@ class ApiService extends BaseService {
   }
 
   void _updateAccessToken(String accessToken) {
-    _tokens.accessToken = accessToken;
+    _tokens = AuthTokens(
+      accessToken: accessToken,
+      refreshToken: _tokens.refreshToken,
+    );
   }
 
   void _addHeaders(HttpClientRequest httpRequest) {

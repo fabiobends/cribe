@@ -5,8 +5,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
+import 'package:cribe/data/model/auth/login_response.dart' as _i4;
 import 'package:cribe/data/services/api_service.dart' as _i2;
-import 'package:cribe/domain/models/auth_tokens.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -63,7 +63,7 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Future<void> setTokens(_i4.AuthTokens? tokens) => (super.noSuchMethod(
+  _i3.Future<void> setTokens(_i4.LoginResponse? tokens) => (super.noSuchMethod(
         Invocation.method(
           #setTokens,
           [tokens],

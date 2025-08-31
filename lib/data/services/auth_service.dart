@@ -1,4 +1,4 @@
-import 'package:cribe/core/constants/storage_key.dart';
+import 'package:cribe/core/constants/storage_keys.dart';
 import 'package:cribe/data/services/storage_service.dart';
 
 class AuthService {
