@@ -1,7 +1,9 @@
+import 'package:cribe/core/constants/feature_flags.dart';
 import 'package:cribe/core/constants/ui_state.dart';
-import 'package:cribe/ui/core/shared/styled_button.dart';
-import 'package:cribe/ui/home/view_model/home_view_model.dart';
+import 'package:cribe/data/providers/feature_flags_provider.dart';
+import 'package:cribe/ui/home/view_models/home_view_model.dart';
 import 'package:cribe/ui/home/widgets/home_screen.dart';
+import 'package:cribe/ui/shared/widgets/styled_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -10,24 +12,41 @@ import 'package:provider/provider.dart';
 
 import 'home_screen_test.mocks.dart';
 
-@GenerateMocks([HomeViewModel])
+@GenerateMocks([HomeViewModel, FeatureFlagsProvider])
 void main() {
   late MockHomeViewModel mockHomeViewModel;
+  late MockFeatureFlagsProvider mockFeatureFlagsProvider;
 
   setUp(() {
     mockHomeViewModel = MockHomeViewModel();
+    mockFeatureFlagsProvider = MockFeatureFlagsProvider();
 
-    // Default mock behavior
+    // Default mock behavior for HomeViewModel
     when(mockHomeViewModel.state).thenReturn(UiState.initial);
     when(mockHomeViewModel.isLoading).thenReturn(false);
     when(mockHomeViewModel.hasError).thenReturn(false);
     when(mockHomeViewModel.errorMessage).thenReturn('');
+
+    // Default mock behavior for FeatureFlagsProvider
+    when(mockFeatureFlagsProvider.getFlag<bool>(FeatureFlagKey.booleanFlag))
+        .thenReturn(true);
+    when(mockFeatureFlagsProvider.getFlag<String>(FeatureFlagKey.abTestVariant))
+        .thenReturn('A');
+    when(mockFeatureFlagsProvider.getFlag<String>(FeatureFlagKey.apiEndpoint))
+        .thenReturn('https://api.example.com');
   });
 
   Widget createTestWidget() {
     return MaterialApp(
-      home: ChangeNotifierProvider<HomeViewModel>.value(
-        value: mockHomeViewModel,
+      home: MultiProvider(
+        providers: [
+          ChangeNotifierProvider<HomeViewModel>.value(
+            value: mockHomeViewModel,
+          ),
+          ChangeNotifierProvider<FeatureFlagsProvider>.value(
+            value: mockFeatureFlagsProvider,
+          ),
+        ],
         child: const HomeScreen(),
       ),
     );
@@ -180,13 +199,16 @@ void main() {
     });
 
     group('Consumer integration', () {
-      testWidgets('should use Consumer to listen to ViewModel changes',
+      testWidgets('should use Consumer2 to listen to ViewModel changes',
           (tester) async {
         // Act
         await tester.pumpWidget(createTestWidget());
 
         // Assert
-        expect(find.byType(Consumer<HomeViewModel>), findsOneWidget);
+        expect(
+          find.byType(Consumer2<HomeViewModel, FeatureFlagsProvider>),
+          findsOneWidget,
+        );
       });
     });
   });

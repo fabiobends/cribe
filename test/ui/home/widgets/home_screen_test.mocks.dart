@@ -6,8 +6,10 @@
 import 'dart:async' as _i5;
 import 'dart:ui' as _i6;
 
+import 'package:cribe/core/constants/feature_flags.dart' as _i8;
 import 'package:cribe/core/constants/ui_state.dart' as _i3;
-import 'package:cribe/ui/home/view_model/home_view_model.dart' as _i2;
+import 'package:cribe/data/providers/feature_flags_provider.dart' as _i7;
+import 'package:cribe/ui/home/view_models/home_view_model.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
 
@@ -93,6 +95,107 @@ class MockHomeViewModel extends _i1.Mock implements _i2.HomeViewModel {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  void addListener(_i6.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #addListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void removeListener(_i6.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #removeListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+}
+
+/// A class which mocks [FeatureFlagsProvider].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockFeatureFlagsProvider extends _i1.Mock
+    implements _i7.FeatureFlagsProvider {
+  MockFeatureFlagsProvider() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  bool get hasListeners => (super.noSuchMethod(
+        Invocation.getter(#hasListeners),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  T getFlag<T>(_i8.FeatureFlagKey? key) => (super.noSuchMethod(
+        Invocation.method(
+          #getFlag,
+          [key],
+        ),
+        returnValue: _i4.dummyValue<T>(
+          this,
+          Invocation.method(
+            #getFlag,
+            [key],
+          ),
+        ),
+      ) as T);
+
+  @override
+  void setFlag<T>(
+    _i8.FeatureFlagKey? key,
+    T? value,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setFlag,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void resetToDefaults() => super.noSuchMethod(
+        Invocation.method(
+          #resetToDefaults,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  Map<String, dynamic> getAllFlags() => (super.noSuchMethod(
+        Invocation.method(
+          #getAllFlags,
+          [],
+        ),
+        returnValue: <String, dynamic>{},
+      ) as Map<String, dynamic>);
 
   @override
   void addListener(_i6.VoidCallback? listener) => super.noSuchMethod(

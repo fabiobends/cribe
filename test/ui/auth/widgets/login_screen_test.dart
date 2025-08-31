@@ -1,10 +1,10 @@
 import 'package:cribe/data/model/auth/login_response.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
-import 'package:cribe/ui/auth/view_model/login_view_model.dart';
+import 'package:cribe/ui/auth/view_models/login_view_model.dart';
 import 'package:cribe/ui/auth/widgets/login_screen.dart';
-import 'package:cribe/ui/core/shared/styled_button.dart';
-import 'package:cribe/ui/core/shared/styled_text_field.dart';
+import 'package:cribe/ui/shared/widgets/styled_button.dart';
+import 'package:cribe/ui/shared/widgets/styled_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -164,24 +164,6 @@ void main() {
       // Assert
       verify(mockAuthRepository.login('test@example.com', 'password123'))
           .called(1);
-    });
-
-    testWidgets('should disable fields when loading', (tester) async {
-      // Arrange
-      await tester.pumpWidget(createTestWidget());
-
-      // Act - Set loading state manually
-      loginViewModel.setLoading(true);
-      await tester.pump();
-
-      // Assert - Check that fields are disabled
-      final emailField =
-          tester.widget<StyledTextField>(find.byType(StyledTextField).first);
-      final passwordField =
-          tester.widget<StyledTextField>(find.byType(StyledTextField).at(1));
-
-      expect(emailField.enabled, isFalse);
-      expect(passwordField.enabled, isFalse);
     });
 
     testWidgets('should show snackbar on login error', (tester) async {

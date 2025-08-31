@@ -1,11 +1,13 @@
+import 'package:cribe/core/constants/feature_flags.dart';
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/constants/ui_state.dart';
-import 'package:cribe/ui/auth/view_model/login_view_model.dart';
+import 'package:cribe/data/providers/feature_flags_provider.dart';
+import 'package:cribe/ui/auth/view_models/login_view_model.dart';
 import 'package:cribe/ui/auth/widgets/register_screen.dart';
-import 'package:cribe/ui/core/shared/styled_button.dart';
-import 'package:cribe/ui/core/shared/styled_text.dart';
-import 'package:cribe/ui/core/shared/styled_text_button.dart';
-import 'package:cribe/ui/core/shared/styled_text_field.dart';
+import 'package:cribe/ui/shared/widgets/styled_button.dart';
+import 'package:cribe/ui/shared/widgets/styled_text.dart';
+import 'package:cribe/ui/shared/widgets/styled_text_button.dart';
+import 'package:cribe/ui/shared/widgets/styled_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -23,12 +25,40 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   final _emailFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
+  bool _obscurePassword = true;
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     _viewModel = context.read<LoginViewModel>();
     _viewModel.addListener(_onViewModelChanged);
+
+    // Load default values from feature flags if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        final featureFlags = context.read<FeatureFlagsProvider>();
+        final defaultEmail =
+            featureFlags.getFlag<String>(FeatureFlagKey.defaultEmail);
+        final defaultPassword =
+            featureFlags.getFlag<String>(FeatureFlagKey.defaultPassword);
+
+        if (defaultEmail.isNotEmpty) {
+          _emailController.text = defaultEmail;
+        }
+        if (defaultPassword.isNotEmpty) {
+          _passwordController.text = defaultPassword;
+        }
+      } catch (e) {
+        // FeatureFlagsProvider not available (e.g., in tests)
+        // This is fine, just continue without default values
+      }
+    });
   }
 
   @override
@@ -43,10 +73,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _onViewModelChanged() {
     if (_viewModel.hasError) {
+      final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_viewModel.errorMessage),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          content: StyledText(
+            text: _viewModel.errorMessage,
+            variant: TextVariant.body,
+            color: theme.colorScheme.onError,
+          ),
+          backgroundColor: theme.colorScheme.error,
         ),
       );
       _viewModel.clearError();
@@ -86,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.large),
           child: SizedBox(
             height: contentHeight,
             child: Form(
@@ -112,24 +147,27 @@ class _LoginScreenState extends State<LoginScreen> {
                         hint: 'Enter your email',
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        enabled: !viewModel.isLoading,
                         validator: viewModel.validateEmail,
                         focusNode: _emailFocusNode,
                         textInputAction: TextInputAction.next,
                         onFieldSubmitted: (_) =>
                             _passwordFocusNode.requestFocus(),
                       ),
-                      const SizedBox(height: Spacing.medium),
                       StyledTextField(
                         label: 'Password',
                         hint: 'Enter your password',
                         controller: _passwordController,
-                        obscureText: true,
-                        enabled: !viewModel.isLoading,
+                        obscureText: _obscurePassword,
                         validator: viewModel.validatePassword,
                         focusNode: _passwordFocusNode,
                         textInputAction: TextInputAction.done,
                         onFieldSubmitted: (_) => _onLoginPressed(),
+                        suffixIcon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressedSuffixIcon: _togglePasswordVisibility,
                       ),
                       const SizedBox(height: Spacing.medium),
                       StyledButton(

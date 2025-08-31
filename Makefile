@@ -1,7 +1,12 @@
-.PHONY: test
+.PHONY: test format-fix
 
 test:
 	flutter test
+
+# Format and fix all Dart code
+format-fix:
+	@echo "🎨 Formatting and fixing Dart code..."
+	@scripts/format-and-fix
 
 # Git hooks
 setup-hooks:
