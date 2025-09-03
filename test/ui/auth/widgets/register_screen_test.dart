@@ -1,10 +1,10 @@
 import 'package:cribe/data/model/auth/register_response.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
-import 'package:cribe/ui/auth/view_model/register_view_model.dart';
+import 'package:cribe/ui/auth/view_models/register_view_model.dart';
 import 'package:cribe/ui/auth/widgets/register_screen.dart';
-import 'package:cribe/ui/core/shared/styled_button.dart';
-import 'package:cribe/ui/core/shared/styled_text_field.dart';
+import 'package:cribe/ui/shared/widgets/styled_button.dart';
+import 'package:cribe/ui/shared/widgets/styled_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';

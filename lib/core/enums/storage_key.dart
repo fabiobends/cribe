@@ -1,4 +1,0 @@
-enum StorageKey {
-  accessToken,
-  refreshToken,
-}

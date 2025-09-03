@@ -1,9 +1,9 @@
 import 'package:cribe/core/constants/spacing.dart';
-import 'package:cribe/ui/auth/view_model/register_view_model.dart';
-import 'package:cribe/ui/core/shared/styled_button.dart';
-import 'package:cribe/ui/core/shared/styled_text.dart';
-import 'package:cribe/ui/core/shared/styled_text_button.dart';
-import 'package:cribe/ui/core/shared/styled_text_field.dart';
+import 'package:cribe/ui/auth/view_models/register_view_model.dart';
+import 'package:cribe/ui/shared/widgets/styled_button.dart';
+import 'package:cribe/ui/shared/widgets/styled_text.dart';
+import 'package:cribe/ui/shared/widgets/styled_text_button.dart';
+import 'package:cribe/ui/shared/widgets/styled_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -57,7 +57,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (_viewModel.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_viewModel.errorMessage),
+          content: StyledText(
+            text: _viewModel.errorMessage,
+            variant: TextVariant.body,
+            color: Colors.white,
+          ),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -118,7 +122,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: Spacing.extraLarge),
                 Column(
-                  spacing: 4,
+                  spacing: Spacing.extraSmall,
                   children: [
                     StyledTextField(
                       label: 'First Name',

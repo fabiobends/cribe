@@ -1,43 +1,50 @@
 #!/bin/sh
 
-echo "Running pre-commit hook..."
+echo "🔍 Running pre-commit hook..."
 
 # Get all staged Dart files
 STAGED_FILES=$(git diff --cached --name-only --diff-filter=d | grep '\.dart$')
 
 if [ -z "$STAGED_FILES" ]; then
-    echo "No Dart files to check."
-    echo "Pre-commit hook completed successfully!"
+    echo "✅ No Dart files to check."
+    echo "🎉 Pre-commit hook completed successfully!"
     exit 0
 fi
 
-# Format and lint the files
-echo "Formatting and linting Dart files..."
+echo "📝 Found $(echo "$STAGED_FILES" | wc -l | tr -d ' ') Dart file(s) to process..."
 
-# Run flutter format and analyze on staged files only
+# Convert to space-separated list for batch operations
+STAGED_FILES_LIST=$(echo "$STAGED_FILES" | tr '\n' ' ')
+
+echo "🎨 Formatting Dart files..."
+# Format all files at once (more efficient)
+dart format $STAGED_FILES_LIST
+if [ $? -ne 0 ]; then
+    echo "❌ Dart format failed. Please fix the issues before committing."
+    exit 1
+fi
+
+echo "🔧 Applying automatic fixes (including trailing commas)..."
+# Apply fixes to all files at once
+dart fix --apply $STAGED_FILES_LIST
+if [ $? -ne 0 ]; then
+    echo "❌ Dart fix failed. Please fix the issues before committing."
+    exit 1
+fi
+
+echo "🔍 Analyzing code..."
+# Analyze all staged files at once
+flutter analyze $STAGED_FILES_LIST
+if [ $? -ne 0 ]; then
+    echo "❌ Flutter analyze found issues. Please fix them before committing."
+    exit 1
+fi
+
+# Re-add all modified files to staging
+echo "📦 Re-staging formatted and fixed files..."
 for file in $STAGED_FILES; do
-    echo "Checking $file"
-    
-    # Format file
-    dart format "$file"
-
-    if [ $? -ne 0 ]; then
-        echo "Dart format failed for $file. Please fix the issues before committing."
-        exit 1
-    fi
-    
-    # Apply automatic fixes (including trailing commas)
-    dart fix --apply "$file"
-    
-    # Analyze single file
-    flutter analyze "$file"
-    
-    if [ $? -ne 0 ]; then
-        echo "Flutter analyze failed for $file. Please fix the issues before committing."
-        exit 1
-    fi
-    
     git add "$file"
 done
 
-echo "Pre-commit hook completed successfully!"
+echo "✅ All checks passed!"
+echo "🎉 Pre-commit hook completed successfully!"
