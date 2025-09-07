@@ -11,7 +11,8 @@ if [ -z "$STAGED_FILES" ]; then
     exit 0
 fi
 
-echo "📝 Found $(echo "$STAGED_FILES" | wc -l | tr -d ' ') Dart file(s) to process..."
+COUNT=$(printf "%s\n" "$STAGED_FILES" | wc -l | tr -d ' ')
+echo "📝 Found ${COUNT} Dart file(s) to process..."
 
 # Run format-fix script which handles formatting, fixes, and analysis
 scripts/format-and-fix
@@ -20,10 +21,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Re-add all modified staged files to staging
+# Re-stage only the originally staged Dart files (handles spaces/newlines safely)
 echo "📦 Re-staging formatted and fixed files..."
-for file in $STAGED_FILES; do
-    git add "$file"
+printf "%s\n" "$STAGED_FILES" | while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    git add -- "$file"
 done
 
 echo "✅ All checks passed!"
