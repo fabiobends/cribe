@@ -16,12 +16,14 @@ class ComponentShowcase extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: StyledText(text: name, variant: TextVariant.title)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(Spacing.medium),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: _buildVariantsWithSpacing(),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(Spacing.medium),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: _buildVariantsWithSpacing(),
+            ),
           ),
         ),
       ),
