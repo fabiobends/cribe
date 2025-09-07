@@ -13,34 +13,14 @@ fi
 
 echo "📝 Found $(echo "$STAGED_FILES" | wc -l | tr -d ' ') Dart file(s) to process..."
 
-# Convert to space-separated list for batch operations
-STAGED_FILES_LIST=$(echo "$STAGED_FILES" | tr '\n' ' ')
-
-echo "🎨 Formatting Dart files..."
-# Format all files at once (more efficient)
-dart format $STAGED_FILES_LIST
+# Run format-fix script which handles formatting, fixes, and analysis
+scripts/format-and-fix
 if [ $? -ne 0 ]; then
-    echo "❌ Dart format failed. Please fix the issues before committing."
+    echo "❌ Format and fix failed. Please fix the issues before committing."
     exit 1
 fi
 
-echo "🔧 Applying automatic fixes (including trailing commas)..."
-# Apply fixes to all files at once
-dart fix --apply $STAGED_FILES_LIST
-if [ $? -ne 0 ]; then
-    echo "❌ Dart fix failed. Please fix the issues before committing."
-    exit 1
-fi
-
-echo "🔍 Analyzing code..."
-# Analyze all staged files at once
-flutter analyze $STAGED_FILES_LIST
-if [ $? -ne 0 ]; then
-    echo "❌ Flutter analyze found issues. Please fix them before committing."
-    exit 1
-fi
-
-# Re-add all modified files to staging
+# Re-add all modified staged files to staging
 echo "📦 Re-staging formatted and fixed files..."
 for file in $STAGED_FILES; do
     git add "$file"
