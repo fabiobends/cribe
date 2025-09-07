@@ -17,11 +17,34 @@ class FeatureFlagsView extends StatefulWidget {
 
 class _FeatureFlagsViewState extends State<FeatureFlagsView> {
   bool _obscurePassword = true;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _apiController = TextEditingController();
 
   void _togglePasswordVisibility() {
     setState(() {
       _obscurePassword = !_obscurePassword;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final featureFlags = context.read<FeatureFlagsProvider>();
+    _emailController.text =
+        featureFlags.getFlag(FeatureFlagKey.defaultEmail) ?? '';
+    _passwordController.text =
+        featureFlags.getFlag(FeatureFlagKey.defaultPassword) ?? '';
+    _apiController.text =
+        featureFlags.getFlag(FeatureFlagKey.apiEndpoint) ?? '';
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _apiController.dispose();
+    super.dispose();
   }
 
   @override
@@ -38,18 +61,14 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
                 const SizedBox(height: Spacing.medium),
                 StyledTextField(
                   label: 'Default user email',
-                  controller: TextEditingController(
-                    text: featureFlags.getFlag(FeatureFlagKey.defaultEmail),
-                  ),
+                  controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   onFieldSubmitted: (value) =>
                       featureFlags.setFlag(FeatureFlagKey.defaultEmail, value),
                 ),
                 StyledTextField(
                   label: 'Default user password',
-                  controller: TextEditingController(
-                    text: featureFlags.getFlag(FeatureFlagKey.defaultPassword),
-                  ),
+                  controller: _passwordController,
                   obscureText: _obscurePassword,
                   onFieldSubmitted: (value) => featureFlags.setFlag(
                     FeatureFlagKey.defaultPassword,
@@ -63,9 +82,7 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
                 StyledTextField(
                   label: 'API Endpoint',
                   hint: 'Enter custom API endpoint',
-                  controller: TextEditingController(
-                    text: featureFlags.getFlag(FeatureFlagKey.apiEndpoint),
-                  ),
+                  controller: _apiController,
                   keyboardType: TextInputType.url,
                   suffixIcon: const Icon(Icons.link),
                   helperText: 'Override the default API endpoint for testing',
