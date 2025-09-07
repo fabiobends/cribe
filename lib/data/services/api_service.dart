@@ -83,7 +83,7 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson,
   ) async {
     try {
-      final uri = Uri.parse('$baseUrl/$path');
+      final uri = _getUri(path);
       final httpRequest = await _httpClient.getUrl(uri);
       _addHeaders(httpRequest);
       return _refreshAndProcessResponse(httpRequest, fromJson);
@@ -101,7 +101,7 @@ class ApiService extends BaseService {
     Map<String, dynamic>? body,
   }) async {
     try {
-      final uri = Uri.parse('$baseUrl/$path');
+      final uri = _getUri(path);
       final httpRequest = await _httpClient.postUrl(uri);
       _addHeaders(httpRequest);
       _addBody(httpRequest, body);
@@ -117,7 +117,7 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson,
   ) async {
     try {
-      final uri = Uri.parse('$baseUrl/$path');
+      final uri = _getUri(path);
       final httpRequest = await _httpClient.deleteUrl(uri);
       _addHeaders(httpRequest);
       return _refreshAndProcessResponse(httpRequest, fromJson);
@@ -135,7 +135,7 @@ class ApiService extends BaseService {
     Map<String, dynamic>? body,
   }) async {
     try {
-      final uri = Uri.parse('$baseUrl}/$path');
+      final uri = _getUri(path);
       final httpRequest = await _httpClient.putUrl(uri);
       _addHeaders(httpRequest);
       _addBody(httpRequest, body);
@@ -154,7 +154,7 @@ class ApiService extends BaseService {
     Map<String, dynamic>? body,
   }) async {
     try {
-      final uri = Uri.parse('$baseUrl/$path');
+      final uri = _getUri(path);
       final httpRequest = await _httpClient.patchUrl(uri);
       _addHeaders(httpRequest);
       _addBody(httpRequest, body);
@@ -167,11 +167,18 @@ class ApiService extends BaseService {
     }
   }
 
+  Uri _getUri(String path) {
+    final uri = Uri.parse(baseUrl).resolve(path);
+    return uri;
+  }
+
   void _updateAccessToken(String accessToken) {
     _tokens = AuthTokens(
       accessToken: accessToken,
       refreshToken: _tokens.refreshToken,
     );
+    // Keep storage in syn
+    _storageService.setValue(StorageKey.accessToken, accessToken);
   }
 
   void _addHeaders(HttpClientRequest httpRequest) {
