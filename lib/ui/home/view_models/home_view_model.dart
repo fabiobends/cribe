@@ -23,8 +23,8 @@ class HomeViewModel extends ChangeNotifier {
 
     try {
       // Clear tokens from storage
-      await _storageService.setValue(StorageKey.accessToken, '');
-      await _storageService.setValue(StorageKey.refreshToken, '');
+      await _storageService.setSecureValue(SecureStorageKey.accessToken, '');
+      await _storageService.setSecureValue(SecureStorageKey.refreshToken, '');
 
       _setState(UiState.success);
     } catch (e) {

@@ -27,8 +27,9 @@ class _AuthScreenState extends State<AuthScreen> {
     final authService = AuthService(storageService);
 
     if (mounted) {
+      final isAuthenticated = await authService.isAuthenticated;
       setState(() {
-        _isAuthenticated = authService.isAuthenticated;
+        _isAuthenticated = isAuthenticated;
         _isLoading = false;
       });
     }
