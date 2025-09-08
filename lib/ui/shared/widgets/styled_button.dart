@@ -59,7 +59,7 @@ class StyledButton extends StatelessWidget {
     }
 
     return ElevatedButton(
-      onPressed: isEnabled ? onPressed : null,
+      onPressed: (isEnabled && !isLoading) ? onPressed : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: getBackgroundColor(),
         foregroundColor: getForegroundColor(),
