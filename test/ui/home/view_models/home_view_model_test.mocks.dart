@@ -150,6 +150,38 @@ class MockStorageService extends _i1.Mock implements _i7.StorageService {
       ) as String);
 
   @override
+  _i4.Future<String> getSecureValue(_i8.SecureStorageKey? key) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getSecureValue,
+          [key],
+        ),
+        returnValue: _i4.Future<String>.value(_i9.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getSecureValue,
+            [key],
+          ),
+        )),
+      ) as _i4.Future<String>);
+
+  @override
+  _i4.Future<bool> setSecureValue(
+    _i8.SecureStorageKey? key,
+    String? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setSecureValue,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i4.Future<bool>.value(false),
+      ) as _i4.Future<bool>);
+
+  @override
   _i4.Future<bool> setValue(
     _i8.StorageKey? key,
     String? value,

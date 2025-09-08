@@ -6,16 +6,17 @@ class AuthService {
 
   AuthService(this._storageService);
 
-  bool get isAuthenticated {
-    final accessToken = _storageService.getValue(StorageKey.accessToken);
+  Future<bool> get isAuthenticated async {
+    final accessToken =
+        await _storageService.getSecureValue(SecureStorageKey.accessToken);
     return accessToken.isNotEmpty;
   }
 
-  String get accessToken {
-    return _storageService.getValue(StorageKey.accessToken);
+  Future<String> get accessToken async {
+    return await _storageService.getSecureValue(SecureStorageKey.accessToken);
   }
 
-  String get refreshToken {
-    return _storageService.getValue(StorageKey.refreshToken);
+  Future<String> get refreshToken async {
+    return await _storageService.getSecureValue(SecureStorageKey.refreshToken);
   }
 }

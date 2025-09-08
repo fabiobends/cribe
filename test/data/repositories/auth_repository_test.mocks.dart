@@ -3,11 +3,12 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i3;
+import 'dart:async' as _i4;
 
-import 'package:cribe/data/model/auth/login_response.dart' as _i4;
+import 'package:cribe/data/model/auth/login_response.dart' as _i5;
 import 'package:cribe/data/services/api_service.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i3;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -43,37 +44,46 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
   }
 
   @override
-  _i3.Future<void> init() => (super.noSuchMethod(
+  String get baseUrl => (super.noSuchMethod(
+        Invocation.getter(#baseUrl),
+        returnValue: _i3.dummyValue<String>(
+          this,
+          Invocation.getter(#baseUrl),
+        ),
+      ) as String);
+
+  @override
+  _i4.Future<void> init() => (super.noSuchMethod(
         Invocation.method(
           #init,
           [],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<void> dispose() => (super.noSuchMethod(
+  _i4.Future<void> dispose() => (super.noSuchMethod(
         Invocation.method(
           #dispose,
           [],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<void> setTokens(_i4.LoginResponse? tokens) => (super.noSuchMethod(
+  _i4.Future<void> setTokens(_i5.LoginResponse? tokens) => (super.noSuchMethod(
         Invocation.method(
           #setTokens,
           [tokens],
         ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i3.Future<_i2.ApiResponse<T>> get<T>(
+  _i4.Future<_i2.ApiResponse<T>> get<T>(
     String? path,
     T Function(dynamic)? fromJson,
   ) =>
@@ -85,7 +95,7 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
             fromJson,
           ],
         ),
-        returnValue: _i3.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
+        returnValue: _i4.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
           this,
           Invocation.method(
             #get,
@@ -95,10 +105,10 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
             ],
           ),
         )),
-      ) as _i3.Future<_i2.ApiResponse<T>>);
+      ) as _i4.Future<_i2.ApiResponse<T>>);
 
   @override
-  _i3.Future<_i2.ApiResponse<T>> post<T>(
+  _i4.Future<_i2.ApiResponse<T>> post<T>(
     String? path,
     T Function(dynamic)? fromJson, {
     Map<String, dynamic>? body,
@@ -112,7 +122,7 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
           ],
           {#body: body},
         ),
-        returnValue: _i3.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
+        returnValue: _i4.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
           this,
           Invocation.method(
             #post,
@@ -123,10 +133,10 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
             {#body: body},
           ),
         )),
-      ) as _i3.Future<_i2.ApiResponse<T>>);
+      ) as _i4.Future<_i2.ApiResponse<T>>);
 
   @override
-  _i3.Future<_i2.ApiResponse<T>> delete<T>(
+  _i4.Future<_i2.ApiResponse<T>> delete<T>(
     String? path,
     T Function(dynamic)? fromJson,
   ) =>
@@ -138,7 +148,7 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
             fromJson,
           ],
         ),
-        returnValue: _i3.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
+        returnValue: _i4.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
           this,
           Invocation.method(
             #delete,
@@ -148,10 +158,10 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
             ],
           ),
         )),
-      ) as _i3.Future<_i2.ApiResponse<T>>);
+      ) as _i4.Future<_i2.ApiResponse<T>>);
 
   @override
-  _i3.Future<_i2.ApiResponse<T>> put<T>(
+  _i4.Future<_i2.ApiResponse<T>> put<T>(
     String? path,
     T Function(dynamic)? fromJson, {
     Map<String, dynamic>? body,
@@ -165,7 +175,7 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
           ],
           {#body: body},
         ),
-        returnValue: _i3.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
+        returnValue: _i4.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
           this,
           Invocation.method(
             #put,
@@ -176,10 +186,10 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
             {#body: body},
           ),
         )),
-      ) as _i3.Future<_i2.ApiResponse<T>>);
+      ) as _i4.Future<_i2.ApiResponse<T>>);
 
   @override
-  _i3.Future<_i2.ApiResponse<T>> patch<T>(
+  _i4.Future<_i2.ApiResponse<T>> patch<T>(
     String? path,
     T Function(dynamic)? fromJson, {
     Map<String, dynamic>? body,
@@ -193,7 +203,7 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
           ],
           {#body: body},
         ),
-        returnValue: _i3.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
+        returnValue: _i4.Future<_i2.ApiResponse<T>>.value(_FakeApiResponse_0<T>(
           this,
           Invocation.method(
             #patch,
@@ -204,5 +214,5 @@ class MockApiService extends _i1.Mock implements _i2.ApiService {
             {#body: body},
           ),
         )),
-      ) as _i3.Future<_i2.ApiResponse<T>>);
+      ) as _i4.Future<_i2.ApiResponse<T>>);
 }

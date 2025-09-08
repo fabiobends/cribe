@@ -50,8 +50,10 @@ class ApiService extends BaseService {
 
   @override
   Future<void> init() async {
-    final accessToken = _storageService.getValue(StorageKey.accessToken);
-    final refreshToken = _storageService.getValue(StorageKey.refreshToken);
+    final accessToken =
+        await _storageService.getSecureValue(SecureStorageKey.accessToken);
+    final refreshToken =
+        await _storageService.getSecureValue(SecureStorageKey.refreshToken);
     setTokens(
       LoginResponse(
         accessToken: accessToken,
@@ -67,9 +69,12 @@ class ApiService extends BaseService {
   }
 
   Future<void> setTokens(AuthTokens tokens) async {
-    await _storageService.setValue(StorageKey.accessToken, tokens.accessToken);
-    await _storageService.setValue(
-      StorageKey.refreshToken,
+    await _storageService.setSecureValue(
+      SecureStorageKey.accessToken,
+      tokens.accessToken,
+    );
+    await _storageService.setSecureValue(
+      SecureStorageKey.refreshToken,
       tokens.refreshToken,
     );
     _tokens = AuthTokens(
@@ -177,8 +182,8 @@ class ApiService extends BaseService {
       accessToken: accessToken,
       refreshToken: _tokens.refreshToken,
     );
-    // Keep storage in syn
-    _storageService.setValue(StorageKey.accessToken, accessToken);
+    // Keep storage in sync - use secure storage for token
+    _storageService.setSecureValue(SecureStorageKey.accessToken, accessToken);
   }
 
   void _addHeaders(HttpClientRequest httpRequest) {
