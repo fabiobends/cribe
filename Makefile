@@ -6,7 +6,14 @@ test:
 # Format and fix all Dart code
 format-fix:
 	@echo "🎨 Formatting and fixing Dart code..."
-	@scripts/format-and-fix
+	@echo "📝 Formatting all Dart files..."
+	@dart format .
+	@echo "🔧 Applying automatic fixes..."
+	@dart fix --apply
+	@echo "🔍 Running analysis..."
+	@flutter analyze
+	@echo "✅ All checks passed!"
+	@echo "🎉 Code is ready!"
 
 # Git hooks
 setup-hooks:

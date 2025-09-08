@@ -14,14 +14,27 @@ fi
 COUNT=$(printf "%s\n" "$STAGED_FILES" | wc -l | tr -d ' ')
 echo "📝 Found ${COUNT} Dart file(s) to process..."
 
-# Run format-fix script which handles formatting, fixes, and analysis
-scripts/format-and-fix
+# Format only the staged files first to avoid formatting unrelated files
+echo "🎨 Formatting staged Dart files..."
+printf "%s\n" "$STAGED_FILES" | while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    dart format "$file"
+done
+
+# Apply automatic fixes to staged files
+echo "🔧 Applying automatic fixes to staged files..."
+dart fix --apply
+
+# Run analysis on the whole project
+echo "🔍 Running analysis..."
+flutter analyze
+
 if [ $? -ne 0 ]; then
-    echo "❌ Format and fix failed. Please fix the issues before committing."
+    echo "❌ Analysis failed. Please fix the issues before committing."
     exit 1
 fi
 
-# Re-stage only the originally staged Dart files (handles spaces/newlines safely)
+# Re-stage all the originally staged Dart files (they may have been formatted/fixed)
 echo "📦 Re-staging formatted and fixed files..."
 printf "%s\n" "$STAGED_FILES" | while IFS= read -r file; do
     [ -n "$file" ] || continue

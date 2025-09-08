@@ -34,12 +34,18 @@ void main() {
     group('logout', () {
       test('should update state to loading when logout starts', () async {
         // Arrange
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.accessToken, '',),)
-            .thenAnswer((_) async => true);
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.refreshToken, '',),)
-            .thenAnswer((_) async => true);
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.accessToken,
+            '',
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.refreshToken,
+            '',
+          ),
+        ).thenAnswer((_) async => true);
 
         // Act
         final logoutFuture = homeViewModel.logout();
@@ -55,12 +61,18 @@ void main() {
 
       test('should update state to success when logout succeeds', () async {
         // Arrange
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.accessToken, '',),)
-            .thenAnswer((_) async => true);
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.refreshToken, '',),)
-            .thenAnswer((_) async => true);
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.accessToken,
+            '',
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.refreshToken,
+            '',
+          ),
+        ).thenAnswer((_) async => true);
 
         // Act
         await homeViewModel.logout();
@@ -75,12 +87,18 @@ void main() {
       test('should call StorageService.setValue with correct parameters',
           () async {
         // Arrange
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.accessToken, '',),)
-            .thenAnswer((_) async => true);
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.refreshToken, '',),)
-            .thenAnswer((_) async => true);
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.accessToken,
+            '',
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.refreshToken,
+            '',
+          ),
+        ).thenAnswer((_) async => true);
 
         // Act
         await homeViewModel.logout();
@@ -97,9 +115,12 @@ void main() {
       test('should update state to error when logout fails', () async {
         // Arrange
         const errorMessage = 'Logout failed: Storage error';
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.accessToken, '',),)
-            .thenThrow(Exception(errorMessage));
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.accessToken,
+            '',
+          ),
+        ).thenThrow(Exception(errorMessage));
 
         // Act
         await homeViewModel.logout();
@@ -113,12 +134,18 @@ void main() {
 
       test('should notify listeners during state changes', () async {
         // Arrange
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.accessToken, '',),)
-            .thenAnswer((_) async => true);
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.refreshToken, '',),)
-            .thenAnswer((_) async => true);
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.accessToken,
+            '',
+          ),
+        ).thenAnswer((_) async => true);
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.refreshToken,
+            '',
+          ),
+        ).thenAnswer((_) async => true);
 
         int notificationCount = 0;
         homeViewModel.addListener(() {
@@ -136,9 +163,12 @@ void main() {
     group('clearError', () {
       test('should clear error state and reset to initial', () async {
         // Arrange - First set the view model to error state
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.accessToken, '',),)
-            .thenThrow(Exception('Storage error'));
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.accessToken,
+            '',
+          ),
+        ).thenThrow(Exception('Storage error'));
 
         await homeViewModel.logout();
 
@@ -168,9 +198,12 @@ void main() {
 
       test('should notify listeners when clearing error', () async {
         // Arrange - Set to error state first
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.accessToken, '',),)
-            .thenThrow(Exception('Storage error'));
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.accessToken,
+            '',
+          ),
+        ).thenThrow(Exception('Storage error'));
 
         await homeViewModel.logout();
 
@@ -190,15 +223,21 @@ void main() {
     group('state getters', () {
       test('isLoading should return true only when state is loading', () async {
         // Arrange
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.accessToken, '',),)
-            .thenAnswer((_) async {
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.accessToken,
+            '',
+          ),
+        ).thenAnswer((_) async {
           await Future.delayed(const Duration(milliseconds: 100));
           return true;
         });
-        when(mockStorageService.setSecureValue(
-                SecureStorageKey.refreshToken, '',),)
-            .thenAnswer((_) async => true);
+        when(
+          mockStorageService.setSecureValue(
+            SecureStorageKey.refreshToken,
+            '',
+          ),
+        ).thenAnswer((_) async => true);
 
         // Initial state
         expect(homeViewModel.isLoading, isFalse);
