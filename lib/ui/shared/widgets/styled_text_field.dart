@@ -49,7 +49,7 @@ class StyledTextField extends StatelessWidget {
           text: label,
           variant: TextVariant.label,
         ),
-        const SizedBox(height: Spacing.small),
+        const SizedBox(height: Spacing.extraSmall),
         FormField<String>(
           validator: validator,
           autovalidateMode: AutovalidateMode.disabled,
