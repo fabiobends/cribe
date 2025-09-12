@@ -35,7 +35,7 @@ class StyledDropdown<T> extends StatelessWidget {
           text: label,
           variant: TextVariant.label,
         ),
-        const SizedBox(height: Spacing.small),
+        const SizedBox(height: Spacing.extraSmall),
         DropdownButtonFormField<T>(
           value: value,
           onChanged: enabled ? onChanged : null,

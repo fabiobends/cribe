@@ -57,8 +57,8 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(Spacing.medium),
             child: Column(
+              spacing: Spacing.extraSmall,
               children: [
-                const SizedBox(height: Spacing.medium),
                 StyledTextField(
                   label: 'Default user email',
                   controller: _emailController,
@@ -88,6 +88,27 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
                   helperText: 'Override the default API endpoint for testing',
                   onFieldSubmitted: (value) =>
                       featureFlags.setFlag(FeatureFlagKey.apiEndpoint, value),
+                ),
+                StyledDropdown<String>(
+                  label: 'Log Filter Level',
+                  value: featureFlags.getFlag(FeatureFlagKey.logFilter),
+                  onChanged: (v) {
+                    if (v != null) {
+                      featureFlags.setFlag(
+                        FeatureFlagKey.logFilter,
+                        v,
+                      );
+                    }
+                  },
+                  options: const [
+                    (value: 'all', label: 'All Logs'),
+                    (value: 'debug', label: 'Debug Only'),
+                    (value: 'info', label: 'Info Only'),
+                    (value: 'warn', label: 'Warnings Only'),
+                    (value: 'error', label: 'Errors Only'),
+                    (value: 'none', label: 'No Logs'),
+                  ],
+                  subtitle: 'Filter logs by level for debugging',
                 ),
                 StyledSwitch(
                   value: featureFlags.getFlag(FeatureFlagKey.booleanFlag),
