@@ -4,4 +4,5 @@ enum FeatureFlagKey {
   apiEndpoint,
   defaultEmail,
   defaultPassword,
+  logFilter,
 }

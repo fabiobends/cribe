@@ -1,3 +1,4 @@
+import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/services/auth_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
 import 'package:cribe/ui/auth/widgets/login_screen.dart';
@@ -12,31 +13,58 @@ class AuthScreen extends StatefulWidget {
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+class _AuthScreenState extends State<AuthScreen> with ScreenLogger {
   bool _isLoading = true;
   bool _isAuthenticated = false;
 
   @override
   void initState() {
     super.initState();
+    logger.info('AuthScreen initialized');
     _checkAuthStatus();
   }
 
   Future<void> _checkAuthStatus() async {
+    logger.debug('Checking authentication status');
     final storageService = context.read<StorageService>();
     final authService = AuthService(storageService);
 
     if (mounted) {
-      final isAuthenticated = await authService.isAuthenticated;
-      setState(() {
-        _isAuthenticated = isAuthenticated;
-        _isLoading = false;
-      });
+      try {
+        final isAuthenticated = await authService.isAuthenticated;
+        logger.info(
+          'Authentication check completed',
+          extra: {
+            'isAuthenticated': isAuthenticated,
+          },
+        );
+
+        setState(() {
+          _isAuthenticated = isAuthenticated;
+          _isLoading = false;
+        });
+      } catch (e) {
+        logger.error('Failed to check authentication status', error: e);
+        setState(() {
+          _isAuthenticated = false;
+          _isLoading = false;
+        });
+      }
+    } else {
+      logger.warn('Widget unmounted during authentication check');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    logger.debug(
+      'Building AuthScreen',
+      extra: {
+        'isLoading': _isLoading,
+        'isAuthenticated': _isAuthenticated,
+      },
+    );
+
     if (_isLoading) {
       return _buildLoadingScreen();
     }

@@ -12,4 +12,8 @@ class EnvVars {
   static String get defaultPassword {
     return dotenv.env['DEFAULT_PASSWORD'] ?? '';
   }
+
+  static String get defaultLogFilter {
+    return dotenv.env['DEFAULT_LOG_FILTER'] ?? 'all';
+  }
 }
