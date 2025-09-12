@@ -7,6 +7,7 @@ import 'package:cribe/core/ui/themes/app_theme.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
+import 'package:cribe/data/services/logger_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
 import 'package:cribe/ui/auth/view_models/login_view_model.dart';
 import 'package:cribe/ui/auth/view_models/register_view_model.dart';
@@ -25,6 +26,10 @@ Future<void> main() async {
   await dotenv.load();
   final storageService = StorageService();
   await storageService.init();
+
+  // Initialize logger service
+  await LoggerService.instance.init(storageService: storageService);
+
   final apiService = ApiService(
     apiUrl: EnvVars.apiUrl,
     storageService: storageService,
