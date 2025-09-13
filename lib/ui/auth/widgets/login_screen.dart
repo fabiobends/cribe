@@ -1,6 +1,7 @@
 import 'package:cribe/core/constants/feature_flags.dart';
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/constants/ui_state.dart';
+import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
 import 'package:cribe/ui/auth/view_models/login_view_model.dart';
 import 'package:cribe/ui/auth/widgets/register_screen.dart';
@@ -18,7 +19,7 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with ScreenLogger {
   late LoginViewModel _viewModel;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -36,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    logger.info('LoginScreen initialized');
     _viewModel = context.read<LoginViewModel>();
     _viewModel.addListener(_onViewModelChanged);
 
@@ -63,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    logger.info('Disposing LoginScreen');
     _viewModel.removeListener(_onViewModelChanged);
     _emailController.dispose();
     _passwordController.dispose();
@@ -72,7 +75,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _onViewModelChanged() {
+    logger.debug('LoginScreen view model changed');
     if (_viewModel.hasError) {
+      logger.warn('Login failed: ${_viewModel.errorMessage}');
       final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -86,13 +91,16 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       _viewModel.clearError();
     } else if (_viewModel.state == UiState.success) {
+      logger.info('Login successful, navigating to home screen');
       // Navigate to home screen after successful login
       Navigator.of(context).pushReplacementNamed('/home');
     }
   }
 
   void _onLoginPressed() {
+    logger.debug('Login button pressed');
     if (_formKey.currentState?.validate() ?? false) {
+      logger.info('Form validated, proceeding with login');
       _viewModel.login(
         _emailController.text.trim(),
         _passwordController.text,
@@ -101,6 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _navigateToRegister() {
+    logger.info('Navigating to RegisterScreen');
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const RegisterScreen(),

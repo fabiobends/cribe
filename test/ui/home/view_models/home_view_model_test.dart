@@ -1,6 +1,5 @@
 import 'package:cribe/core/constants/storage_keys.dart';
 import 'package:cribe/core/constants/ui_state.dart';
-import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/storage_service.dart';
 import 'package:cribe/ui/home/view_models/home_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,16 +8,14 @@ import 'package:mockito/mockito.dart';
 
 import 'home_view_model_test.mocks.dart';
 
-@GenerateMocks([AuthRepository, StorageService])
+@GenerateMocks([StorageService])
 void main() {
   late HomeViewModel homeViewModel;
-  late MockAuthRepository mockAuthRepository;
   late MockStorageService mockStorageService;
 
   setUp(() {
-    mockAuthRepository = MockAuthRepository();
     mockStorageService = MockStorageService();
-    homeViewModel = HomeViewModel(mockAuthRepository, mockStorageService);
+    homeViewModel = HomeViewModel(mockStorageService);
   });
 
   group('HomeViewModel', () {
@@ -274,7 +271,6 @@ void main() {
         homeViewModel.setLoading(true);
 
         // Assert
-        expect(homeViewModel.state, equals(UiState.loading));
         expect(homeViewModel.isLoading, isTrue);
       });
 

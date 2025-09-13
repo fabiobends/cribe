@@ -1,4 +1,5 @@
 import 'package:cribe/core/constants/spacing.dart';
+import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/ui/auth/view_models/register_view_model.dart';
 import 'package:cribe/ui/shared/widgets/styled_button.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
@@ -16,7 +17,7 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen> with ScreenLogger {
   late RegisterViewModel _viewModel;
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
@@ -33,12 +34,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
+    logger.info('RegisterScreen initialized');
     _viewModel = context.read<RegisterViewModel>();
     _viewModel.addListener(_onViewModelChanged);
   }
 
   @override
   void dispose() {
+    logger.info('Disposing RegisterScreen');
     _viewModel.removeListener(_onViewModelChanged);
     _firstNameController.dispose();
     _lastNameController.dispose();
@@ -54,7 +57,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _onViewModelChanged() {
+    logger.debug('RegisterScreen view model changed');
     if (_viewModel.hasError) {
+      logger.warn('Registration failed: ${_viewModel.errorMessage}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
@@ -70,7 +75,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _onRegisterPressed() {
+    logger.debug('Register button pressed');
     if (_formKey.currentState?.validate() ?? false) {
+      logger.info('Form validated, proceeding with registration');
       _viewModel.register(
         _emailController.text.trim(),
         _passwordController.text,
@@ -81,6 +88,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _navigateBack() {
+    logger.info('Navigating back to previous screen');
     Navigator.of(context).pop();
   }
 

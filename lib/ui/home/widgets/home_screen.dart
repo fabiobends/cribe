@@ -1,6 +1,7 @@
 import 'package:cribe/core/constants/feature_flags.dart';
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/constants/ui_state.dart';
+import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
 import 'package:cribe/ui/home/view_models/home_view_model.dart';
 import 'package:cribe/ui/shared/widgets/styled_button.dart';
@@ -15,24 +16,29 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with ScreenLogger {
   late HomeViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
+    logger.info('HomeScreen initialized');
     _viewModel = context.read<HomeViewModel>();
     _viewModel.addListener(_onViewModelChanged);
   }
 
   @override
   void dispose() {
+    logger.info('Disposing HomeScreen');
     _viewModel.removeListener(_onViewModelChanged);
     super.dispose();
   }
 
   void _onViewModelChanged() {
+    logger.debug('HomeScreen view model changed');
     if (_viewModel.hasError) {
+      logger
+          .warn('HomeScreen encountered an error: ${_viewModel.errorMessage}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
@@ -45,12 +51,14 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       _viewModel.clearError();
     } else if (_viewModel.state == UiState.success) {
+      logger.info('Logout successful');
       // Navigate back to login screen after successful logout
       Navigator.of(context).pushReplacementNamed('/');
     }
   }
 
   void _onLogoutPressed() {
+    logger.info('Logout button pressed');
     _viewModel.logout();
   }
 

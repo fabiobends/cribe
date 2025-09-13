@@ -163,7 +163,10 @@ void main() {
         await loginViewModel.login(email, password);
 
         // Assert
-        expect(notificationCount, equals(2)); // loading -> success
+        expect(
+          notificationCount,
+          equals(2),
+        );
       });
     });
 
@@ -228,7 +231,10 @@ void main() {
         loginViewModel.clearError();
 
         // Assert
-        expect(notificationCount, equals(1));
+        expect(
+          notificationCount,
+          equals(1),
+        );
       });
     });
 

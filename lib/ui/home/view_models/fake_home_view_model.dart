@@ -1,14 +1,12 @@
 import 'package:cribe/core/constants/ui_state.dart';
-import 'package:flutter/foundation.dart';
+import 'package:cribe/ui/shared/view_models/base_view_model.dart';
 
-class FakeHomeViewModel extends ChangeNotifier {
+class FakeHomeViewModel extends BaseViewModel {
   UiState _state = UiState.initial;
   String _errorMessage = '';
 
   UiState get state => _state;
   String get errorMessage => _errorMessage;
-
-  bool get isLoading => _state == UiState.loading;
   bool get hasError => _state == UiState.error;
 
   Future<void> logout() async {
@@ -28,11 +26,6 @@ class FakeHomeViewModel extends ChangeNotifier {
     }
   }
 
-  // For testing purposes
-  void setLoading(bool loading) {
-    _setState(loading ? UiState.loading : UiState.initial);
-  }
-
   void simulateError() {
     _errorMessage = 'Fake error for testing';
     _setState(UiState.error);
@@ -40,6 +33,11 @@ class FakeHomeViewModel extends ChangeNotifier {
 
   void _setState(UiState newState) {
     _state = newState;
-    notifyListeners();
+    setLoading(newState == UiState.loading);
+    if (newState == UiState.error) {
+      setError(_errorMessage);
+    } else {
+      setError(null);
+    }
   }
 }

@@ -1,21 +1,20 @@
 import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/validation_service.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:cribe/ui/shared/view_models/base_view_model.dart';
 
-class RegisterViewModel extends ChangeNotifier {
+class RegisterViewModel extends BaseViewModel {
   final AuthRepository _authRepository;
 
-  RegisterViewModel(this._authRepository);
+  RegisterViewModel(this._authRepository) {
+    logger.info('RegisterViewModel initialized');
+  }
 
   UiState _state = UiState.initial;
   String _errorMessage = '';
 
   UiState get state => _state;
   String get errorMessage => _errorMessage;
-
-  bool get isLoading => _state == UiState.loading;
   bool get hasError => _state == UiState.error;
 
   String? validateFirstName(String? firstName) {
@@ -57,17 +56,21 @@ class RegisterViewModel extends ChangeNotifier {
     String firstName,
     String lastName,
   ) async {
+    logger.info('Starting user registration process');
     _setState(UiState.loading);
 
     try {
+      logger.debug('Calling auth repository register method');
       await _authRepository.register(
         email,
         password,
         firstName,
         lastName,
       );
+      logger.info('User registration successful');
       _setState(UiState.success);
     } catch (e) {
+      logger.error('Registration failed: ${e.toString()}');
       _errorMessage = e.toString();
       _setState(UiState.error);
     }
@@ -75,17 +78,19 @@ class RegisterViewModel extends ChangeNotifier {
 
   void clearError() {
     if (_state == UiState.error) {
+      logger.debug('Clearing error state');
       _setState(UiState.initial);
     }
   }
 
-  // For testing purposes
-  void setLoading(bool loading) {
-    _setState(loading ? UiState.loading : UiState.initial);
-  }
-
   void _setState(UiState newState) {
+    logger.debug('State changed: $_state -> $newState');
     _state = newState;
-    notifyListeners();
+    setLoading(newState == UiState.loading);
+    if (newState == UiState.error) {
+      setError(_errorMessage);
+    } else {
+      setError(null);
+    }
   }
 }

@@ -9,32 +9,91 @@ class StorageService extends BaseService {
 
   @override
   Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    logger.info('Initializing StorageService');
+    try {
+      _prefs = await SharedPreferences.getInstance();
+      logger.info('StorageService initialized successfully');
+    } catch (e) {
+      logger.error('Failed to initialize StorageService', error: e);
+      rethrow;
+    }
   }
 
   @override
   Future<void> dispose() async {
+    logger.info('Disposing StorageService');
     _prefs = null;
   }
 
   String getValue(StorageKey key) {
-    return _prefs?.getString(key.name) ?? '';
+    final value = _prefs?.getString(key.name) ?? '';
+    logger.debug(
+      'Retrieved value from storage',
+      extra: {key.name: value.isEmpty ? '<empty>' : value},
+    );
+    return value;
   }
 
   Future<String> getSecureValue(SecureStorageKey key) async {
-    return await _secureStorage.read(key: key.name) ?? '';
+    logger.debug('Retrieving secure value', extra: {key.name: 'requesting...'});
+    try {
+      final value = await _secureStorage.read(key: key.name) ?? '';
+      logger.debug(
+        'Retrieved secure value',
+        extra: {key.name: value.isEmpty ? '<empty>' : value},
+      );
+      return value;
+    } catch (e) {
+      logger.error(
+        'Failed to retrieve secure value',
+        error: e,
+        extra: {key.name: 'failed'},
+      );
+      return '';
+    }
   }
 
   Future<bool> setSecureValue(SecureStorageKey key, String value) async {
+    logger.debug(
+      'Setting secure value',
+      extra: {key.name: value.isEmpty ? '<empty>' : value},
+    );
+
     try {
       await _secureStorage.write(key: key.name, value: value);
+      logger.debug('Secure value set successfully', extra: {key.name: 'saved'});
       return true;
     } catch (e) {
+      logger.error(
+        'Failed to set secure value',
+        error: e,
+        extra: {key.name: 'failed'},
+      );
       return false;
     }
   }
 
   Future<bool> setValue(StorageKey key, String value) async {
-    return await _prefs?.setString(key.name, value) ?? false;
+    logger.debug(
+      'Setting value',
+      extra: {key.name: value.isEmpty ? '<empty>' : value},
+    );
+
+    try {
+      final result = await _prefs?.setString(key.name, value) ?? false;
+      if (result) {
+        logger.debug('Value set successfully', extra: {key.name: 'saved'});
+      } else {
+        logger.warn('Failed to set value', extra: {key.name: 'failed'});
+      }
+      return result;
+    } catch (e) {
+      logger.error(
+        'Exception while setting value',
+        error: e,
+        extra: {'key': key.name},
+      );
+      return false;
+    }
   }
 }

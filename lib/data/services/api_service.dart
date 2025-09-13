@@ -44,12 +44,15 @@ class ApiService extends BaseService {
     required StorageService storageService,
     String Function()? baseUrlResolver,
   })  : _baseUrlResolver = baseUrlResolver ?? (() => apiUrl),
-        _storageService = storageService;
+        _storageService = storageService {
+    logger.info('ApiService initialized with baseUrl: $apiUrl');
+  }
 
   String get baseUrl => _baseUrlResolver();
 
   @override
   Future<void> init() async {
+    logger.debug('Initializing ApiService tokens from secure storage');
     final accessToken =
         await _storageService.getSecureValue(SecureStorageKey.accessToken);
     final refreshToken =
@@ -64,11 +67,13 @@ class ApiService extends BaseService {
 
   @override
   Future<void> dispose() async {
+    logger.debug('Disposing ApiService resources');
     final StorageService storageService = StorageService();
     await storageService.dispose();
   }
 
   Future<void> setTokens(AuthTokens tokens) async {
+    logger.debug('Setting authentication tokens');
     await _storageService.setSecureValue(
       SecureStorageKey.accessToken,
       tokens.accessToken,
