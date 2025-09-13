@@ -29,29 +29,31 @@ class _AuthScreenState extends State<AuthScreen> with ScreenLogger {
     final storageService = context.read<StorageService>();
     final authService = AuthService(storageService);
 
-    if (mounted) {
-      try {
-        final isAuthenticated = await authService.isAuthenticated;
-        logger.info(
-          'Authentication check completed',
-          extra: {
-            'isAuthenticated': isAuthenticated,
-          },
-        );
-
-        setState(() {
-          _isAuthenticated = isAuthenticated;
-          _isLoading = false;
-        });
-      } catch (e) {
-        logger.error('Failed to check authentication status', error: e);
-        setState(() {
-          _isAuthenticated = false;
-          _isLoading = false;
-        });
+    try {
+      final isAuthenticated = await authService.isAuthenticated;
+      if (!mounted) {
+        logger.warn('Widget unmounted during authentication check');
+        return;
       }
-    } else {
-      logger.warn('Widget unmounted during authentication check');
+      logger.info(
+        'Authentication check completed',
+        extra: {'isAuthenticated': isAuthenticated},
+      );
+      setState(() {
+        _isAuthenticated = isAuthenticated;
+        _isLoading = false;
+      });
+    } catch (e, st) {
+      logger.error(
+        'Failed to check authentication status',
+        error: e,
+        stackTrace: st,
+      );
+      if (!mounted) return;
+      setState(() {
+        _isAuthenticated = false;
+        _isLoading = false;
+      });
     }
   }
 

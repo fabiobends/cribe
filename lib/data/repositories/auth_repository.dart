@@ -1,12 +1,12 @@
 import 'package:cribe/core/constants/api_path.dart';
-import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/model/auth/login_request.dart';
 import 'package:cribe/data/model/auth/login_response.dart';
 import 'package:cribe/data/model/auth/register_request.dart';
 import 'package:cribe/data/model/auth/register_response.dart';
+import 'package:cribe/data/repositories/base_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
 
-class AuthRepository with RepositoryLogger {
+class AuthRepository extends BaseRepository {
   final ApiService _apiService;
 
   AuthRepository(this._apiService) {
@@ -87,5 +87,15 @@ class AuthRepository with RepositoryLogger {
       );
       rethrow;
     }
+  }
+
+  @override
+  Future<void> init() async {
+    logger.debug('AuthRepository initialized');
+  }
+
+  @override
+  Future<void> dispose() async {
+    logger.debug('AuthRepository disposed');
   }
 }

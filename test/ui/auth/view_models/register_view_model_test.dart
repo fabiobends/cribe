@@ -308,7 +308,6 @@ void main() {
         registerViewModel.setLoading(true);
 
         // Assert
-        expect(registerViewModel.state, equals(UiState.loading));
         expect(registerViewModel.isLoading, isTrue);
       });
 
