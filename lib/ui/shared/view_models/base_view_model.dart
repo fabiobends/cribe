@@ -1,6 +1,7 @@
+import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:flutter/foundation.dart';
 
-abstract class BaseViewModel extends ChangeNotifier {
+abstract class BaseViewModel extends ChangeNotifier with ViewModelLogger {
   bool _isLoading = false;
   String? _error;
 
@@ -8,12 +9,16 @@ abstract class BaseViewModel extends ChangeNotifier {
   String? get error => _error;
 
   void setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
+    if (_isLoading != value) {
+      _isLoading = value;
+      notifyListeners();
+    }
   }
 
   void setError(String? value) {
-    _error = value;
-    notifyListeners();
+    if (_error != value) {
+      _error = value;
+      notifyListeners();
+    }
   }
 }

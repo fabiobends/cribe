@@ -63,8 +63,7 @@ Future<void> main() async {
           create: (context) => RegisterViewModel(AuthRepository(apiService)),
         ),
         ChangeNotifierProvider<HomeViewModel>(
-          create: (context) =>
-              HomeViewModel(AuthRepository(apiService), storageService),
+          create: (context) => HomeViewModel(storageService),
         ),
       ],
       child: const MyApp(),

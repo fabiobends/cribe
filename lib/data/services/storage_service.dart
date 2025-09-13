@@ -1,10 +1,9 @@
 import 'package:cribe/core/constants/storage_keys.dart';
-import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/services/base_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class StorageService extends BaseService with ServiceLogger {
+class StorageService extends BaseService {
   SharedPreferences? _prefs;
   final _secureStorage = const FlutterSecureStorage();
 
@@ -30,33 +29,25 @@ class StorageService extends BaseService with ServiceLogger {
     final value = _prefs?.getString(key.name) ?? '';
     logger.debug(
       'Retrieved value from storage',
-      extra: {
-        'key': key.name,
-        'hasValue': value.isNotEmpty,
-        'valueLength': value.length,
-      },
+      extra: {key.name: value.isEmpty ? '<empty>' : value},
     );
     return value;
   }
 
   Future<String> getSecureValue(SecureStorageKey key) async {
-    logger.debug('Retrieving secure value', extra: {'key': key.name});
+    logger.debug('Retrieving secure value', extra: {key.name: 'requesting...'});
     try {
       final value = await _secureStorage.read(key: key.name) ?? '';
       logger.debug(
         'Retrieved secure value',
-        extra: {
-          'key': key.name,
-          'hasValue': value.isNotEmpty,
-          'valueLength': value.length,
-        },
+        extra: {key.name: value.isEmpty ? '<empty>' : value},
       );
       return value;
     } catch (e) {
       logger.error(
         'Failed to retrieve secure value',
         error: e,
-        extra: {'key': key.name},
+        extra: {key.name: 'failed'},
       );
       return '';
     }
@@ -65,21 +56,18 @@ class StorageService extends BaseService with ServiceLogger {
   Future<bool> setSecureValue(SecureStorageKey key, String value) async {
     logger.debug(
       'Setting secure value',
-      extra: {
-        'key': key.name,
-        'valueLength': value.length,
-      },
+      extra: {key.name: value.isEmpty ? '<empty>' : value},
     );
 
     try {
       await _secureStorage.write(key: key.name, value: value);
-      logger.debug('Secure value set successfully', extra: {'key': key.name});
+      logger.debug('Secure value set successfully', extra: {key.name: 'saved'});
       return true;
     } catch (e) {
       logger.error(
         'Failed to set secure value',
         error: e,
-        extra: {'key': key.name},
+        extra: {key.name: 'failed'},
       );
       return false;
     }
@@ -88,18 +76,15 @@ class StorageService extends BaseService with ServiceLogger {
   Future<bool> setValue(StorageKey key, String value) async {
     logger.debug(
       'Setting value',
-      extra: {
-        'key': key.name,
-        'valueLength': value.length,
-      },
+      extra: {key.name: value.isEmpty ? '<empty>' : value},
     );
 
     try {
       final result = await _prefs?.setString(key.name, value) ?? false;
       if (result) {
-        logger.debug('Value set successfully', extra: {'key': key.name});
+        logger.debug('Value set successfully', extra: {key.name: 'saved'});
       } else {
-        logger.warn('Failed to set value', extra: {'key': key.name});
+        logger.warn('Failed to set value', extra: {key.name: 'failed'});
       }
       return result;
     } catch (e) {

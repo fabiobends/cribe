@@ -249,15 +249,40 @@ class ConsoleLogger implements LoggerInterface {
       'access_token',
       'refresh_token',
       'email',
-      'auth',
       'authorization',
       'credential',
+    };
+
+    // Keys that should be specifically masked (exact match or ends with these)
+    final exactSensitiveKeys = {
+      'auth',
+      'authtoken',
+      'auth_token',
     };
 
     return map.map((key, value) {
       final lowerKey = key.toLowerCase();
 
-      if (sensitiveKeys.any((sensitive) => lowerKey.contains(sensitive))) {
+      // Check for exact matches or ending patterns first
+      bool shouldMask = exactSensitiveKeys.contains(lowerKey) ||
+          exactSensitiveKeys.any((sensitive) => lowerKey.endsWith(sensitive));
+
+      // If not exact match, check for contains (but exclude boolean-like fields)
+      if (!shouldMask) {
+        shouldMask =
+            sensitiveKeys.any((sensitive) => lowerKey.contains(sensitive));
+
+        // Don't mask boolean authentication status fields
+        if (shouldMask &&
+            (lowerKey.startsWith('is') || lowerKey.startsWith('has'))) {
+          if (value is bool ||
+              (value is String && (value == 'true' || value == 'false'))) {
+            shouldMask = false;
+          }
+        }
+      }
+
+      if (shouldMask) {
         if (lowerKey.contains('email')) {
           return MapEntry(key, _maskSensitiveData(value));
         } else {
