@@ -1,10 +1,9 @@
 import 'package:cribe/core/constants/ui_state.dart';
-import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/validation_service.dart';
-import 'package:flutter/foundation.dart';
+import 'package:cribe/ui/shared/view_models/base_view_model.dart';
 
-class LoginViewModel extends ChangeNotifier with ViewModelLogger {
+class LoginViewModel extends BaseViewModel {
   final AuthRepository _authRepository;
 
   LoginViewModel(this._authRepository) {
@@ -16,13 +15,10 @@ class LoginViewModel extends ChangeNotifier with ViewModelLogger {
 
   UiState get state => _state;
   String get errorMessage => _errorMessage;
-
-  bool get isLoading => _state == UiState.loading;
   bool get hasError => _state == UiState.error;
 
   String? validateEmail(String? email) {
-    logger
-        .debug('Validating email', extra: {'emailLength': email?.length ?? 0});
+    logger.debug('Validating email');
     final result = ValidationService.validateEmail(email ?? '');
     if (!result.isValid) {
       logger.warn(
@@ -70,18 +66,17 @@ class LoginViewModel extends ChangeNotifier with ViewModelLogger {
     }
   }
 
-  // For testing purposes
-  void setLoading(bool loading) {
-    logger.debug('Setting loading state', extra: {'loading': loading});
-    _setState(loading ? UiState.loading : UiState.initial);
-  }
-
   void _setState(UiState newState) {
     logger.debug(
       'State transition',
       extra: {'from': _state.name, 'to': newState.name},
     );
     _state = newState;
-    notifyListeners();
+    setLoading(newState == UiState.loading);
+    if (newState == UiState.error) {
+      setError(_errorMessage);
+    } else {
+      setError(null);
+    }
   }
 }

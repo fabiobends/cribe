@@ -1,9 +1,8 @@
 import 'package:cribe/core/constants/storage_keys.dart';
-import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/services/base_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
 
-class AuthService extends BaseService with ServiceLogger {
+class AuthService extends BaseService {
   final StorageService _storageService;
 
   AuthService(this._storageService) {

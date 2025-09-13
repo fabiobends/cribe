@@ -1,14 +1,12 @@
 import 'package:cribe/core/constants/storage_keys.dart';
 import 'package:cribe/core/constants/ui_state.dart';
-import 'package:cribe/core/logger/logger_mixins.dart';
-import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/storage_service.dart';
-import 'package:flutter/foundation.dart';
+import 'package:cribe/ui/shared/view_models/base_view_model.dart';
 
-class HomeViewModel extends ChangeNotifier with ViewModelLogger {
+class HomeViewModel extends BaseViewModel {
   final StorageService _storageService;
 
-  HomeViewModel(AuthRepository authRepository, this._storageService) {
+  HomeViewModel(this._storageService) {
     logger.info('HomeViewModel initialized');
   }
 
@@ -17,8 +15,6 @@ class HomeViewModel extends ChangeNotifier with ViewModelLogger {
 
   UiState get state => _state;
   String get errorMessage => _errorMessage;
-
-  bool get isLoading => _state == UiState.loading;
   bool get hasError => _state == UiState.error;
 
   Future<void> logout() async {
@@ -34,7 +30,7 @@ class HomeViewModel extends ChangeNotifier with ViewModelLogger {
       logger.info('User logout successful');
       _setState(UiState.success);
     } catch (e) {
-      logger.error('Logout failed: ${e.toString()}');
+      logger.error('Logout failed', error: e);
       _errorMessage = e.toString();
       _setState(UiState.error);
     }
@@ -47,14 +43,14 @@ class HomeViewModel extends ChangeNotifier with ViewModelLogger {
     }
   }
 
-  void setLoading(bool loading) {
-    logger.debug('Setting loading state: $loading');
-    _setState(loading ? UiState.loading : UiState.initial);
-  }
-
   void _setState(UiState newState) {
     logger.debug('State changed: $_state -> $newState');
     _state = newState;
-    notifyListeners();
+    setLoading(newState == UiState.loading);
+    if (newState == UiState.error) {
+      setError(_errorMessage);
+    } else {
+      setError(null);
+    }
   }
 }

@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:cribe/core/constants/api_path.dart';
 import 'package:cribe/core/constants/storage_keys.dart';
-import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/model/auth/login_response.dart';
 import 'package:cribe/data/model/auth/refresh_token_response.dart';
 import 'package:cribe/data/services/base_service.dart';
@@ -31,7 +30,7 @@ class ApiException implements Exception {
   String toString() => 'ApiException: $message (Status: $statusCode)';
 }
 
-class ApiService extends BaseService with ServiceLogger {
+class ApiService extends BaseService {
   final String Function() _baseUrlResolver;
   AuthTokens _tokens = AuthTokens(
     accessToken: '',
