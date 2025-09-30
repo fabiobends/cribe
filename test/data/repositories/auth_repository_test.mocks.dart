@@ -3,15 +3,14 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i7;
+import 'dart:async' as _i6;
 import 'dart:io' as _i3;
 
 import 'package:cribe/core/logger/logger_mixins.dart' as _i4;
-import 'package:cribe/data/model/auth/login_response.dart' as _i8;
+import 'package:cribe/data/model/auth/login_response.dart' as _i7;
 import 'package:cribe/data/services/api_service.dart' as _i5;
 import 'package:cribe/data/services/storage_service.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -79,15 +78,6 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
   }
 
   @override
-  String Function() get baseUrlResolver => (super.noSuchMethod(
-        Invocation.getter(#baseUrlResolver),
-        returnValue: () => _i6.dummyValue<String>(
-          this,
-          Invocation.getter(#baseUrlResolver),
-        ),
-      ) as String Function());
-
-  @override
   _i2.StorageService get storageService => (super.noSuchMethod(
         Invocation.getter(#storageService),
         returnValue: _FakeStorageService_0(
@@ -106,15 +96,6 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
       ) as _i3.HttpClient);
 
   @override
-  String get baseUrl => (super.noSuchMethod(
-        Invocation.getter(#baseUrl),
-        returnValue: _i6.dummyValue<String>(
-          this,
-          Invocation.getter(#baseUrl),
-        ),
-      ) as String);
-
-  @override
   _i4.ContextualLogger get logger => (super.noSuchMethod(
         Invocation.getter(#logger),
         returnValue: _FakeContextualLogger_2(
@@ -124,37 +105,43 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
       ) as _i4.ContextualLogger);
 
   @override
-  _i7.Future<void> init() => (super.noSuchMethod(
+  _i6.Future<void> init() => (super.noSuchMethod(
         Invocation.method(
           #init,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> dispose() => (super.noSuchMethod(
+  dynamic updateBaseUrl(String? newUrl) => super.noSuchMethod(Invocation.method(
+        #updateBaseUrl,
+        [newUrl],
+      ));
+
+  @override
+  _i6.Future<void> dispose() => (super.noSuchMethod(
         Invocation.method(
           #dispose,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setTokens(_i8.LoginResponse? tokens) => (super.noSuchMethod(
+  _i6.Future<void> setTokens(_i7.LoginResponse? tokens) => (super.noSuchMethod(
         Invocation.method(
           #setTokens,
           [tokens],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<_i5.ApiResponse<T>> get<T>(
+  _i6.Future<_i5.ApiResponse<T>> get<T>(
     String? path,
     T Function(dynamic)? fromJson,
   ) =>
@@ -166,7 +153,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             fromJson,
           ],
         ),
-        returnValue: _i7.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #get,
@@ -176,10 +163,10 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             ],
           ),
         )),
-      ) as _i7.Future<_i5.ApiResponse<T>>);
+      ) as _i6.Future<_i5.ApiResponse<T>>);
 
   @override
-  _i7.Future<_i5.ApiResponse<T>> post<T>(
+  _i6.Future<_i5.ApiResponse<T>> post<T>(
     String? path,
     T Function(dynamic)? fromJson, {
     Map<String, dynamic>? body,
@@ -193,7 +180,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
           ],
           {#body: body},
         ),
-        returnValue: _i7.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #post,
@@ -204,10 +191,10 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             {#body: body},
           ),
         )),
-      ) as _i7.Future<_i5.ApiResponse<T>>);
+      ) as _i6.Future<_i5.ApiResponse<T>>);
 
   @override
-  _i7.Future<_i5.ApiResponse<T>> delete<T>(
+  _i6.Future<_i5.ApiResponse<T>> delete<T>(
     String? path,
     T Function(dynamic)? fromJson,
   ) =>
@@ -219,7 +206,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             fromJson,
           ],
         ),
-        returnValue: _i7.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #delete,
@@ -229,10 +216,10 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             ],
           ),
         )),
-      ) as _i7.Future<_i5.ApiResponse<T>>);
+      ) as _i6.Future<_i5.ApiResponse<T>>);
 
   @override
-  _i7.Future<_i5.ApiResponse<T>> put<T>(
+  _i6.Future<_i5.ApiResponse<T>> put<T>(
     String? path,
     T Function(dynamic)? fromJson, {
     Map<String, dynamic>? body,
@@ -246,7 +233,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
           ],
           {#body: body},
         ),
-        returnValue: _i7.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #put,
@@ -257,10 +244,10 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             {#body: body},
           ),
         )),
-      ) as _i7.Future<_i5.ApiResponse<T>>);
+      ) as _i6.Future<_i5.ApiResponse<T>>);
 
   @override
-  _i7.Future<_i5.ApiResponse<T>> patch<T>(
+  _i6.Future<_i5.ApiResponse<T>> patch<T>(
     String? path,
     T Function(dynamic)? fromJson, {
     Map<String, dynamic>? body,
@@ -274,7 +261,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
           ],
           {#body: body},
         ),
-        returnValue: _i7.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #patch,
@@ -285,5 +272,5 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             {#body: body},
           ),
         )),
-      ) as _i7.Future<_i5.ApiResponse<T>>);
+      ) as _i6.Future<_i5.ApiResponse<T>>);
 }

@@ -64,10 +64,19 @@ class FeatureFlagsProvider extends ChangeNotifier with ProviderLogger {
         case 'ERROR':
           level = LogLevel.error;
           break;
+        case 'NONE':
+          // For NONE, disable logging entirely
+          logger.info(
+            'Logging disabled (NONE level set)',
+          ); // Log before disabling
+          LoggerService.instance.setEnabled(false);
+          return; // Early return
         default:
           level = LogLevel.info;
           break;
       }
+      // Re-enable logging when switching away from NONE
+      LoggerService.instance.setEnabled(true);
       LoggerService.instance.setLogLevel(level);
       logger.info('Log level updated', extra: {'level': levelValue});
     } catch (e) {

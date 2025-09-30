@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:cribe/core/config/env_vars.dart';
 import 'package:cribe/core/constants/feature_flags.dart';
-import 'package:cribe/core/constants/storage_keys.dart';
 import 'package:cribe/core/ui/themes/app_theme.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
@@ -29,33 +26,34 @@ Future<void> main() async {
   await storageService.init();
 
   // Initialize logger service
-  await LoggerService.instance.init(storageService: storageService);
+  await LoggerService.instance.init();
 
   final apiService = ApiService(
     storageService: storageService,
     httpClient: HttpClient(),
-    // Resolve base URL programmatically from Feature Flags persisted in storage
-    baseUrlResolver: () {
-      try {
-        final flagsJson = storageService.getValue(StorageKey.featureFlags);
-        if (flagsJson.isNotEmpty) {
-          final map = jsonDecode(flagsJson) as Map<String, dynamic>;
-          final value = map[FeatureFlagKey.apiEndpoint.name]?.toString() ?? '';
-          if (value.isNotEmpty) return value;
-        }
-      } catch (_) {
-        // Ignore and fallback
-      }
-      return EnvVars.apiUrl;
-    },
   );
   await apiService.init();
+
   runApp(
     MultiProvider(
       providers: [
         Provider<StorageService>.value(value: storageService),
         ChangeNotifierProvider<FeatureFlagsProvider>(
-          create: (context) => FeatureFlagsProvider(storageService),
+          create: (context) {
+            final provider = FeatureFlagsProvider(storageService);
+            // Set up listener to update services when flags change
+            provider.addListener(() {
+              final apiEndpoint = provider.getFlag(FeatureFlagKey.apiEndpoint);
+              apiService.updateBaseUrl(apiEndpoint);
+
+              // Update logger when log level changes
+              final logLevel = provider.getFlag(FeatureFlagKey.logFilter);
+              LoggerService.instance.setLogLevelByName(logLevel);
+            });
+            final logLevel = provider.getFlag(FeatureFlagKey.logFilter);
+            LoggerService.instance.setLogLevelByName(logLevel);
+            return provider;
+          },
         ),
         ChangeNotifierProvider<LoginViewModel>(
           create: (context) => LoginViewModel(AuthRepository(apiService)),

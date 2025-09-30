@@ -30,6 +30,12 @@ abstract class LoggerInterface {
     Map<String, dynamic>? extra,
   });
 
+  /// Set minimum log level for hierarchical filtering
+  void setMinLevel(LogLevel level);
+
+  /// Set logging enabled/disabled
+  void setEnabled(bool enabled);
+
   /// Platform-specific initialization
   Future<void> init();
 
