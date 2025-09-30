@@ -3,15 +3,25 @@ import 'package:cribe/data/services/base_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class SharedPreferencesProvider {
+  Future<SharedPreferences> getInstance() {
+    return SharedPreferences.getInstance();
+  }
+}
+
 class StorageService extends BaseService {
   SharedPreferences? _prefs;
   final _secureStorage = const FlutterSecureStorage();
+  final SharedPreferencesProvider _prefsProvider;
+
+  StorageService({SharedPreferencesProvider? prefsProvider})
+      : _prefsProvider = prefsProvider ?? SharedPreferencesProvider();
 
   @override
   Future<void> init() async {
-    logger.info('Initializing StorageService');
     try {
-      _prefs = await SharedPreferences.getInstance();
+      logger.info('Initializing StorageService');
+      _prefs = await _prefsProvider.getInstance();
       logger.info('StorageService initialized successfully');
     } catch (e) {
       logger.error('Failed to initialize StorageService', error: e);
@@ -35,8 +45,10 @@ class StorageService extends BaseService {
   }
 
   Future<String> getSecureValue(SecureStorageKey key) async {
-    logger.debug('Retrieving secure value', extra: {key.name: 'requesting...'});
     try {
+      logger
+          .debug('Retrieving secure value', extra: {key.name: 'requesting...'});
+
       final value = await _secureStorage.read(key: key.name) ?? '';
       logger.debug(
         'Retrieved secure value',
@@ -54,12 +66,12 @@ class StorageService extends BaseService {
   }
 
   Future<bool> setSecureValue(SecureStorageKey key, String value) async {
-    logger.debug(
-      'Setting secure value',
-      extra: {key.name: value.isEmpty ? '<empty>' : value},
-    );
-
     try {
+      logger.debug(
+        'Setting secure value',
+        extra: {key.name: value.isEmpty ? '<empty>' : value},
+      );
+
       await _secureStorage.write(key: key.name, value: value);
       logger.debug('Secure value set successfully', extra: {key.name: 'saved'});
       return true;
@@ -74,12 +86,12 @@ class StorageService extends BaseService {
   }
 
   Future<bool> setValue(StorageKey key, String value) async {
-    logger.debug(
-      'Setting value',
-      extra: {key.name: value.isEmpty ? '<empty>' : value},
-    );
-
     try {
+      logger.debug(
+        'Setting value',
+        extra: {key.name: value.isEmpty ? '<empty>' : value},
+      );
+
       final result = await _prefs?.setString(key.name, value) ?? false;
       if (result) {
         logger.debug('Value set successfully', extra: {key.name: 'saved'});

@@ -1,7 +1,20 @@
 .PHONY: test format-fix
 
 test:
-	flutter test
+	@echo "🧪 Running tests with coverage..."
+	@flutter test --coverage
+	@echo "📊 Coverage summary:"
+	@scripts/coverage-summary.sh
+	@echo "🔍 Checking coverage requirements..."
+	@scripts/coverage-check.sh
+	@if command -v genhtml >/dev/null 2>&1; then \
+		echo "📊 Generating HTML coverage report..."; \
+		genhtml coverage/lcov.info -o coverage/html; \
+		echo "✅ Tests completed! Coverage report available at coverage/html/index.html"; \
+	else \
+		echo "💡 To generate HTML coverage reports, install lcov: brew install lcov"; \
+		echo "✅ Tests completed! Coverage data available at coverage/lcov.info"; \
+	fi
 
 # Format and fix all Dart code
 format-fix:

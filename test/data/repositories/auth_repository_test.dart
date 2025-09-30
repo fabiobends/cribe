@@ -176,5 +176,21 @@ void main() {
         verify(mockRegisterCall());
       });
     });
+
+    group('lifecycle methods', () {
+      test('should call init method', () async {
+        // Act
+        await authRepository.init();
+
+        // Assert - No specific assertion needed, just testing code path
+      });
+
+      test('should call dispose method', () async {
+        // Act
+        await authRepository.dispose();
+
+        // Assert - No specific assertion needed, just testing code path
+      });
+    });
   });
 }

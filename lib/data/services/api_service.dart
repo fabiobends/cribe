@@ -31,32 +31,29 @@ class ApiException implements Exception {
 }
 
 class ApiService extends BaseService {
-  final String Function() _baseUrlResolver;
+  final String Function() baseUrlResolver;
   AuthTokens _tokens = AuthTokens(
     accessToken: '',
     refreshToken: '',
   );
-  final StorageService _storageService;
-  final HttpClient _httpClient = HttpClient();
+  final StorageService storageService;
+  final HttpClient httpClient;
 
   ApiService({
-    required String apiUrl,
-    required StorageService storageService,
-    String Function()? baseUrlResolver,
-  })  : _baseUrlResolver = baseUrlResolver ?? (() => apiUrl),
-        _storageService = storageService {
-    logger.info('ApiService initialized with baseUrl: $apiUrl');
-  }
+    required this.storageService,
+    required this.httpClient,
+    required this.baseUrlResolver,
+  });
 
-  String get baseUrl => _baseUrlResolver();
+  String get baseUrl => baseUrlResolver();
 
   @override
   Future<void> init() async {
     logger.debug('Initializing ApiService tokens from secure storage');
     final accessToken =
-        await _storageService.getSecureValue(SecureStorageKey.accessToken);
+        await storageService.getSecureValue(SecureStorageKey.accessToken);
     final refreshToken =
-        await _storageService.getSecureValue(SecureStorageKey.refreshToken);
+        await storageService.getSecureValue(SecureStorageKey.refreshToken);
     setTokens(
       LoginResponse(
         accessToken: accessToken,
@@ -74,11 +71,11 @@ class ApiService extends BaseService {
 
   Future<void> setTokens(AuthTokens tokens) async {
     logger.debug('Setting authentication tokens');
-    await _storageService.setSecureValue(
+    await storageService.setSecureValue(
       SecureStorageKey.accessToken,
       tokens.accessToken,
     );
-    await _storageService.setSecureValue(
+    await storageService.setSecureValue(
       SecureStorageKey.refreshToken,
       tokens.refreshToken,
     );
@@ -92,17 +89,15 @@ class ApiService extends BaseService {
     String path,
     T Function(dynamic) fromJson,
   ) async {
-    try {
-      final uri = _getUri(path);
-      final httpRequest = await _httpClient.getUrl(uri);
-      _addHeaders(httpRequest);
-      return _refreshAndProcessResponse(httpRequest, fromJson);
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException(
-        'Network error during GET request: $e',
-      );
-    }
+    return _makeRequestWithRetry(
+      () async {
+        final uri = _getUri(path);
+        final httpRequest = await httpClient.getUrl(uri);
+        _addHeaders(httpRequest);
+        return httpRequest;
+      },
+      fromJson,
+    );
   }
 
   Future<ApiResponse<T>> post<T>(
@@ -110,33 +105,31 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson, {
     Map<String, dynamic>? body,
   }) async {
-    try {
-      final uri = _getUri(path);
-      final httpRequest = await _httpClient.postUrl(uri);
-      _addHeaders(httpRequest);
-      _addBody(httpRequest, body);
-      return _refreshAndProcessResponse(httpRequest, fromJson);
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException('Network error during POST request: $e');
-    }
+    return _makeRequestWithRetry(
+      () async {
+        final uri = _getUri(path);
+        final httpRequest = await httpClient.postUrl(uri);
+        _addHeaders(httpRequest);
+        _addBody(httpRequest, body);
+        return httpRequest;
+      },
+      fromJson,
+    );
   }
 
   Future<ApiResponse<T>> delete<T>(
     String path,
     T Function(dynamic) fromJson,
   ) async {
-    try {
-      final uri = _getUri(path);
-      final httpRequest = await _httpClient.deleteUrl(uri);
-      _addHeaders(httpRequest);
-      return _refreshAndProcessResponse(httpRequest, fromJson);
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException(
-        'Network error during DELETE request: $e',
-      );
-    }
+    return _makeRequestWithRetry(
+      () async {
+        final uri = _getUri(path);
+        final httpRequest = await httpClient.deleteUrl(uri);
+        _addHeaders(httpRequest);
+        return httpRequest;
+      },
+      fromJson,
+    );
   }
 
   Future<ApiResponse<T>> put<T>(
@@ -144,18 +137,16 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson, {
     Map<String, dynamic>? body,
   }) async {
-    try {
-      final uri = _getUri(path);
-      final httpRequest = await _httpClient.putUrl(uri);
-      _addHeaders(httpRequest);
-      _addBody(httpRequest, body);
-      return _refreshAndProcessResponse(httpRequest, fromJson);
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException(
-        'Network error during PUT request: $e',
-      );
-    }
+    return _makeRequestWithRetry(
+      () async {
+        final uri = _getUri(path);
+        final httpRequest = await httpClient.putUrl(uri);
+        _addHeaders(httpRequest);
+        _addBody(httpRequest, body);
+        return httpRequest;
+      },
+      fromJson,
+    );
   }
 
   Future<ApiResponse<T>> patch<T>(
@@ -163,18 +154,16 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson, {
     Map<String, dynamic>? body,
   }) async {
-    try {
-      final uri = _getUri(path);
-      final httpRequest = await _httpClient.patchUrl(uri);
-      _addHeaders(httpRequest);
-      _addBody(httpRequest, body);
-      return _refreshAndProcessResponse(httpRequest, fromJson);
-    } catch (e) {
-      if (e is ApiException) rethrow;
-      throw ApiException(
-        'Network error during PATCH request: $e',
-      );
-    }
+    return _makeRequestWithRetry(
+      () async {
+        final uri = _getUri(path);
+        final httpRequest = await httpClient.patchUrl(uri);
+        _addHeaders(httpRequest);
+        _addBody(httpRequest, body);
+        return httpRequest;
+      },
+      fromJson,
+    );
   }
 
   Uri _getUri(String path) {
@@ -188,7 +177,7 @@ class ApiService extends BaseService {
       refreshToken: _tokens.refreshToken,
     );
     // Keep storage in sync - use secure storage for token
-    _storageService.setSecureValue(SecureStorageKey.accessToken, accessToken);
+    storageService.setSecureValue(SecureStorageKey.accessToken, accessToken);
   }
 
   void _addHeaders(HttpClientRequest httpRequest) {
@@ -209,33 +198,52 @@ class ApiService extends BaseService {
     final shouldRefresh =
         response.statusCode == 401 && _tokens.refreshToken.isNotEmpty;
     if (shouldRefresh) {
-      final response = await post<RefreshTokenResponse>(
-        ApiPath.refreshToken,
-        RefreshTokenResponse.fromJson,
-        body: {'refreshToken': _tokens.refreshToken},
-      );
-      if (response.statusCode == 200) {
-        // If the refresh is successful, update the access token
-        _updateAccessToken(response.data.accessToken);
-        return true;
-      } else {
+      try {
+        // Make refresh token request directly without retry logic
+        final uri = _getUri(ApiPath.refreshToken);
+        final httpRequest = await httpClient.postUrl(uri);
+        _addHeaders(httpRequest);
+        _addBody(httpRequest, {'refreshToken': _tokens.refreshToken});
+        final refreshResponse = await httpRequest.close();
+
+        if (refreshResponse.statusCode == 200) {
+          final responseBody =
+              await refreshResponse.transform(utf8.decoder).join();
+          final data = RefreshTokenResponse.fromJson(jsonDecode(responseBody));
+          _updateAccessToken(data.accessToken);
+          return true;
+        }
+        return false;
+      } catch (e) {
         return false;
       }
     }
     return false;
   }
 
-  Future<ApiResponse<T>> _refreshAndProcessResponse<T>(
-    HttpClientRequest httpRequest,
+  Future<ApiResponse<T>> _makeRequestWithRetry<T>(
+    Future<HttpClientRequest> Function() createRequest,
     T Function(dynamic) fromJson,
   ) async {
-    HttpClientResponse response = await httpRequest.close();
-    final hasRefreshed = await _refreshTokenIfNeeded(response);
-    if (hasRefreshed) {
-      _addHeaders(httpRequest); // Re-add headers after refresh
-      response = await httpRequest.close(); // Re-send request
+    try {
+      // Make the initial request
+      HttpClientRequest httpRequest = await createRequest();
+      HttpClientResponse response = await httpRequest.close();
+
+      // Check if we need to refresh the token
+      final hasRefreshed = await _refreshTokenIfNeeded(response);
+
+      if (hasRefreshed) {
+        // Create a new request for the retry
+        httpRequest = await createRequest();
+        response = await httpRequest.close();
+      }
+
+      return _processResponse(response, fromJson);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException('Network error: $e');
     }
-    return _processResponse(response, fromJson);
   }
 
   Future<ApiResponse<T>> _processResponse<T>(

@@ -3,12 +3,13 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
-import 'package:cribe/data/model/auth/login_response.dart' as _i5;
-import 'package:cribe/data/model/auth/register_response.dart' as _i6;
-import 'package:cribe/data/repositories/auth_repository.dart' as _i3;
-import 'package:cribe/data/services/api_service.dart' as _i2;
+import 'package:cribe/core/logger/logger_mixins.dart' as _i2;
+import 'package:cribe/data/model/auth/login_response.dart' as _i6;
+import 'package:cribe/data/model/auth/register_response.dart' as _i7;
+import 'package:cribe/data/repositories/auth_repository.dart' as _i4;
+import 'package:cribe/data/services/api_service.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -25,9 +26,20 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeApiResponse_0<T> extends _i1.SmartFake
-    implements _i2.ApiResponse<T> {
-  _FakeApiResponse_0(
+class _FakeContextualLogger_0 extends _i1.SmartFake
+    implements _i2.ContextualLogger {
+  _FakeContextualLogger_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeApiResponse_1<T> extends _i1.SmartFake
+    implements _i3.ApiResponse<T> {
+  _FakeApiResponse_1(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -39,13 +51,22 @@ class _FakeApiResponse_0<T> extends _i1.SmartFake
 /// A class which mocks [AuthRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
+class MockAuthRepository extends _i1.Mock implements _i4.AuthRepository {
   MockAuthRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<_i2.ApiResponse<_i5.LoginResponse>> login(
+  _i2.ContextualLogger get logger => (super.noSuchMethod(
+        Invocation.getter(#logger),
+        returnValue: _FakeContextualLogger_0(
+          this,
+          Invocation.getter(#logger),
+        ),
+      ) as _i2.ContextualLogger);
+
+  @override
+  _i5.Future<_i3.ApiResponse<_i6.LoginResponse>> login(
     String? email,
     String? password,
   ) =>
@@ -57,8 +78,8 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
             password,
           ],
         ),
-        returnValue: _i4.Future<_i2.ApiResponse<_i5.LoginResponse>>.value(
-            _FakeApiResponse_0<_i5.LoginResponse>(
+        returnValue: _i5.Future<_i3.ApiResponse<_i6.LoginResponse>>.value(
+            _FakeApiResponse_1<_i6.LoginResponse>(
           this,
           Invocation.method(
             #login,
@@ -68,10 +89,10 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
             ],
           ),
         )),
-      ) as _i4.Future<_i2.ApiResponse<_i5.LoginResponse>>);
+      ) as _i5.Future<_i3.ApiResponse<_i6.LoginResponse>>);
 
   @override
-  _i4.Future<_i2.ApiResponse<_i6.RegisterResponse>> register(
+  _i5.Future<_i3.ApiResponse<_i7.RegisterResponse>> register(
     String? email,
     String? password,
     String? firstName,
@@ -87,8 +108,8 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
             lastName,
           ],
         ),
-        returnValue: _i4.Future<_i2.ApiResponse<_i6.RegisterResponse>>.value(
-            _FakeApiResponse_0<_i6.RegisterResponse>(
+        returnValue: _i5.Future<_i3.ApiResponse<_i7.RegisterResponse>>.value(
+            _FakeApiResponse_1<_i7.RegisterResponse>(
           this,
           Invocation.method(
             #register,
@@ -100,5 +121,25 @@ class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
             ],
           ),
         )),
-      ) as _i4.Future<_i2.ApiResponse<_i6.RegisterResponse>>);
+      ) as _i5.Future<_i3.ApiResponse<_i7.RegisterResponse>>);
+
+  @override
+  _i5.Future<void> init() => (super.noSuchMethod(
+        Invocation.method(
+          #init,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 }
