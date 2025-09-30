@@ -90,7 +90,7 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
                       featureFlags.setFlag(FeatureFlagKey.apiEndpoint, value),
                 ),
                 StyledDropdown<String>(
-                  label: 'Log Filter Level',
+                  label: 'Log Level',
                   value: featureFlags.getFlag(FeatureFlagKey.logFilter),
                   onChanged: (v) {
                     if (v != null) {
@@ -101,12 +101,11 @@ class _FeatureFlagsViewState extends State<FeatureFlagsView> {
                     }
                   },
                   options: const [
-                    (value: 'all', label: 'All Logs'),
-                    (value: 'debug', label: 'Debug Only'),
-                    (value: 'info', label: 'Info Only'),
-                    (value: 'warn', label: 'Warnings Only'),
-                    (value: 'error', label: 'Errors Only'),
-                    (value: 'none', label: 'No Logs'),
+                    (value: 'DEBUG', label: 'Debug'),
+                    (value: 'INFO', label: 'Info'),
+                    (value: 'WARN', label: 'Warning'),
+                    (value: 'ERROR', label: 'Error'),
+                    (value: 'NONE', label: 'No Logs'),
                   ],
                   subtitle: 'Filter logs by level for debugging',
                 ),

@@ -18,20 +18,24 @@ classDiagram
         +info(String message, String tag, EntityType entityType, Map extra)
         +warn(String message, String tag, EntityType entityType, Map extra)
         +error(String message, String tag, EntityType entityType, Object error, StackTrace stackTrace, Map extra)
+        +setMinLevel(LogLevel level) void
+        +setEnabled(bool enabled) void
         +init() Future~void~
         +dispose() void
     }
     
     class ConsoleLogger {
-        -LogFilter _currentFilter
-        +setLogFilter(LogFilter filter)
-        +currentFilter LogFilter
+        -LogLevel _minLevel
+        -bool _enabled
+        +setMinLevel(LogLevel level) void
+        +setEnabled(bool enabled) void
         +debug(String message, ...)
         +info(String message, ...)
         +warn(String message, ...)
         +error(String message, ...)
         +init() Future~void~
         +dispose() void
+        -_shouldLog(LogLevel level) bool
         -_getLevelIndicator(LogLevel level) String
         -_maskSensitiveData(String data) String
         -_maskSensitiveMap(Map data) Map
@@ -81,14 +85,17 @@ Provides convenient access to logging with automatic context injection.
 - `ModelLogger` → Tags logs as `[MODEL]`
 - `ProviderLogger` → Tags logs as `[PROVIDER]`
 
-## Log Levels & Visual Indicators
+## Hierarchical Log Levels & Visual Indicators
 
-| Level | Emoji | Usage |
-|-------|-------|-------|
-| Debug | 🔍 | Development debugging |
-| Info | ℹ️ | General information |
-| Warn | ⚠️ | Warning conditions |
-| Error | ❌ | Error conditions |
+The logging system uses severity-based hierarchical filtering where each level includes all higher severity levels:
+
+| Level | Severity | Emoji | Shows | Usage |
+|-------|----------|-------|-------|-------|
+| DEBUG | 0 | 🔍 | All messages | Development debugging |
+| INFO | 1 | ℹ️ | Info, Warn, Error | General information |
+| WARN | 2 | ⚠️ | Warn, Error | Warning conditions |
+| ERROR | 3 | ❌ | Error only | Error conditions |
+| NONE | - | - | Nothing | Disable all logging |
 
 ## Security Features
 
@@ -173,31 +180,39 @@ lib/data/services/
 
 ```bash
 # .env file
-DEFAULT_LOG_FILTER=all  # Options: all, debug, info, warn, error, none
+LOG_LEVEL=INFO  # Options: DEBUG, INFO, WARN, ERROR, NONE
 ```
+
+### Hierarchical Filtering
+
+The logger uses severity-based filtering:
+- **DEBUG**: Shows all messages (debug, info, warn, error)
+- **INFO**: Shows info, warn, and error messages
+- **WARN**: Shows warn and error messages  
+- **ERROR**: Shows only error messages
+- **NONE**: Disables all logging
 
 ### Feature Flag Configuration
 
-The logger filter is managed through the existing feature flag system, allowing runtime configuration through the dev helper UI.
-
+The logger level is managed through the existing feature flag system, allowing runtime configuration through the dev helper UI.
 
 ```mermaid
 graph TD
-    A[Dev Helper UI] --> B[Feature Flag Dropdown]
+    A[Dev Helper UI] --> B[Log Level Dropdown]
     B --> C{User Selection}
-    C -->|All| D[Show All Logs]
-    C -->|Debug| E[Show Debug+ Logs]
-    C -->|Info| F[Show Info+ Logs]
-    C -->|Warn| G[Show Warn+ Logs]
-    C -->|Error| H[Show Error Only]
-    C -->|None| I[Hide All Logs]
+    C -->|DEBUG| D[severity >= 0: All logs]
+    C -->|INFO| E[severity >= 1: Info, Warn, Error]
+    C -->|WARN| F[severity >= 2: Warn, Error]
+    C -->|ERROR| G[severity >= 3: Error only]
+    C -->|NONE| H[_enabled = false: No logs]
     
-    D --> J[LoggerService Filter]
-    E --> J
-    F --> J
-    G --> J
-    H --> J
-    I --> J
+    D --> I[LoggerService.setLogLevelByName]
+    E --> I
+    F --> I
+    G --> I
+    H --> J[LoggerService.setEnabled false]
     
-    J --> K[Persistent Storage]
+    I --> K[Hierarchical Severity Check]
+    J --> K
+    K --> L[Persistent Storage]
 ```

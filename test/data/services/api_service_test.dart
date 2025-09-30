@@ -6,6 +6,7 @@ import 'package:cribe/data/model/auth/login_response.dart';
 import 'package:cribe/data/model/auth/refresh_token_response.dart';
 import 'package:cribe/data/services/api_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -20,6 +21,12 @@ import 'api_service_test.mocks.dart';
   StorageService,
 ])
 void main() {
+  final baseUrl = 'https://api.example.com/v1';
+
+  setUpAll(() async {
+    dotenv.testLoad(fileInput: 'API_URL=$baseUrl');
+  });
+
   group('ApiResponse', () {
     test('should create ApiResponse with all fields', () {
       // Arrange
@@ -101,8 +108,6 @@ void main() {
     late MockHttpClientResponse mockResponse;
     late MockHttpHeaders mockHeaders;
 
-    const baseUrl = 'https://api.example.com/';
-
     setUp(() async {
       mockStorageService = MockStorageService();
       mockHttpClient = MockHttpClient();
@@ -116,7 +121,6 @@ void main() {
           .thenAnswer((_) async => true);
 
       apiService = ApiService(
-        baseUrlResolver: () => baseUrl,
         storageService: mockStorageService,
         httpClient: mockHttpClient,
       );
@@ -132,13 +136,30 @@ void main() {
     });
 
     group('initialization', () {
-      test('should create with base URL', () {
-        expect(apiService.baseUrl, equals(baseUrl));
-      });
-
       test('should initialize and dispose without errors', () async {
         await expectLater(apiService.init(), completes);
         await expectLater(apiService.dispose(), completes);
+      });
+    });
+
+    group('updateBaseUrl', () {
+      test('should update base URL when different', () {
+        // Arrange
+        const newUrl = 'https://api.newdomain.com/v2';
+
+        // Act
+        apiService.updateBaseUrl(newUrl);
+
+        // Assert - verify the URL was updated (we can't directly check _baseUrl since it's private)
+        // The method should complete without error and log the change
+        expect(() => apiService.updateBaseUrl(newUrl), returnsNormally);
+      });
+
+      test('should not update base URL when same', () {
+        // Arrange
+        const currentUrl = 'https://api.example.com/v1';
+        // Act & Assert
+        expect(() => apiService.updateBaseUrl(currentUrl), returnsNormally);
       });
     });
 

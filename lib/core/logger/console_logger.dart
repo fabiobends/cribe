@@ -19,11 +19,13 @@ class ConsoleLogger implements LoggerInterface {
   LogFilter get currentFilter => _currentFilter;
 
   /// Set minimum log level for hierarchical filtering
+  @override
   void setMinLevel(LogLevel level) {
     _minLevel = level;
   }
 
   /// Set logging enabled/disabled
+  @override
   void setEnabled(bool enabled) {
     _enabled = enabled;
   }
@@ -164,27 +166,13 @@ class ConsoleLogger implements LoggerInterface {
   }
 
   bool _shouldLog(LogLevel level) {
-    // If logging is disabled, return false
-    if (!_enabled) return false;
+    // If logging is disabled, return false immediately
+    if (!_enabled) {
+      return false;
+    }
 
     // Check against minimum level (hierarchical severity)
-    if (level.severity < _minLevel.severity) return false;
-
-    // Legacy filter support for backward compatibility
-    switch (_currentFilter) {
-      case LogFilter.none:
-        return false;
-      case LogFilter.all:
-        return true;
-      case LogFilter.debug:
-        return true; // Debug and above (all levels)
-      case LogFilter.info:
-        return level.severity >= LogLevel.info.severity; // Info and above
-      case LogFilter.warn:
-        return level.severity >= LogLevel.warn.severity; // Warn and above
-      case LogFilter.error:
-        return level == LogLevel.error; // Error only
-    }
+    return level.severity >= _minLevel.severity;
   }
 
   String _getLevelIndicator(LogLevel level) {

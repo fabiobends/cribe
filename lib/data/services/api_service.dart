@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cribe/core/config/env_vars.dart';
 import 'package:cribe/core/constants/api_path.dart';
 import 'package:cribe/core/constants/storage_keys.dart';
 import 'package:cribe/data/model/auth/login_response.dart';
@@ -31,21 +32,18 @@ class ApiException implements Exception {
 }
 
 class ApiService extends BaseService {
-  final String Function() baseUrlResolver;
   AuthTokens _tokens = AuthTokens(
     accessToken: '',
     refreshToken: '',
   );
   final StorageService storageService;
   final HttpClient httpClient;
+  String _baseUrl;
 
   ApiService({
     required this.storageService,
     required this.httpClient,
-    required this.baseUrlResolver,
-  });
-
-  String get baseUrl => baseUrlResolver();
+  }) : _baseUrl = EnvVars.apiUrl;
 
   @override
   Future<void> init() async {
@@ -60,6 +58,12 @@ class ApiService extends BaseService {
         refreshToken: refreshToken,
       ),
     );
+  }
+
+  updateBaseUrl(String newUrl) {
+    if (_baseUrl == newUrl) return;
+    _baseUrl = newUrl;
+    logger.info('Base URL updated to $newUrl');
   }
 
   @override
@@ -167,7 +171,7 @@ class ApiService extends BaseService {
   }
 
   Uri _getUri(String path) {
-    final uri = Uri.parse(baseUrl).resolve(path);
+    final uri = Uri.parse(_baseUrl).resolve(path);
     return uri;
   }
 
