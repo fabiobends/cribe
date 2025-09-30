@@ -9,12 +9,24 @@ import 'package:validators/validators.dart';
 /// Can be extended to integrate with Sentry, Crashlytics, etc.
 class ConsoleLogger implements LoggerInterface {
   LogFilter _currentFilter = LogFilter.all;
+  LogLevel _minLevel = LogLevel.info;
+  bool _enabled = true;
 
   void setLogFilter(LogFilter filter) {
     _currentFilter = filter;
   }
 
   LogFilter get currentFilter => _currentFilter;
+
+  /// Set minimum log level for hierarchical filtering
+  void setMinLevel(LogLevel level) {
+    _minLevel = level;
+  }
+
+  /// Set logging enabled/disabled
+  void setEnabled(bool enabled) {
+    _enabled = enabled;
+  }
 
   @override
   Future<void> init() async {
@@ -152,6 +164,13 @@ class ConsoleLogger implements LoggerInterface {
   }
 
   bool _shouldLog(LogLevel level) {
+    // If logging is disabled, return false
+    if (!_enabled) return false;
+
+    // Check against minimum level (hierarchical severity)
+    if (level.severity < _minLevel.severity) return false;
+
+    // Legacy filter support for backward compatibility
     switch (_currentFilter) {
       case LogFilter.none:
         return false;
@@ -160,9 +179,9 @@ class ConsoleLogger implements LoggerInterface {
       case LogFilter.debug:
         return true; // Debug and above (all levels)
       case LogFilter.info:
-        return level.index >= LogLevel.info.index; // Info and above
+        return level.severity >= LogLevel.info.severity; // Info and above
       case LogFilter.warn:
-        return level.index >= LogLevel.warn.index; // Warn and above
+        return level.severity >= LogLevel.warn.severity; // Warn and above
       case LogFilter.error:
         return level == LogLevel.error; // Error only
     }

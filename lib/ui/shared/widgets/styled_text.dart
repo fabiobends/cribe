@@ -32,29 +32,29 @@ class StyledText extends StatelessWidget {
 
     switch (variant) {
       case TextVariant.headline:
-        return theme.textTheme.headlineLarge!.copyWith(
+        return theme.textTheme.headlineLarge?.copyWith(
           color: color ?? theme.colorScheme.onSurface,
           fontWeight: FontWeight.w500,
         );
 
       case TextVariant.title:
-        return theme.textTheme.headlineSmall!.copyWith(
+        return theme.textTheme.headlineSmall?.copyWith(
           fontWeight: FontWeight.bold,
           color: color ?? theme.colorScheme.onSurface,
         );
 
       case TextVariant.subtitle:
-        return theme.textTheme.bodyLarge!.copyWith(
+        return theme.textTheme.bodyLarge?.copyWith(
           color: color ?? theme.colorScheme.onSurface.withValues(alpha: 0.9),
         );
 
       case TextVariant.body:
-        return theme.textTheme.bodyMedium!.copyWith(
+        return theme.textTheme.bodyMedium?.copyWith(
           color: color ?? theme.colorScheme.onSurface,
         );
 
       case TextVariant.caption:
-        return theme.textTheme.bodySmall!.copyWith(
+        return theme.textTheme.bodySmall?.copyWith(
           color: color ?? theme.colorScheme.onSurface.withValues(alpha: 0.6),
         );
 

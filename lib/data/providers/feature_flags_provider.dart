@@ -18,7 +18,7 @@ class FeatureFlagsProvider extends ChangeNotifier with ProviderLogger {
     FeatureFlagKey.apiEndpoint.name: EnvVars.apiUrl,
     FeatureFlagKey.defaultEmail.name: EnvVars.defaultEmail,
     FeatureFlagKey.defaultPassword.name: EnvVars.defaultPassword,
-    FeatureFlagKey.logFilter.name: EnvVars.defaultLogFilter,
+    FeatureFlagKey.logFilter.name: EnvVars.logLevel,
   };
 
   // All feature flags stored in a single map
@@ -46,38 +46,35 @@ class FeatureFlagsProvider extends ChangeNotifier with ProviderLogger {
     notifyListeners();
   }
 
-  // Update log filter in the logger service
-  void _updateLogFilter(String filterValue) {
+  // Update log level in the logger service
+  void _updateLogFilter(String levelValue) {
     try {
-      LogFilter filter;
-      switch (filterValue.toLowerCase()) {
-        case 'debug':
-          filter = LogFilter.debug;
+      LogLevel level;
+      switch (levelValue.toUpperCase().trim()) {
+        case 'DEBUG':
+          level = LogLevel.debug;
           break;
-        case 'info':
-          filter = LogFilter.info;
+        case 'INFO':
+          level = LogLevel.info;
           break;
-        case 'warn':
-          filter = LogFilter.warn;
+        case 'WARN':
+        case 'WARNING':
+          level = LogLevel.warn;
           break;
-        case 'error':
-          filter = LogFilter.error;
+        case 'ERROR':
+          level = LogLevel.error;
           break;
-        case 'none':
-          filter = LogFilter.none;
-          break;
-        case 'all':
         default:
-          filter = LogFilter.all;
+          level = LogLevel.info;
           break;
       }
-      LoggerService.instance.setLogFilter(filter);
-      logger.info('Log filter updated', extra: {'filter': filterValue});
+      LoggerService.instance.setLogLevel(level);
+      logger.info('Log level updated', extra: {'level': levelValue});
     } catch (e) {
       logger.error(
-        'Failed to update log filter',
+        'Failed to update log level',
         error: e,
-        extra: {'filter': filterValue},
+        extra: {'level': levelValue},
       );
     }
   }

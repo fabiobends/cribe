@@ -18,70 +18,71 @@ class LoggerService extends BaseService {
 
   LoggerInterface? _logger;
   StorageService? _storageService;
+  LogLevel _minLevel = LogLevel.info;
+  bool _enabled = true;
 
   /// Initialize the logger service
   @override
   Future<void> init({StorageService? storageService}) async {
     _storageService = storageService;
     _logger = ConsoleLogger();
-    await _logger!.init();
+    await _logger?.init();
 
-    // Set initial log filter from feature flags or env
-    _updateLogFilter();
+    // Configure logging based on LOG_LEVEL environment variable
+    _configure();
   }
 
-  /// Update log filter from feature flags or default
-  void _updateLogFilter() {
-    if (_logger == null) return;
+  /// Configure the logger service based on environment variables
+  void _configure() {
+    // Check if logging is enabled via environment variable
+    final logLevel = EnvVars.logLevel.toUpperCase().trim();
 
-    try {
-      if (_storageService != null) {
-        final flagsJson = _storageService!.getValue(StorageKey.featureFlags);
-        if (flagsJson.isNotEmpty) {
-          final map = jsonDecode(flagsJson) as Map<String, dynamic>;
-          final filterValue = map[FeatureFlagKey.logFilter.name]?.toString();
-          if (filterValue != null) {
-            final filter = _parseLogFilter(filterValue);
-            if (_logger is ConsoleLogger) {
-              (_logger! as ConsoleLogger).setLogFilter(filter);
-            }
-            return;
-          }
-        }
-      }
-    } catch (e) {
-      // Fallback to env default
+    // Handle NONE as explicit disable, but empty or invalid defaults to INFO
+    if (logLevel == 'NONE') {
+      _enabled = false;
+      return;
     }
 
-    // Use default from env
-    final defaultFilter = _parseLogFilter(EnvVars.defaultLogFilter);
-    if (_logger is ConsoleLogger) {
-      (_logger! as ConsoleLogger).setLogFilter(defaultFilter);
-    }
-  }
-
-  LogFilter _parseLogFilter(String value) {
-    switch (value.toLowerCase()) {
-      case 'debug':
-        return LogFilter.debug;
-      case 'info':
-        return LogFilter.info;
-      case 'warn':
-        return LogFilter.warn;
-      case 'error':
-        return LogFilter.error;
-      case 'none':
-        return LogFilter.none;
-      case 'all':
+    // Set minimum log level following severity hierarchy
+    switch (logLevel) {
+      case 'DEBUG':
+        _minLevel = LogLevel.debug;
+        break;
+      case 'INFO':
+        _minLevel = LogLevel.info;
+        break;
+      case 'WARN':
+      case 'WARNING':
+        _minLevel = LogLevel.warn;
+        break;
+      case 'ERROR':
+        _minLevel = LogLevel.error;
+        break;
+      case '': // Empty LOG_LEVEL defaults to INFO level behavior
+        _minLevel = LogLevel.info;
+        break;
       default:
-        return LogFilter.all;
+        // For unknown log levels, default to INFO
+        _minLevel = LogLevel.info;
+    }
+
+    _enabled = true;
+
+    // Update the console logger to use hierarchical filtering
+    final logger = _logger;
+    if (logger is ConsoleLogger) {
+      logger.setMinLevel(_minLevel);
+      logger.setEnabled(_enabled);
     }
   }
 
-  /// Update log filter and persist to feature flags
-  void setLogFilter(LogFilter filter) {
-    if (_logger is ConsoleLogger) {
-      (_logger! as ConsoleLogger).setLogFilter(filter);
+  /// Update log level and persist to feature flags
+  void setLogLevel(LogLevel level) {
+    _minLevel = level;
+
+    final logger = _logger;
+    if (logger is ConsoleLogger) {
+      logger.setMinLevel(_minLevel);
     }
 
     // Persist to feature flags if storage service is available
@@ -94,25 +95,28 @@ class LoggerService extends BaseService {
           flags = jsonDecode(flagsJson) as Map<String, dynamic>;
         }
 
-        flags[FeatureFlagKey.logFilter.name] = filter.name;
-        _storageService!.setValue(StorageKey.featureFlags, jsonEncode(flags));
+        flags[FeatureFlagKey.logFilter.name] = level.name;
+        _storageService?.setValue(StorageKey.featureFlags, jsonEncode(flags));
       }
     } catch (e) {
       // Log error but don't crash - only if logger is available
       _logger?.error(
-        'Failed to persist log filter',
+        'Failed to persist log level',
         entityType: EntityType.service,
         error: e,
       );
     }
   }
 
-  /// Get current log filter
-  LogFilter get currentFilter {
-    if (_logger is ConsoleLogger) {
-      return (_logger! as ConsoleLogger).currentFilter;
-    }
-    return LogFilter.all;
+  /// Get current minimum log level
+  LogLevel get minLevel => _minLevel;
+
+  /// Get current enabled state
+  bool get enabled => _enabled;
+
+  /// Check if logging is enabled and meets minimum level
+  bool _shouldLog(LogLevel level) {
+    return _enabled && level.severity >= _minLevel.severity;
   }
 
   /// Debug log
@@ -122,7 +126,9 @@ class LoggerService extends BaseService {
     EntityType? entityType,
     Map<String, dynamic>? extra,
   }) {
-    _logger?.debug(message, tag: tag, entityType: entityType, extra: extra);
+    if (_shouldLog(LogLevel.debug)) {
+      _logger?.debug(message, tag: tag, entityType: entityType, extra: extra);
+    }
   }
 
   /// Info log
@@ -132,7 +138,9 @@ class LoggerService extends BaseService {
     EntityType? entityType,
     Map<String, dynamic>? extra,
   }) {
-    _logger?.info(message, tag: tag, entityType: entityType, extra: extra);
+    if (_shouldLog(LogLevel.info)) {
+      _logger?.info(message, tag: tag, entityType: entityType, extra: extra);
+    }
   }
 
   /// Warning log
@@ -142,7 +150,9 @@ class LoggerService extends BaseService {
     EntityType? entityType,
     Map<String, dynamic>? extra,
   }) {
-    _logger?.warn(message, tag: tag, entityType: entityType, extra: extra);
+    if (_shouldLog(LogLevel.warn)) {
+      _logger?.warn(message, tag: tag, entityType: entityType, extra: extra);
+    }
   }
 
   /// Error log
@@ -154,14 +164,16 @@ class LoggerService extends BaseService {
     StackTrace? stackTrace,
     Map<String, dynamic>? extra,
   }) {
-    _logger?.error(
-      message,
-      tag: tag,
-      entityType: entityType,
-      error: error,
-      stackTrace: stackTrace,
-      extra: extra,
-    );
+    if (_shouldLog(LogLevel.error)) {
+      _logger?.error(
+        message,
+        tag: tag,
+        entityType: entityType,
+        error: error,
+        stackTrace: stackTrace,
+        extra: extra,
+      );
+    }
   }
 
   /// Dispose the logger service
