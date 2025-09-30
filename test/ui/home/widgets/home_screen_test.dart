@@ -1,6 +1,7 @@
 import 'package:cribe/core/constants/feature_flags.dart';
 import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
+import 'package:cribe/data/services/storage_service.dart';
 import 'package:cribe/ui/home/view_models/home_view_model.dart';
 import 'package:cribe/ui/home/widgets/home_screen.dart';
 import 'package:cribe/ui/shared/widgets/styled_button.dart';
@@ -12,7 +13,48 @@ import 'package:provider/provider.dart';
 
 import 'home_screen_test.mocks.dart';
 
-@GenerateMocks([HomeViewModel, FeatureFlagsProvider])
+// TestHomeViewModel that can trigger actual listener notifications
+class TestHomeViewModel extends HomeViewModel {
+  TestHomeViewModel(super.storageService);
+
+  void simulateError(String errorMessage) {
+    _errorMessage = errorMessage;
+    _setState(UiState.error);
+  }
+
+  void simulateSuccess() {
+    _setState(UiState.success);
+  }
+
+  // Expose private fields for testing
+  String _errorMessage = '';
+
+  @override
+  String get errorMessage => _errorMessage;
+
+  void _setState(UiState newState) {
+    _state = newState;
+    setLoading(newState == UiState.loading);
+    if (newState == UiState.error) {
+      setError(_errorMessage);
+    } else {
+      setError(null);
+    }
+    // The BaseViewModel will call notifyListeners() through setLoading/setError
+    // But we need to ensure it's called for state changes too
+    notifyListeners();
+  }
+
+  UiState _state = UiState.initial;
+
+  @override
+  UiState get state => _state;
+
+  @override
+  bool get hasError => _state == UiState.error;
+}
+
+@GenerateMocks([HomeViewModel, StorageService, FeatureFlagsProvider])
 void main() {
   late MockHomeViewModel mockHomeViewModel;
   late MockFeatureFlagsProvider mockFeatureFlagsProvider;
@@ -209,6 +251,80 @@ void main() {
           find.byType(Consumer2<HomeViewModel, FeatureFlagsProvider>),
           findsOneWidget,
         );
+      });
+    });
+
+    group('_onViewModelChanged listener tests', () {
+      testWidgets('should show SnackBar when error occurs', (tester) async {
+        // Create a test storage service for the TestHomeViewModel
+        final testViewModel = TestHomeViewModel(MockStorageService());
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MultiProvider(
+              providers: [
+                ChangeNotifierProvider<HomeViewModel>.value(
+                  value: testViewModel,
+                ),
+                ChangeNotifierProvider<FeatureFlagsProvider>.value(
+                  value: mockFeatureFlagsProvider,
+                ),
+              ],
+              child: const HomeScreen(),
+            ),
+          ),
+        );
+
+        // Wait for initial build
+        await tester.pump();
+
+        // Simulate an error - this will trigger _onViewModelChanged
+        testViewModel.simulateError('Test error message');
+        await tester.pump();
+
+        // Assert that SnackBar is shown
+        expect(find.byType(SnackBar), findsOneWidget);
+        expect(find.text('Test error message'), findsOneWidget);
+      });
+
+      testWidgets('should navigate when success state occurs', (tester) async {
+        // Create a test storage service for the TestHomeViewModel
+        final testViewModel = TestHomeViewModel(MockStorageService());
+
+        await tester.pumpWidget(
+          MaterialApp(
+            initialRoute: '/home',
+            routes: {
+              '/': (context) => const Scaffold(body: Text('Login Screen')),
+              '/home': (context) => MultiProvider(
+                    providers: [
+                      ChangeNotifierProvider<HomeViewModel>.value(
+                        value: testViewModel,
+                      ),
+                      ChangeNotifierProvider<FeatureFlagsProvider>.value(
+                        value: mockFeatureFlagsProvider,
+                      ),
+                    ],
+                    child: const HomeScreen(),
+                  ),
+            },
+          ),
+        );
+
+        // Wait for initial build and ensure home screen is displayed
+        await tester.pumpAndSettle();
+        expect(find.byType(HomeScreen), findsOneWidget);
+        expect(find.text('Login Screen'), findsNothing);
+
+        // Simulate success - this will trigger _onViewModelChanged and navigation
+        testViewModel.simulateSuccess();
+
+        // Wait for all animations and navigation to complete
+        await tester.pumpAndSettle();
+
+        // Assert that navigation occurred
+        expect(find.text('Login Screen'), findsOneWidget);
+        expect(find.byType(HomeScreen), findsNothing);
       });
     });
   });

@@ -11,4 +11,10 @@ class RefreshTokenResponse {
       accessToken: map['access_token']?.toString() ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'access_token': accessToken,
+    };
+  }
 }

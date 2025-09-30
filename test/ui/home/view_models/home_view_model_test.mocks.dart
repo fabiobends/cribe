@@ -5,14 +5,11 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
-import 'package:cribe/core/constants/storage_keys.dart' as _i8;
-import 'package:cribe/data/model/auth/login_response.dart' as _i5;
-import 'package:cribe/data/model/auth/register_response.dart' as _i6;
-import 'package:cribe/data/repositories/auth_repository.dart' as _i3;
-import 'package:cribe/data/services/api_service.dart' as _i2;
-import 'package:cribe/data/services/storage_service.dart' as _i7;
+import 'package:cribe/core/constants/storage_keys.dart' as _i5;
+import 'package:cribe/core/logger/logger_mixins.dart' as _i2;
+import 'package:cribe/data/services/storage_service.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i9;
+import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -28,9 +25,9 @@ import 'package:mockito/src/dummies.dart' as _i9;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeApiResponse_0<T> extends _i1.SmartFake
-    implements _i2.ApiResponse<T> {
-  _FakeApiResponse_0(
+class _FakeContextualLogger_0 extends _i1.SmartFake
+    implements _i2.ContextualLogger {
+  _FakeContextualLogger_0(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -39,80 +36,22 @@ class _FakeApiResponse_0<T> extends _i1.SmartFake
         );
 }
 
-/// A class which mocks [AuthRepository].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockAuthRepository extends _i1.Mock implements _i3.AuthRepository {
-  MockAuthRepository() {
-    _i1.throwOnMissingStub(this);
-  }
-
-  @override
-  _i4.Future<_i2.ApiResponse<_i5.LoginResponse>> login(
-    String? email,
-    String? password,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #login,
-          [
-            email,
-            password,
-          ],
-        ),
-        returnValue: _i4.Future<_i2.ApiResponse<_i5.LoginResponse>>.value(
-            _FakeApiResponse_0<_i5.LoginResponse>(
-          this,
-          Invocation.method(
-            #login,
-            [
-              email,
-              password,
-            ],
-          ),
-        )),
-      ) as _i4.Future<_i2.ApiResponse<_i5.LoginResponse>>);
-
-  @override
-  _i4.Future<_i2.ApiResponse<_i6.RegisterResponse>> register(
-    String? email,
-    String? password,
-    String? firstName,
-    String? lastName,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #register,
-          [
-            email,
-            password,
-            firstName,
-            lastName,
-          ],
-        ),
-        returnValue: _i4.Future<_i2.ApiResponse<_i6.RegisterResponse>>.value(
-            _FakeApiResponse_0<_i6.RegisterResponse>(
-          this,
-          Invocation.method(
-            #register,
-            [
-              email,
-              password,
-              firstName,
-              lastName,
-            ],
-          ),
-        )),
-      ) as _i4.Future<_i2.ApiResponse<_i6.RegisterResponse>>);
-}
-
 /// A class which mocks [StorageService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockStorageService extends _i1.Mock implements _i7.StorageService {
+class MockStorageService extends _i1.Mock implements _i3.StorageService {
   MockStorageService() {
     _i1.throwOnMissingStub(this);
   }
+
+  @override
+  _i2.ContextualLogger get logger => (super.noSuchMethod(
+        Invocation.getter(#logger),
+        returnValue: _FakeContextualLogger_0(
+          this,
+          Invocation.getter(#logger),
+        ),
+      ) as _i2.ContextualLogger);
 
   @override
   _i4.Future<void> init() => (super.noSuchMethod(
@@ -135,12 +74,12 @@ class MockStorageService extends _i1.Mock implements _i7.StorageService {
       ) as _i4.Future<void>);
 
   @override
-  String getValue(_i8.StorageKey? key) => (super.noSuchMethod(
+  String getValue(_i5.StorageKey? key) => (super.noSuchMethod(
         Invocation.method(
           #getValue,
           [key],
         ),
-        returnValue: _i9.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.method(
             #getValue,
@@ -150,13 +89,13 @@ class MockStorageService extends _i1.Mock implements _i7.StorageService {
       ) as String);
 
   @override
-  _i4.Future<String> getSecureValue(_i8.SecureStorageKey? key) =>
+  _i4.Future<String> getSecureValue(_i5.SecureStorageKey? key) =>
       (super.noSuchMethod(
         Invocation.method(
           #getSecureValue,
           [key],
         ),
-        returnValue: _i4.Future<String>.value(_i9.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i6.dummyValue<String>(
           this,
           Invocation.method(
             #getSecureValue,
@@ -167,7 +106,7 @@ class MockStorageService extends _i1.Mock implements _i7.StorageService {
 
   @override
   _i4.Future<bool> setSecureValue(
-    _i8.SecureStorageKey? key,
+    _i5.SecureStorageKey? key,
     String? value,
   ) =>
       (super.noSuchMethod(
@@ -183,7 +122,7 @@ class MockStorageService extends _i1.Mock implements _i7.StorageService {
 
   @override
   _i4.Future<bool> setValue(
-    _i8.StorageKey? key,
+    _i5.StorageKey? key,
     String? value,
   ) =>
       (super.noSuchMethod(

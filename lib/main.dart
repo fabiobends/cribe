@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cribe/core/config/env_vars.dart';
 import 'package:cribe/core/constants/feature_flags.dart';
@@ -31,8 +32,8 @@ Future<void> main() async {
   await LoggerService.instance.init(storageService: storageService);
 
   final apiService = ApiService(
-    apiUrl: EnvVars.apiUrl,
     storageService: storageService,
+    httpClient: HttpClient(),
     // Resolve base URL programmatically from Feature Flags persisted in storage
     baseUrlResolver: () {
       try {
