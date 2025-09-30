@@ -1,8 +1,11 @@
 enum LogLevel {
-  debug,
-  info,
-  warn,
-  error,
+  debug(0),
+  info(1),
+  warn(2),
+  error(3);
+
+  const LogLevel(this.severity);
+  final int severity;
 }
 
 enum LogFilter {

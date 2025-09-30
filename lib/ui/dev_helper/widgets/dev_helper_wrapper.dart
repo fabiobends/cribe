@@ -52,8 +52,8 @@ class _DevHelperWrapperState extends State<DevHelperWrapper> {
         children: [
           widget.child,
           Positioned(
-            left: position!.dx,
-            top: position!.dy,
+            left: position?.dx,
+            top: position?.dy,
             child: Directionality(
               textDirection: TextDirection.ltr,
               child: GestureDetector(

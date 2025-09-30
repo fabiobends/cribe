@@ -13,7 +13,7 @@ class EnvVars {
     return dotenv.env['DEFAULT_PASSWORD'] ?? '';
   }
 
-  static String get defaultLogFilter {
-    return dotenv.env['DEFAULT_LOG_FILTER'] ?? 'all';
+  static String get logLevel {
+    return dotenv.env['LOG_LEVEL'] ?? 'INFO';
   }
 }
