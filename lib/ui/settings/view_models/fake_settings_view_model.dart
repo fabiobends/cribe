@@ -1,7 +1,11 @@
 import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/ui/shared/view_models/base_view_model.dart';
 
-class FakeHomeViewModel extends BaseViewModel {
+class FakeSettingsViewModel extends BaseViewModel {
+  FakeSettingsViewModel() {
+    logger.info('FakeSettingsViewModel initialized');
+  }
+
   UiState _state = UiState.initial;
   String _errorMessage = '';
 
@@ -10,28 +14,31 @@ class FakeHomeViewModel extends BaseViewModel {
   bool get hasError => _state == UiState.error;
 
   Future<void> logout() async {
+    logger.info('Starting fake user logout process');
     _setState(UiState.loading);
 
-    // Simulate logout delay
+    // Simulate async logout
     await Future.delayed(const Duration(seconds: 1));
 
-    // Fake logout logic - always succeeds in storybook
-    _setState(UiState.success);
+    try {
+      logger.info('Fake user logout successful');
+      _setState(UiState.success);
+    } catch (e) {
+      logger.error('Fake logout failed', error: e);
+      _errorMessage = e.toString();
+      _setState(UiState.error);
+    }
   }
 
   void clearError() {
-    _errorMessage = '';
     if (_state == UiState.error) {
+      logger.debug('Clearing error state');
       _setState(UiState.initial);
     }
   }
 
-  void simulateError() {
-    _errorMessage = 'Fake error for testing';
-    _setState(UiState.error);
-  }
-
   void _setState(UiState newState) {
+    logger.debug('State changed: $_state -> $newState');
     _state = newState;
     setLoading(newState == UiState.loading);
     if (newState == UiState.error) {
@@ -39,5 +46,6 @@ class FakeHomeViewModel extends BaseViewModel {
     } else {
       setError(null);
     }
+    notifyListeners();
   }
 }

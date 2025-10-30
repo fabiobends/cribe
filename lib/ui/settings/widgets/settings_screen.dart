@@ -3,42 +3,42 @@ import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
-import 'package:cribe/ui/home/view_models/home_view_model.dart';
+import 'package:cribe/ui/settings/view_models/settings_view_model.dart';
 import 'package:cribe/ui/shared/widgets/styled_button.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with ScreenLogger {
-  late HomeViewModel _viewModel;
+class _SettingsScreenState extends State<SettingsScreen> with ScreenLogger {
+  late SettingsViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
-    logger.info('HomeScreen initialized');
-    _viewModel = context.read<HomeViewModel>();
+    logger.info('SettingsScreen initialized');
+    _viewModel = context.read<SettingsViewModel>();
     _viewModel.addListener(_onViewModelChanged);
   }
 
   @override
   void dispose() {
-    logger.info('Disposing HomeScreen');
+    logger.info('Disposing SettingsScreen');
     _viewModel.removeListener(_onViewModelChanged);
     super.dispose();
   }
 
   void _onViewModelChanged() {
-    logger.debug('HomeScreen view model changed');
+    logger.debug('SettingsScreen view model changed');
     if (_viewModel.hasError) {
-      logger
-          .warn('HomeScreen encountered an error: ${_viewModel.errorMessage}');
+      logger.warn(
+          'SettingsScreen encountered an error: ${_viewModel.errorMessage}',);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
@@ -68,12 +68,8 @@ class _HomeScreenState extends State<HomeScreen> with ScreenLogger {
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('Home'),
-        automaticallyImplyLeading: false, // Remove back button
-      ),
       body: SafeArea(
-        child: Consumer2<HomeViewModel, FeatureFlagsProvider>(
+        child: Consumer2<SettingsViewModel, FeatureFlagsProvider>(
           builder: (context, viewModel, featureFlags, child) {
             return Padding(
               padding: const EdgeInsets.all(Spacing.large),

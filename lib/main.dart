@@ -13,8 +13,9 @@ import 'package:cribe/ui/auth/widgets/auth_screen.dart';
 import 'package:cribe/ui/auth/widgets/login_screen.dart';
 import 'package:cribe/ui/auth/widgets/register_screen.dart';
 import 'package:cribe/ui/dev_helper/widgets/dev_helper_wrapper.dart';
-import 'package:cribe/ui/home/view_models/home_view_model.dart';
-import 'package:cribe/ui/home/widgets/home_screen.dart';
+import 'package:cribe/ui/navigation/widgets/main_navigation_screen.dart';
+import 'package:cribe/ui/podcasts/view_models/podcasts_list_view_model.dart';
+import 'package:cribe/ui/settings/view_models/settings_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
@@ -61,8 +62,11 @@ Future<void> main() async {
         ChangeNotifierProvider<RegisterViewModel>(
           create: (context) => RegisterViewModel(AuthRepository(apiService)),
         ),
-        ChangeNotifierProvider<HomeViewModel>(
-          create: (context) => HomeViewModel(storageService),
+        ChangeNotifierProvider<SettingsViewModel>(
+          create: (context) => SettingsViewModel(storageService),
+        ),
+        ChangeNotifierProvider<PodcastsListViewModel>(
+          create: (context) => PodcastsListViewModel(),
         ),
       ],
       child: const MyApp(),
@@ -85,7 +89,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const DevHelperWrapper(child: LoginScreen()),
         '/register': (context) =>
             const DevHelperWrapper(child: RegisterScreen()),
-        '/home': (context) => const DevHelperWrapper(child: HomeScreen()),
+        '/home': (context) =>
+            const DevHelperWrapper(child: MainNavigationScreen()),
       },
     );
   }

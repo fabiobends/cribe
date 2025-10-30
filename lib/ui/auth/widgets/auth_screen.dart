@@ -2,7 +2,7 @@ import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/services/auth_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
 import 'package:cribe/ui/auth/widgets/login_screen.dart';
-import 'package:cribe/ui/home/widgets/home_screen.dart';
+import 'package:cribe/ui/navigation/widgets/main_navigation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -71,7 +71,9 @@ class _AuthScreenState extends State<AuthScreen> with ScreenLogger {
       return _buildLoadingScreen();
     }
 
-    return _isAuthenticated ? const HomeScreen() : const LoginScreen();
+    return _isAuthenticated
+        ? const MainNavigationScreen()
+        : const LoginScreen();
   }
 
   Widget _buildLoadingScreen() {
