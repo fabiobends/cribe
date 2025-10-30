@@ -3,8 +3,11 @@ import 'package:cribe/ui/auth/view_models/fake_register_view_model.dart';
 import 'package:cribe/ui/auth/widgets/login_screen.dart';
 import 'package:cribe/ui/auth/widgets/register_screen.dart';
 import 'package:cribe/ui/dev_helper/widgets/component_showcase.dart';
-import 'package:cribe/ui/home/view_models/fake_home_view_model.dart';
-import 'package:cribe/ui/home/widgets/home_screen.dart';
+import 'package:cribe/ui/navigation/widgets/main_navigation_screen.dart';
+import 'package:cribe/ui/podcasts/view_models/fake_podcasts_list_view_model.dart';
+import 'package:cribe/ui/podcasts/widgets/podcasts_list_screen.dart';
+import 'package:cribe/ui/settings/view_models/fake_settings_view_model.dart';
+import 'package:cribe/ui/settings/widgets/settings_screen.dart';
 import 'package:cribe/ui/shared/widgets/styled_button.dart';
 import 'package:cribe/ui/shared/widgets/styled_dropdown.dart';
 import 'package:cribe/ui/shared/widgets/styled_switch.dart';
@@ -30,8 +33,10 @@ class StorybookView extends StatelessWidget {
   ];
   static const _screens = [
     'LoginScreen',
-    'HomeScreen',
     'RegisterScreen',
+    'MainNavigationScreen',
+    'PodcastsListScreen',
+    'SettingsScreen',
   ];
 
   @override
@@ -277,13 +282,40 @@ class StorybookView extends StatelessWidget {
           ),
         );
 
-      case 'HomeScreen':
+      case 'MainNavigationScreen':
+        return Scaffold(
+          appBar:
+              AppBar(title: StyledText(text: name, variant: TextVariant.title)),
+          body: MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                create: (_) => FakePodcastsListViewModel(),
+              ),
+              ChangeNotifierProvider(
+                create: (_) => FakeSettingsViewModel(),
+              ),
+            ],
+            child: const MainNavigationScreen(),
+          ),
+        );
+
+      case 'PodcastsListScreen':
         return Scaffold(
           appBar:
               AppBar(title: StyledText(text: name, variant: TextVariant.title)),
           body: ChangeNotifierProvider(
-            create: (_) => FakeHomeViewModel(),
-            child: const HomeScreen(),
+            create: (_) => FakePodcastsListViewModel(),
+            child: const PodcastsListScreen(),
+          ),
+        );
+
+      case 'SettingsScreen':
+        return Scaffold(
+          appBar:
+              AppBar(title: StyledText(text: name, variant: TextVariant.title)),
+          body: ChangeNotifierProvider(
+            create: (_) => FakeSettingsViewModel(),
+            child: const SettingsScreen(),
           ),
         );
 

@@ -3,11 +3,11 @@ import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/data/services/storage_service.dart';
 import 'package:cribe/ui/shared/view_models/base_view_model.dart';
 
-class HomeViewModel extends BaseViewModel {
+class SettingsViewModel extends BaseViewModel {
   final StorageService _storageService;
 
-  HomeViewModel(this._storageService) {
-    logger.info('HomeViewModel initialized');
+  SettingsViewModel(this._storageService) {
+    logger.info('SettingsViewModel initialized');
   }
 
   UiState _state = UiState.initial;
