@@ -16,6 +16,13 @@ test:
 		echo "✅ Tests completed! Coverage data available at coverage/lcov.info"; \
 	fi
 
+view-coverage:
+	@if [ -f coverage/html/index.html ]; then \
+		open coverage/html/index.html; \
+	else \
+		echo "❌ HTML coverage report not found. Please run 'make test' first."; \
+	fi
+
 # Format and fix all Dart code
 format-fix:
 	@echo "🎨 Formatting and fixing Dart code..."
