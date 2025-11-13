@@ -35,6 +35,10 @@ format-fix:
 	@echo "✅ All checks passed!"
 	@echo "🎉 Code is ready!"
 
+generate-mocks:
+	@echo "Generating mocks using build_runner..."
+	@dart run build_runner build --delete-conflicting-outputs
+
 # Git hooks
 setup-hooks:
 	@echo "Setting up Git hooks..."
