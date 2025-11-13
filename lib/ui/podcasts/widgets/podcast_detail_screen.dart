@@ -1,17 +1,16 @@
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/domain/models/podcast.dart';
+import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
+import 'package:cribe/ui/podcasts/widgets/episode_detail_screen.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class PodcastDetailScreen extends StatefulWidget {
-  final int podcastId;
-
   const PodcastDetailScreen({
     super.key,
-    required this.podcastId,
   });
 
   @override
@@ -25,10 +24,10 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen>
   @override
   void initState() {
     super.initState();
-    logger.info(
-      'PodcastDetailScreen initialized for podcast ${widget.podcastId}',
-    );
     _viewModel = context.read<PodcastDetailViewModel>();
+    logger.info(
+      'PodcastDetailScreen initialized for podcast ${_viewModel.podcast?.id}',
+    );
     _viewModel.addListener(_onViewModelChanged);
   }
 
@@ -45,18 +44,23 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen>
       logger.warn(
         'PodcastDetailScreen encountered an error: ${_viewModel.error}',
       );
+      final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
             text: _viewModel.error!,
             variant: TextVariant.body,
-            color: Colors.white,
+            color: theme.colorScheme.onError,
           ),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: theme.colorScheme.error,
         ),
       );
       _viewModel.setError(null);
     }
+  }
+
+  void _goBack(BuildContext context) {
+    Navigator.of(context).pop();
   }
 
   @override
@@ -107,7 +111,7 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen>
           Icons.arrow_back,
           color: theme.colorScheme.onSurface,
         ),
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () => _goBack(context),
       ),
       flexibleSpace: FlexibleSpaceBar(
         title: StyledText(
@@ -163,7 +167,9 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen>
   }
 
   Widget _buildEpisodesList(
-      BuildContext context, PodcastDetailViewModel viewModel,) {
+    BuildContext context,
+    PodcastDetailViewModel viewModel,
+  ) {
     final theme = Theme.of(context);
     final podcast = viewModel.podcast!;
 
@@ -216,6 +222,17 @@ class _EpisodeCard extends StatelessWidget {
     required this.viewModel,
   });
 
+  void _navigateToEpisodeDetail(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => EpisodeDetailViewModel(episodeId: episode.id),
+          child: const EpisodeDetailScreen(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -226,9 +243,7 @@ class _EpisodeCard extends StatelessWidget {
         vertical: Spacing.small,
       ),
       child: InkWell(
-        onTap: () {
-          // TODO: Play episode or navigate to episode player
-        },
+        onTap: () => _navigateToEpisodeDetail(context),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(Spacing.medium),

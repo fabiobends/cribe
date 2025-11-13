@@ -88,7 +88,7 @@ void main() {
     return MaterialApp(
       home: ChangeNotifierProvider<PodcastDetailViewModel>(
         create: (_) => viewModel,
-        child: const PodcastDetailScreen(podcastId: testPodcastId),
+        child: const PodcastDetailScreen(),
       ),
     );
   }

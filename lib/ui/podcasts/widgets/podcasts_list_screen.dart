@@ -40,14 +40,15 @@ class _PodcastsListScreenState extends State<PodcastsListScreen>
       logger.warn(
         'PodcastsListScreen encountered an error: ${_viewModel.errorMessage}',
       );
+      final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
             text: _viewModel.errorMessage,
             variant: TextVariant.body,
-            color: Colors.white,
+            color: theme.colorScheme.onError,
           ),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: theme.colorScheme.error,
         ),
       );
       _viewModel.clearError();
@@ -111,7 +112,7 @@ class _PodcastCard extends StatelessWidget {
             MaterialPageRoute(
               builder: (_) => ChangeNotifierProvider(
                 create: (_) => PodcastDetailViewModel(podcastId: podcast.id),
-                child: PodcastDetailScreen(podcastId: podcast.id),
+                child: const PodcastDetailScreen(),
               ),
             ),
           );

@@ -38,15 +38,17 @@ class _SettingsScreenState extends State<SettingsScreen> with ScreenLogger {
     logger.debug('SettingsScreen view model changed');
     if (_viewModel.hasError) {
       logger.warn(
-          'SettingsScreen encountered an error: ${_viewModel.errorMessage}',);
+        'SettingsScreen encountered an error: ${_viewModel.errorMessage}',
+      );
+      final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
             text: _viewModel.errorMessage,
             variant: TextVariant.body,
-            color: Colors.white,
+            color: theme.colorScheme.onError,
           ),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: theme.colorScheme.error,
         ),
       );
       _viewModel.clearError();
