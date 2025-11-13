@@ -4,7 +4,10 @@ import 'package:cribe/ui/auth/widgets/login_screen.dart';
 import 'package:cribe/ui/auth/widgets/register_screen.dart';
 import 'package:cribe/ui/dev_helper/widgets/component_showcase.dart';
 import 'package:cribe/ui/navigation/widgets/main_navigation_screen.dart';
+import 'package:cribe/ui/podcasts/view_models/fake_podcast_detail_view_model.dart';
 import 'package:cribe/ui/podcasts/view_models/fake_podcasts_list_view_model.dart';
+import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
+import 'package:cribe/ui/podcasts/widgets/podcast_detail_screen.dart';
 import 'package:cribe/ui/podcasts/widgets/podcasts_list_screen.dart';
 import 'package:cribe/ui/settings/view_models/fake_settings_view_model.dart';
 import 'package:cribe/ui/settings/widgets/settings_screen.dart';
@@ -36,6 +39,7 @@ class StorybookView extends StatelessWidget {
     'RegisterScreen',
     'MainNavigationScreen',
     'PodcastsListScreen',
+    'PodcastDetailScreen',
     'SettingsScreen',
   ];
 
@@ -306,6 +310,16 @@ class StorybookView extends StatelessWidget {
           body: ChangeNotifierProvider(
             create: (_) => FakePodcastsListViewModel(),
             child: const PodcastsListScreen(),
+          ),
+        );
+
+      case 'PodcastDetailScreen':
+        return Scaffold(
+          appBar:
+              AppBar(title: StyledText(text: name, variant: TextVariant.title)),
+          body: ChangeNotifierProvider<PodcastDetailViewModel>(
+            create: (_) => FakePodcastDetailViewModel(),
+            child: const PodcastDetailScreen(podcastId: 1),
           ),
         );
 

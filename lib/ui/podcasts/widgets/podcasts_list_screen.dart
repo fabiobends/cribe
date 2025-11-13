@@ -1,7 +1,9 @@
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/domain/models/podcast.dart';
+import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
 import 'package:cribe/ui/podcasts/view_models/podcasts_list_view_model.dart';
+import 'package:cribe/ui/podcasts/widgets/podcast_detail_screen.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -36,7 +38,8 @@ class _PodcastsListScreenState extends State<PodcastsListScreen>
     logger.debug('PodcastsListScreen view model changed');
     if (_viewModel.hasError) {
       logger.warn(
-          'PodcastsListScreen encountered an error: ${_viewModel.errorMessage}',);
+        'PodcastsListScreen encountered an error: ${_viewModel.errorMessage}',
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
@@ -104,7 +107,14 @@ class _PodcastCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: Spacing.medium),
       child: InkWell(
         onTap: () {
-          // TODO: Navigate to podcast detail screen
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => ChangeNotifierProvider(
+                create: (_) => PodcastDetailViewModel(podcastId: podcast.id),
+                child: PodcastDetailScreen(podcastId: podcast.id),
+              ),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

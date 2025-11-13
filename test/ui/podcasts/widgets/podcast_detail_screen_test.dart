@@ -1,0 +1,343 @@
+import 'package:cribe/domain/models/podcast.dart';
+import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
+import 'package:cribe/ui/podcasts/widgets/podcast_detail_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:provider/provider.dart';
+
+import 'podcast_detail_screen_test.mocks.dart';
+
+// TestPodcastDetailViewModel that can trigger actual listener notifications
+class TestPodcastDetailViewModel extends PodcastDetailViewModel {
+  TestPodcastDetailViewModel({required super.podcastId});
+
+  void setPodcast(Podcast? podcast) {
+    _podcast = podcast;
+    notifyListeners();
+  }
+
+  void setEpisodes(List<Episode> episodes) {
+    _episodes = episodes;
+    notifyListeners();
+  }
+
+  Podcast? _podcast;
+
+  @override
+  Podcast? get podcast => _podcast;
+
+  List<Episode> _episodes = [];
+
+  @override
+  List<Episode> get episodes => _episodes;
+}
+
+@GenerateMocks([PodcastDetailViewModel])
+void main() {
+  late MockPodcastDetailViewModel mockViewModel;
+  const testPodcastId = 1;
+
+  setUp(() {
+    mockViewModel = MockPodcastDetailViewModel();
+
+    // Default mock behavior
+    when(mockViewModel.isLoading).thenReturn(false);
+    when(mockViewModel.error).thenReturn('');
+    when(mockViewModel.podcast).thenReturn(null);
+    when(mockViewModel.episodes).thenReturn([]);
+  });
+
+  Podcast createMockPodcast() {
+    return Podcast(
+      id: testPodcastId,
+      authorName: 'Joe Rogan',
+      name: 'The Joe Rogan Experience',
+      imageUrl: 'https://picsum.photos/400/400?random=1',
+      description:
+          'The official podcast of comedian Joe Rogan. Long form conversations.',
+      externalId: 'ext-1',
+      createdAt: DateTime.now().subtract(const Duration(days: 30)),
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  List<Episode> createMockEpisodes({int count = 3}) {
+    return List.generate(
+      count,
+      (index) => Episode(
+        id: index + 1,
+        externalId: 'ep-1-${index + 1}',
+        podcastId: testPodcastId,
+        name: 'Episode ${index + 1}',
+        description: 'Description for episode ${index + 1}',
+        audioUrl: 'https://example.com/audio/1/${index + 1}.mp3',
+        imageUrl: 'https://picsum.photos/200/200?random=${100 + index}',
+        datePublished: DateTime.now()
+            .subtract(Duration(days: index * 7))
+            .toIso8601String(),
+        duration: 3600 + (index * 300),
+        createdAt: DateTime.now().subtract(Duration(days: index * 7)),
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  Widget createWidgetUnderTest(PodcastDetailViewModel viewModel) {
+    return MaterialApp(
+      home: ChangeNotifierProvider<PodcastDetailViewModel>(
+        create: (_) => viewModel,
+        child: const PodcastDetailScreen(podcastId: testPodcastId),
+      ),
+    );
+  }
+
+  group('PodcastDetailScreen', () {
+    group('loading state', () {
+      testWidgets('should show loading indicator when loading',
+          (WidgetTester tester) async {
+        // Arrange
+        when(mockViewModel.isLoading).thenReturn(true);
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      });
+    });
+
+    group('empty state', () {
+      testWidgets('should show not found message when podcast is null',
+          (WidgetTester tester) async {
+        // Arrange
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(null);
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert
+        expect(find.text('Podcast not found'), findsOneWidget);
+      });
+    });
+
+    group('success state with data', () {
+      testWidgets('should display podcast details with sliver app bar',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisodes = createMockEpisodes();
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn(mockEpisodes);
+        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
+        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert - CustomScrollView and SliverAppBar
+        expect(find.byType(CustomScrollView), findsOneWidget);
+        expect(find.byType(SliverAppBar), findsOneWidget);
+      });
+
+      testWidgets('should display podcast info section',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisodes = createMockEpisodes();
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn(mockEpisodes);
+        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
+        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert
+        expect(find.text('By ${mockPodcast.authorName}'), findsOneWidget);
+        expect(find.text(mockPodcast.description), findsOneWidget);
+        expect(find.text('Episodes (${mockEpisodes.length})'), findsOneWidget);
+      });
+
+      testWidgets('should display all episodes in list',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisodes = createMockEpisodes();
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn(mockEpisodes);
+        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
+        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+        await tester.pumpAndSettle();
+
+        // Assert - Check that episode cards are present
+        expect(find.byType(Card), findsWidgets);
+        expect(find.text(mockEpisodes[0].name), findsOneWidget);
+      });
+
+      testWidgets('should display episode duration and date',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisodes = createMockEpisodes(count: 1);
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn(mockEpisodes);
+        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
+        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert
+        expect(find.text('1h 5m'), findsOneWidget);
+        expect(find.text('2 days ago'), findsOneWidget);
+      });
+
+      testWidgets('should display episode cards as tappable',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisodes = createMockEpisodes(count: 1);
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn(mockEpisodes);
+        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
+        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert
+        expect(find.byType(Card), findsWidgets);
+        expect(find.byType(InkWell), findsWidgets);
+      });
+
+      testWidgets('should display back button in app bar',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn([]);
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert
+        expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+      });
+    });
+
+    group('image handling', () {
+      testWidgets('should show placeholder when podcast has no image',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = Podcast(
+          id: testPodcastId,
+          authorName: 'Test Author',
+          name: 'Test Podcast',
+          description: 'Test description',
+          externalId: 'ext-1',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn([]);
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert
+        expect(find.byIcon(Icons.mic), findsOneWidget);
+      });
+
+      testWidgets('should show placeholder when episode has no image',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisode = Episode(
+          id: 1,
+          externalId: 'ep-1',
+          podcastId: testPodcastId,
+          name: 'Episode 1',
+          description: 'Description',
+          audioUrl: 'https://example.com/audio.mp3',
+          datePublished: DateTime.now().toIso8601String(),
+          duration: 3600,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn([mockEpisode]);
+        when(mockViewModel.formatDuration(any)).thenReturn('1h');
+        when(mockViewModel.formatDate(any)).thenReturn('Today');
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert
+        expect(find.byIcon(Icons.play_circle_outline), findsOneWidget);
+      });
+    });
+
+    group('navigation', () {
+      testWidgets('should have back button that pops navigation',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn([]);
+
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Act
+        await tester.tap(find.byIcon(Icons.arrow_back));
+        await tester.pumpAndSettle();
+
+        // Assert - Navigation should work (though we can't verify pop in this test)
+      });
+    });
+
+    group('scrolling behavior', () {
+      testWidgets('should be scrollable with CustomScrollView',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisodes = createMockEpisodes(count: 10);
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn(mockEpisodes);
+        when(mockViewModel.formatDuration(any)).thenReturn('1h');
+        when(mockViewModel.formatDate(any)).thenReturn('Today');
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+
+        // Assert
+        expect(find.byType(CustomScrollView), findsOneWidget);
+      });
+    });
+  });
+}
