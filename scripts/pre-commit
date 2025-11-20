@@ -14,6 +14,23 @@ fi
 COUNT=$(printf "%s\n" "$STAGED_FILES" | wc -l | tr -d ' ')
 echo "📝 Found ${COUNT} Dart file(s) to process..."
 
+# Check file line counts
+echo "📏 Checking file sizes avoiding bloated files..."
+EXCEEDED_FILES=""
+printf "%s\n" "$STAGED_FILES" | while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    LINE_COUNT=$(wc -l < "$file" | tr -d ' ')
+    if [ "$LINE_COUNT" -gt 500 ]; then
+        echo "⚠️  $file has $LINE_COUNT lines (exceeds 500 line limit)"
+        EXCEEDED_FILES="${EXCEEDED_FILES}${file}\n"
+    fi
+done
+
+if [ -n "$EXCEEDED_FILES" ]; then
+    echo "❌ Some files exceed the 500 line limit. Please refactor before committing."
+    exit 1
+fi
+
 # Format only the staged files first to avoid formatting unrelated files
 echo "🎨 Formatting staged Dart files..."
 printf "%s\n" "$STAGED_FILES" | while IFS= read -r file; do
