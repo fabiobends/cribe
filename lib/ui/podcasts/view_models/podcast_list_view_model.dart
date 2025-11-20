@@ -9,13 +9,13 @@ class PodcastListViewModel extends BaseViewModel {
       : _repository = repository,
         super(repo: repository) {
     logger.info('PodcastListViewModel initialized');
-    _loadPodcasts();
+    loadPodcasts();
   }
 
   List<Podcast> get podcasts => _repository.podcasts;
 
-  Future<void> _loadPodcasts() async {
-    logger.info('Loading mock podcasts');
+  Future<void> loadPodcasts() async {
+    logger.info('Loading podcasts');
     setLoading(true);
     try {
       await _repository.getPodcasts();
@@ -26,6 +26,18 @@ class PodcastListViewModel extends BaseViewModel {
       setError(errorMessage);
     } finally {
       setLoading(false);
+    }
+  }
+
+  Future<void> refresh() async {
+    logger.info('Refreshing podcasts');
+    try {
+      await _repository.getPodcasts();
+      notifyListeners();
+    } catch (e) {
+      final errorMessage = 'Failed to refresh podcasts';
+      logger.error(errorMessage, error: e);
+      setError(errorMessage);
     }
   }
 }

@@ -175,13 +175,16 @@ class ApiService extends BaseService {
     return uri;
   }
 
-  void _updateAccessToken(String accessToken) {
+  Future<void> _updateAccessToken(String accessToken) async {
     _tokens = AuthTokens(
       accessToken: accessToken,
       refreshToken: _tokens.refreshToken,
     );
     // Keep storage in sync - use secure storage for token
-    storageService.setSecureValue(SecureStorageKey.accessToken, accessToken);
+    await storageService.setSecureValue(
+      SecureStorageKey.accessToken,
+      accessToken,
+    );
   }
 
   void _addHeaders(HttpClientRequest httpRequest) {
@@ -203,22 +206,28 @@ class ApiService extends BaseService {
         response.statusCode == 401 && _tokens.refreshToken.isNotEmpty;
     if (shouldRefresh) {
       try {
+        logger.info('Access token expired, refreshing token...');
         // Make refresh token request directly without retry logic
         final uri = _getUri(ApiPath.refreshToken);
         final httpRequest = await httpClient.postUrl(uri);
         _addHeaders(httpRequest);
-        _addBody(httpRequest, {'refreshToken': _tokens.refreshToken});
+        _addBody(httpRequest, {'refresh_token': _tokens.refreshToken});
         final refreshResponse = await httpRequest.close();
 
         if (refreshResponse.statusCode == 200) {
           final responseBody =
               await refreshResponse.transform(utf8.decoder).join();
           final data = RefreshTokenResponse.fromJson(jsonDecode(responseBody));
-          _updateAccessToken(data.accessToken);
+          await _updateAccessToken(data.accessToken);
+          logger.info('Token refreshed successfully');
           return true;
         }
+        logger.warn(
+          'Token refresh failed with status: ${refreshResponse.statusCode}',
+        );
         return false;
       } catch (e) {
+        logger.error('Token refresh error', error: e);
         return false;
       }
     }
