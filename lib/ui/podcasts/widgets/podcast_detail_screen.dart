@@ -56,6 +56,8 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen>
         ),
       );
       _viewModel.setError(null);
+      // Go back to the previous screen on error
+      Navigator.of(context).pop();
     }
   }
 
