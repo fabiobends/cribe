@@ -24,7 +24,7 @@ view-coverage:
 	fi
 
 # Format and fix all Dart code
-format-fix:
+format:
 	@echo "🎨 Formatting and fixing Dart code..."
 	@echo "📝 Formatting all Dart files..."
 	@dart format .
@@ -35,17 +35,14 @@ format-fix:
 	@echo "✅ All checks passed!"
 	@echo "🎉 Code is ready!"
 
-generate-mocks:
+gen-mocks:
 	@echo "Generating mocks using build_runner..."
 	@dart run build_runner build --delete-conflicting-outputs
 
 # Git hooks
 setup-hooks:
 	@echo "Setting up Git hooks..."
-
-	@mkdir -p .git/hooks
-	@cp scripts/pre-commit .git/hooks/pre-commit
-	@cp scripts/pre-push .git/hooks/pre-push
-	@chmod +x .git/hooks/pre-commit .git/hooks/pre-push
-
+	@git config core.hooksPath scripts
+	@chmod +x scripts/pre-commit scripts/pre-push
 	@echo "Git hooks installed successfully!"
+	@echo "Hooks directory: scripts/"
