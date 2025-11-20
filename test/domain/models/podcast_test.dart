@@ -88,10 +88,14 @@ void main() {
         expect(podcast.name, equals('Podcast Name'));
         expect(podcast.description, equals('Podcast description'));
         expect(podcast.externalId, equals('ext-123'));
-        expect(podcast.createdAt,
-            equals(DateTime.parse('2024-01-01T00:00:00.000Z')),);
-        expect(podcast.updatedAt,
-            equals(DateTime.parse('2024-01-02T00:00:00.000Z')),);
+        expect(
+          podcast.createdAt,
+          equals(DateTime.parse('2024-01-01T00:00:00.000Z')),
+        );
+        expect(
+          podcast.updatedAt,
+          equals(DateTime.parse('2024-01-02T00:00:00.000Z')),
+        );
         expect(podcast.imageUrl, isNull);
         expect(podcast.episodes, isNull);
       });
@@ -302,7 +306,9 @@ void main() {
 
         // Assert
         expect(
-            episode.imageUrl, equals('https://example.com/episode-image.jpg'),);
+          episode.imageUrl,
+          equals('https://example.com/episode-image.jpg'),
+        );
       });
     });
 
@@ -334,10 +340,14 @@ void main() {
         expect(episode.audioUrl, equals('https://example.com/audio.mp3'));
         expect(episode.datePublished, equals('2024-01-01'));
         expect(episode.duration, equals(3600));
-        expect(episode.createdAt,
-            equals(DateTime.parse('2024-01-01T00:00:00.000Z')),);
-        expect(episode.updatedAt,
-            equals(DateTime.parse('2024-01-02T00:00:00.000Z')),);
+        expect(
+          episode.createdAt,
+          equals(DateTime.parse('2024-01-01T00:00:00.000Z')),
+        );
+        expect(
+          episode.updatedAt,
+          equals(DateTime.parse('2024-01-02T00:00:00.000Z')),
+        );
         expect(episode.imageUrl, isNull);
       });
 
@@ -362,7 +372,9 @@ void main() {
 
         // Assert
         expect(
-            episode.imageUrl, equals('https://example.com/episode-image.jpg'),);
+          episode.imageUrl,
+          equals('https://example.com/episode-image.jpg'),
+        );
       });
     });
 
@@ -420,7 +432,9 @@ void main() {
 
         // Assert
         expect(
-            json['image_url'], equals('https://example.com/episode-image.jpg'),);
+          json['image_url'],
+          equals('https://example.com/episode-image.jpg'),
+        );
       });
     });
 

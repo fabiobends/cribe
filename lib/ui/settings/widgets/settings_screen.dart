@@ -1,8 +1,8 @@
 import 'package:cribe/core/constants/feature_flags.dart';
 import 'package:cribe/core/constants/spacing.dart';
-import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
+import 'package:cribe/ui/auth/widgets/auth_screen.dart';
 import 'package:cribe/ui/settings/view_models/settings_view_model.dart';
 import 'package:cribe/ui/shared/widgets/styled_button.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
@@ -36,26 +36,30 @@ class _SettingsScreenState extends State<SettingsScreen> with ScreenLogger {
 
   void _onViewModelChanged() {
     logger.debug('SettingsScreen view model changed');
-    if (_viewModel.hasError) {
+    if (_viewModel.error != null) {
       logger.warn(
-        'SettingsScreen encountered an error: ${_viewModel.errorMessage}',
+        'SettingsScreen encountered an error: ${_viewModel.error}',
       );
       final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
-            text: _viewModel.errorMessage,
+            text: _viewModel.error!,
             variant: TextVariant.body,
             color: theme.colorScheme.onError,
           ),
           backgroundColor: theme.colorScheme.error,
         ),
       );
-      _viewModel.clearError();
-    } else if (_viewModel.state == UiState.success) {
+      _viewModel.setError(null);
+    } else if (_viewModel.isSuccess) {
       logger.info('Logout successful');
-      // Navigate back to login screen after successful logout
-      Navigator.of(context).pushReplacementNamed('/');
+      // Navigate back to auth screen after successful logout
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const AuthScreen(),
+        ),
+      );
     }
   }
 

@@ -9,31 +9,6 @@ import 'package:provider/provider.dart';
 
 import 'podcast_detail_screen_test.mocks.dart';
 
-// TestPodcastDetailViewModel that can trigger actual listener notifications
-class TestPodcastDetailViewModel extends PodcastDetailViewModel {
-  TestPodcastDetailViewModel({required super.podcastId});
-
-  void setPodcast(Podcast? podcast) {
-    _podcast = podcast;
-    notifyListeners();
-  }
-
-  void setEpisodes(List<Episode> episodes) {
-    _episodes = episodes;
-    notifyListeners();
-  }
-
-  Podcast? _podcast;
-
-  @override
-  Podcast? get podcast => _podcast;
-
-  List<Episode> _episodes = [];
-
-  @override
-  List<Episode> get episodes => _episodes;
-}
-
 @GenerateMocks([PodcastDetailViewModel])
 void main() {
   late MockPodcastDetailViewModel mockViewModel;
@@ -63,23 +38,25 @@ void main() {
     );
   }
 
-  List<Episode> createMockEpisodes({int count = 3}) {
+  List<FormattedEpisode> createMockFormattedEpisodes({int count = 3}) {
     return List.generate(
       count,
-      (index) => Episode(
-        id: index + 1,
-        externalId: 'ep-1-${index + 1}',
-        podcastId: testPodcastId,
-        name: 'Episode ${index + 1}',
-        description: 'Description for episode ${index + 1}',
-        audioUrl: 'https://example.com/audio/1/${index + 1}.mp3',
-        imageUrl: 'https://picsum.photos/200/200?random=${100 + index}',
-        datePublished: DateTime.now()
-            .subtract(Duration(days: index * 7))
-            .toIso8601String(),
-        duration: 3600 + (index * 300),
-        createdAt: DateTime.now().subtract(Duration(days: index * 7)),
-        updatedAt: DateTime.now(),
+      (index) => FormattedEpisode(
+        Episode(
+          id: index + 1,
+          externalId: 'ep-1-${index + 1}',
+          podcastId: testPodcastId,
+          name: 'Episode ${index + 1}',
+          description: 'Description for episode ${index + 1}',
+          audioUrl: 'https://example.com/audio/1/${index + 1}.mp3',
+          imageUrl: 'https://picsum.photos/200/200?random=${100 + index}',
+          datePublished: DateTime.now()
+              .subtract(Duration(days: index * 7))
+              .toIso8601String(),
+          duration: 3600 + (index * 300),
+          createdAt: DateTime.now().subtract(Duration(days: index * 7)),
+          updatedAt: DateTime.now(),
+        ),
       ),
     );
   }
@@ -128,13 +105,11 @@ void main() {
           (WidgetTester tester) async {
         // Arrange
         final mockPodcast = createMockPodcast();
-        final mockEpisodes = createMockEpisodes();
+        final mockEpisodes = createMockFormattedEpisodes();
 
         when(mockViewModel.isLoading).thenReturn(false);
         when(mockViewModel.podcast).thenReturn(mockPodcast);
         when(mockViewModel.episodes).thenReturn(mockEpisodes);
-        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
-        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
@@ -148,13 +123,11 @@ void main() {
           (WidgetTester tester) async {
         // Arrange
         final mockPodcast = createMockPodcast();
-        final mockEpisodes = createMockEpisodes();
+        final mockEpisodes = createMockFormattedEpisodes();
 
         when(mockViewModel.isLoading).thenReturn(false);
         when(mockViewModel.podcast).thenReturn(mockPodcast);
         when(mockViewModel.episodes).thenReturn(mockEpisodes);
-        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
-        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
@@ -169,13 +142,11 @@ void main() {
           (WidgetTester tester) async {
         // Arrange
         final mockPodcast = createMockPodcast();
-        final mockEpisodes = createMockEpisodes();
+        final mockEpisodes = createMockFormattedEpisodes();
 
         when(mockViewModel.isLoading).thenReturn(false);
         when(mockViewModel.podcast).thenReturn(mockPodcast);
         when(mockViewModel.episodes).thenReturn(mockEpisodes);
-        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
-        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
@@ -183,40 +154,36 @@ void main() {
 
         // Assert - Check that episode cards are present
         expect(find.byType(Card), findsWidgets);
-        expect(find.text(mockEpisodes[0].name), findsOneWidget);
+        expect(find.text(mockEpisodes[0].episode.name), findsOneWidget);
       });
 
       testWidgets('should display episode duration and date',
           (WidgetTester tester) async {
         // Arrange
         final mockPodcast = createMockPodcast();
-        final mockEpisodes = createMockEpisodes(count: 1);
+        final mockEpisodes = createMockFormattedEpisodes(count: 1);
 
         when(mockViewModel.isLoading).thenReturn(false);
         when(mockViewModel.podcast).thenReturn(mockPodcast);
         when(mockViewModel.episodes).thenReturn(mockEpisodes);
-        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
-        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
 
-        // Assert
-        expect(find.text('1h 5m'), findsOneWidget);
-        expect(find.text('2 days ago'), findsOneWidget);
+        // Assert - Check that formatted properties are displayed
+        expect(find.text(mockEpisodes[0].duration), findsOneWidget);
+        expect(find.text(mockEpisodes[0].datePublished), findsOneWidget);
       });
 
       testWidgets('should display episode cards as tappable',
           (WidgetTester tester) async {
         // Arrange
         final mockPodcast = createMockPodcast();
-        final mockEpisodes = createMockEpisodes(count: 1);
+        final mockEpisodes = createMockFormattedEpisodes(count: 1);
 
         when(mockViewModel.isLoading).thenReturn(false);
         when(mockViewModel.podcast).thenReturn(mockPodcast);
         when(mockViewModel.episodes).thenReturn(mockEpisodes);
-        when(mockViewModel.formatDuration(any)).thenReturn('1h 5m');
-        when(mockViewModel.formatDate(any)).thenReturn('2 days ago');
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
@@ -272,24 +239,24 @@ void main() {
           (WidgetTester tester) async {
         // Arrange
         final mockPodcast = createMockPodcast();
-        final mockEpisode = Episode(
-          id: 1,
-          externalId: 'ep-1',
-          podcastId: testPodcastId,
-          name: 'Episode 1',
-          description: 'Description',
-          audioUrl: 'https://example.com/audio.mp3',
-          datePublished: DateTime.now().toIso8601String(),
-          duration: 3600,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
+        final mockEpisode = FormattedEpisode(
+          Episode(
+            id: 1,
+            externalId: 'ep-1',
+            podcastId: testPodcastId,
+            name: 'Episode 1',
+            description: 'Description',
+            audioUrl: 'https://example.com/audio.mp3',
+            datePublished: DateTime.now().toIso8601String(),
+            duration: 3600,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
         );
 
         when(mockViewModel.isLoading).thenReturn(false);
         when(mockViewModel.podcast).thenReturn(mockPodcast);
         when(mockViewModel.episodes).thenReturn([mockEpisode]);
-        when(mockViewModel.formatDuration(any)).thenReturn('1h');
-        when(mockViewModel.formatDate(any)).thenReturn('Today');
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
@@ -324,13 +291,11 @@ void main() {
           (WidgetTester tester) async {
         // Arrange
         final mockPodcast = createMockPodcast();
-        final mockEpisodes = createMockEpisodes(count: 10);
+        final mockEpisodes = createMockFormattedEpisodes(count: 10);
 
         when(mockViewModel.isLoading).thenReturn(false);
         when(mockViewModel.podcast).thenReturn(mockPodcast);
         when(mockViewModel.episodes).thenReturn(mockEpisodes);
-        when(mockViewModel.formatDuration(any)).thenReturn('1h');
-        when(mockViewModel.formatDate(any)).thenReturn('Today');
 
         // Act
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));

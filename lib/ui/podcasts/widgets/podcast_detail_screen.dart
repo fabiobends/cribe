@@ -201,10 +201,9 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen>
             ],
           ),
         ),
-        ...viewModel.episodes.map((episode) {
+        ...viewModel.episodes.map((formattedEpisode) {
           return _EpisodeCard(
-            episode: episode,
-            viewModel: viewModel,
+            formattedEpisode: formattedEpisode,
           );
         }),
         const SizedBox(height: Spacing.large),
@@ -214,19 +213,18 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen>
 }
 
 class _EpisodeCard extends StatelessWidget {
-  final Episode episode;
-  final PodcastDetailViewModel viewModel;
+  final FormattedEpisode formattedEpisode;
 
   const _EpisodeCard({
-    required this.episode,
-    required this.viewModel,
+    required this.formattedEpisode,
   });
 
   void _navigateToEpisodeDetail(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider(
-          create: (_) => EpisodeDetailViewModel(episodeId: episode.id),
+          create: (_) =>
+              EpisodeDetailViewModel(episode: formattedEpisode.episode),
           child: const EpisodeDetailScreen(),
         ),
       ),
@@ -236,6 +234,7 @@ class _EpisodeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final episode = formattedEpisode.episode;
 
     return Card(
       margin: const EdgeInsets.symmetric(
@@ -244,14 +243,14 @@ class _EpisodeCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () => _navigateToEpisodeDetail(context),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(Spacing.small),
         child: Padding(
           padding: const EdgeInsets.all(Spacing.medium),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(Spacing.small),
                 child: episode.imageUrl != null
                     ? Image.network(
                         episode.imageUrl!,
@@ -271,7 +270,7 @@ class _EpisodeCard extends StatelessWidget {
                                 width: Spacing.medium,
                                 height: Spacing.medium,
                                 child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                                  strokeWidth: Spacing.tiny,
                                   value: loadingProgress.expectedTotalBytes !=
                                           null
                                       ? loadingProgress.cumulativeBytesLoaded /
@@ -310,7 +309,7 @@ class _EpisodeCard extends StatelessWidget {
                         ),
                         const SizedBox(width: Spacing.extraSmall),
                         StyledText(
-                          text: viewModel.formatDuration(episode.duration),
+                          text: formattedEpisode.duration,
                           variant: TextVariant.caption,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -322,7 +321,7 @@ class _EpisodeCard extends StatelessWidget {
                         ),
                         const SizedBox(width: Spacing.extraSmall),
                         StyledText(
-                          text: viewModel.formatDate(episode.datePublished),
+                          text: formattedEpisode.datePublished,
                           variant: TextVariant.caption,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),

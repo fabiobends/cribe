@@ -1,4 +1,3 @@
-import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/validation_service.dart';
 import 'package:cribe/ui/shared/view_models/base_view_model.dart';
@@ -9,13 +8,6 @@ class LoginViewModel extends BaseViewModel {
   LoginViewModel(this._authRepository) {
     logger.info('LoginViewModel initialized');
   }
-
-  UiState _state = UiState.initial;
-  String _errorMessage = '';
-
-  UiState get state => _state;
-  String get errorMessage => _errorMessage;
-  bool get hasError => _state == UiState.error;
 
   String? validateEmail(String? email) {
     logger.debug('Validating email');
@@ -46,37 +38,18 @@ class LoginViewModel extends BaseViewModel {
 
   Future<void> login(String email, String password) async {
     logger.info('Starting login process', extra: {'email': email});
-    _setState(UiState.loading);
+    setLoading(true);
 
     try {
       await _authRepository.login(email, password);
       logger.info('Login successful');
-      _setState(UiState.success);
+      setSuccess(true);
     } catch (e) {
-      logger.error('Login failed', error: e, extra: {'email': email});
-      _errorMessage = e.toString();
-      _setState(UiState.error);
-    }
-  }
-
-  void clearError() {
-    logger.debug('Clearing error state');
-    if (_state == UiState.error) {
-      _setState(UiState.initial);
-    }
-  }
-
-  void _setState(UiState newState) {
-    logger.debug(
-      'State transition',
-      extra: {'from': _state.name, 'to': newState.name},
-    );
-    _state = newState;
-    setLoading(newState == UiState.loading);
-    if (newState == UiState.error) {
-      setError(_errorMessage);
-    } else {
-      setError(null);
+      final errorMessage = 'Login failed';
+      logger.error(errorMessage, error: e, extra: {'email': email});
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   }
 }

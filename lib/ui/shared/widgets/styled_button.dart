@@ -87,7 +87,7 @@ class StyledButton extends StatelessWidget {
               height: Spacing.medium,
               width: Spacing.medium,
               child: CircularProgressIndicator(
-                strokeWidth: 2,
+                strokeWidth: Spacing.tiny,
                 valueColor: AlwaysStoppedAnimation<Color>(
                   getForegroundColor(),
                 ),

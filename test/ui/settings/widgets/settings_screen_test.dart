@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:cribe/core/constants/feature_flags.dart';
-import 'package:cribe/core/constants/ui_state.dart';
+import 'package:cribe/core/constants/storage_keys.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
+import 'package:cribe/data/services/api_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
+import 'package:cribe/ui/auth/widgets/auth_screen.dart';
 import 'package:cribe/ui/settings/view_models/settings_view_model.dart';
 import 'package:cribe/ui/settings/widgets/settings_screen.dart';
 import 'package:cribe/ui/shared/widgets/styled_button.dart';
@@ -13,56 +17,18 @@ import 'package:provider/provider.dart';
 
 import 'settings_screen_test.mocks.dart';
 
-class TestSettingsViewModel extends SettingsViewModel {
-  TestSettingsViewModel(super.storageService);
-
-  void simulateError(String errorMessage) {
-    _errorMessage = errorMessage;
-    _setState(UiState.error);
-  }
-
-  void simulateSuccess() {
-    _setState(UiState.success);
-  }
-
-  String _errorMessage = '';
-
-  @override
-  String get errorMessage => _errorMessage;
-
-  void _setState(UiState newState) {
-    _state = newState;
-    setLoading(newState == UiState.loading);
-    if (newState == UiState.error) {
-      setError(_errorMessage);
-    } else {
-      setError(null);
-    }
-    notifyListeners();
-  }
-
-  UiState _state = UiState.initial;
-
-  @override
-  UiState get state => _state;
-
-  @override
-  bool get hasError => _state == UiState.error;
-}
-
-@GenerateMocks([SettingsViewModel, StorageService, FeatureFlagsProvider])
+@GenerateMocks([StorageService, FeatureFlagsProvider, ApiService])
 void main() {
-  late MockSettingsViewModel mockViewModel;
+  late SettingsViewModel settingsViewModel;
+  late MockStorageService mockStorageService;
   late MockFeatureFlagsProvider mockFeatureFlagsProvider;
+  late MockApiService mockApiService;
 
   setUp(() {
-    mockViewModel = MockSettingsViewModel();
+    mockStorageService = MockStorageService();
     mockFeatureFlagsProvider = MockFeatureFlagsProvider();
-
-    when(mockViewModel.state).thenReturn(UiState.initial);
-    when(mockViewModel.isLoading).thenReturn(false);
-    when(mockViewModel.hasError).thenReturn(false);
-    when(mockViewModel.errorMessage).thenReturn('');
+    mockApiService = MockApiService();
+    settingsViewModel = SettingsViewModel(storageService: mockStorageService);
 
     when(mockFeatureFlagsProvider.getFlag<bool>(FeatureFlagKey.booleanFlag))
         .thenReturn(true);
@@ -73,220 +39,184 @@ void main() {
   });
 
   Widget createTestWidget() {
-    return MaterialApp(
-      home: MultiProvider(
-        providers: [
-          ChangeNotifierProvider<SettingsViewModel>.value(
-            value: mockViewModel,
-          ),
-          ChangeNotifierProvider<FeatureFlagsProvider>.value(
-            value: mockFeatureFlagsProvider,
-          ),
-        ],
-        child: const SettingsScreen(),
+    return MultiProvider(
+      providers: [
+        Provider<ApiService>.value(value: mockApiService),
+        Provider<StorageService>.value(value: mockStorageService),
+        ChangeNotifierProvider<FeatureFlagsProvider>.value(
+          value: mockFeatureFlagsProvider,
+        ),
+        ChangeNotifierProvider<SettingsViewModel>.value(
+          value: settingsViewModel,
+        ),
+      ],
+      child: MaterialApp(
+        home: Builder(
+          builder: (context) {
+            return const SettingsScreen();
+          },
+        ),
       ),
     );
   }
 
   group('SettingsScreen', () {
-    group('UI elements', () {
-      testWidgets('should display Scaffold', (tester) async {
-        await tester.pumpWidget(createTestWidget());
+    testWidgets('should display all UI elements', (tester) async {
+      await tester.pumpWidget(createTestWidget());
 
-        expect(find.byType(Scaffold), findsOneWidget);
-      });
-
-      testWidgets('should display SafeArea', (tester) async {
-        await tester.pumpWidget(createTestWidget());
-
-        expect(find.byType(SafeArea), findsOneWidget);
-      });
-
-      testWidgets('should display logout button', (tester) async {
-        await tester.pumpWidget(createTestWidget());
-
-        expect(find.text('Logout'), findsOneWidget);
-        expect(find.byType(StyledButton), findsOneWidget);
-      });
-
-      testWidgets('should display feature flags card', (tester) async {
-        await tester.pumpWidget(createTestWidget());
-
-        expect(find.text('Current Feature Flags'), findsOneWidget);
-        expect(find.byType(Card), findsOneWidget);
-      });
+      expect(find.byType(Scaffold), findsOneWidget);
+      expect(find.byType(SafeArea), findsOneWidget);
+      expect(find.text('Logout'), findsOneWidget);
+      expect(find.byType(StyledButton), findsOneWidget);
+      expect(find.text('Current Feature Flags'), findsOneWidget);
+      expect(find.byType(Card), findsOneWidget);
     });
 
-    group('feature flags display', () {
-      testWidgets('should display boolean flag status', (tester) async {
-        await tester.pumpWidget(createTestWidget());
+    testWidgets('should display feature flags correctly', (tester) async {
+      await tester.pumpWidget(createTestWidget());
 
-        expect(find.text('Boolean Flag:'), findsOneWidget);
-        expect(find.text('ON'), findsOneWidget);
-      });
-
-      testWidgets('should display OFF when boolean flag is false',
-          (tester) async {
-        when(mockFeatureFlagsProvider.getFlag<bool>(FeatureFlagKey.booleanFlag))
-            .thenReturn(false);
-
-        await tester.pumpWidget(createTestWidget());
-
-        expect(find.text('OFF'), findsOneWidget);
-      });
-
-      testWidgets('should display A/B test variant', (tester) async {
-        await tester.pumpWidget(createTestWidget());
-
-        expect(find.text('A/B Variant:'), findsOneWidget);
-        expect(find.textContaining('Variant A'), findsOneWidget);
-      });
-
-      testWidgets('should display API endpoint', (tester) async {
-        await tester.pumpWidget(createTestWidget());
-
-        expect(find.text('API Endpoint:'), findsOneWidget);
-        expect(find.text('https://api.example.com'), findsOneWidget);
-      });
+      expect(find.text('Boolean Flag:'), findsOneWidget);
+      expect(find.text('ON'), findsOneWidget);
+      expect(find.text('A/B Variant:'), findsOneWidget);
+      expect(find.textContaining('Variant A'), findsOneWidget);
+      expect(find.text('API Endpoint:'), findsOneWidget);
+      expect(find.text('https://api.example.com'), findsOneWidget);
     });
 
-    group('logout button interaction', () {
-      testWidgets('should call logout when logout button is tapped',
-          (tester) async {
-        when(mockViewModel.logout()).thenAnswer((_) async {});
+    testWidgets('should display OFF when boolean flag is false',
+        (tester) async {
+      when(mockFeatureFlagsProvider.getFlag<bool>(FeatureFlagKey.booleanFlag))
+          .thenReturn(false);
 
-        await tester.pumpWidget(createTestWidget());
-        await tester.tap(find.text('Logout'));
-        await tester.pump();
+      await tester.pumpWidget(createTestWidget());
 
-        verify(mockViewModel.logout()).called(1);
-      });
-
-      testWidgets('should be disabled when loading', (tester) async {
-        when(mockViewModel.isLoading).thenReturn(true);
-
-        await tester.pumpWidget(createTestWidget());
-
-        final button = tester.widget<StyledButton>(find.byType(StyledButton));
-        expect(button.isLoading, isTrue);
-      });
-
-      testWidgets('should show CircularProgressIndicator when loading',
-          (tester) async {
-        when(mockViewModel.isLoading).thenReturn(true);
-
-        await tester.pumpWidget(createTestWidget());
-
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      });
+      expect(find.text('OFF'), findsOneWidget);
     });
 
-    group('error handling', () {
-      testWidgets('should show SnackBar when error occurs', (tester) async {
-        final testViewModel = TestSettingsViewModel(MockStorageService());
+    testWidgets('should call logout when button is tapped', (tester) async {
+      when(mockStorageService.setSecureValue(any, any))
+          .thenAnswer((_) async => true);
 
-        await tester.pumpWidget(
-          MaterialApp(
-            home: MultiProvider(
-              providers: [
-                ChangeNotifierProvider<SettingsViewModel>.value(
-                  value: testViewModel,
-                ),
-                ChangeNotifierProvider<FeatureFlagsProvider>.value(
-                  value: mockFeatureFlagsProvider,
-                ),
-              ],
-              child: const SettingsScreen(),
-            ),
-          ),
-        );
+      await tester.pumpWidget(createTestWidget());
+      await tester.tap(find.text('Logout'));
+      await tester.pump();
 
-        await tester.pump();
-
-        testViewModel.simulateError('Logout failed');
-        await tester.pump();
-
-        expect(find.byType(SnackBar), findsOneWidget);
-        expect(find.text('Logout failed'), findsOneWidget);
-      });
-
-      testWidgets('should navigate when success state occurs', (tester) async {
-        final testViewModel = TestSettingsViewModel(MockStorageService());
-
-        await tester.pumpWidget(
-          MaterialApp(
-            initialRoute: '/settings',
-            routes: {
-              '/': (context) => const Scaffold(body: Text('Login Screen')),
-              '/settings': (context) => MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider<SettingsViewModel>.value(
-                        value: testViewModel,
-                      ),
-                      ChangeNotifierProvider<FeatureFlagsProvider>.value(
-                        value: mockFeatureFlagsProvider,
-                      ),
-                    ],
-                    child: const SettingsScreen(),
-                  ),
-            },
-          ),
-        );
-
-        await tester.pumpAndSettle();
-        expect(find.byType(SettingsScreen), findsOneWidget);
-        expect(find.text('Login Screen'), findsNothing);
-
-        testViewModel.simulateSuccess();
-        await tester.pumpAndSettle();
-
-        expect(find.text('Login Screen'), findsOneWidget);
-        expect(find.byType(SettingsScreen), findsNothing);
-      });
+      verify(
+        mockStorageService.setSecureValue(
+          SecureStorageKey.accessToken,
+          '',
+        ),
+      ).called(1);
+      verify(
+        mockStorageService.setSecureValue(
+          SecureStorageKey.refreshToken,
+          '',
+        ),
+      ).called(1);
     });
 
-    group('view model listener', () {
-      testWidgets('should add listener on initState', (tester) async {
-        await tester.pumpWidget(createTestWidget());
+    testWidgets('should show loading state when logout is in progress',
+        (tester) async {
+      final completer = Completer<bool>();
+      when(mockStorageService.setSecureValue(any, any))
+          .thenAnswer((_) => completer.future);
 
-        expect(find.byType(SettingsScreen), findsOneWidget);
-      });
+      await tester.pumpWidget(createTestWidget());
+      await tester.tap(find.text('Logout'));
+      await tester.pump();
 
-      testWidgets('should remove listener on dispose', (tester) async {
-        await tester.pumpWidget(createTestWidget());
-        expect(find.byType(SettingsScreen), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-        await tester.pumpWidget(const MaterialApp(home: SizedBox()));
-
-        expect(find.byType(SettingsScreen), findsNothing);
-      });
+      // Complete the completer for cleanup
+      completer.complete(true);
     });
 
-    group('Consumer integration', () {
-      testWidgets('should use Consumer2 to listen to ViewModel changes',
-          (tester) async {
-        await tester.pumpWidget(createTestWidget());
+    testWidgets('should show error snackbar on logout failure', (tester) async {
+      when(mockStorageService.setSecureValue(any, any))
+          .thenThrow(Exception('Logout failed'));
 
-        expect(
-          find.byType(Consumer2<SettingsViewModel, FeatureFlagsProvider>),
-          findsOneWidget,
-        );
-      });
+      await tester.pumpWidget(createTestWidget());
+      await tester.tap(find.text('Logout'));
+      await tester.pump();
+
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.text('Logout failed'), findsOneWidget);
     });
 
-    group('layout', () {
-      testWidgets('should use Column for main layout', (tester) async {
-        await tester.pumpWidget(createTestWidget());
+    testWidgets('should clear tokens and reach success state on logout',
+        (tester) async {
+      when(mockStorageService.setSecureValue(any, any))
+          .thenAnswer((_) async => true);
+      when(mockStorageService.getSecureValue(any)).thenAnswer((_) async => '');
 
-        expect(find.byType(Column), findsWidgets);
-      });
+      await tester.pumpWidget(createTestWidget());
+      await tester.tap(find.text('Logout'));
 
-      testWidgets('should have Spacer to push logout button to bottom',
-          (tester) async {
-        await tester.pumpWidget(createTestWidget());
+      verify(
+        mockStorageService.setSecureValue(
+          SecureStorageKey.accessToken,
+          '',
+        ),
+      ).called(1);
+      verify(
+        mockStorageService.setSecureValue(
+          SecureStorageKey.refreshToken,
+          '',
+        ),
+      ).called(1);
 
-        expect(find.byType(Spacer), findsOneWidget);
-      });
+      expect(settingsViewModel.isSuccess, true);
+    });
+
+    testWidgets('should navigate to AuthScreen on successful logout',
+        (tester) async {
+      when(mockStorageService.setSecureValue(any, any))
+          .thenAnswer((_) async => true);
+      when(mockStorageService.getSecureValue(any)).thenAnswer((_) async => '');
+
+      await tester.pumpWidget(createTestWidget());
+      await tester.tap(find.text('Logout'));
+      await tester.pumpAndSettle();
+
+      // Assert - Should navigate to AuthScreen
+      expect(find.byType(AuthScreen), findsOneWidget);
+      verify(
+        mockStorageService.setSecureValue(
+          SecureStorageKey.accessToken,
+          '',
+        ),
+      ).called(1);
+      verify(
+        mockStorageService.setSecureValue(
+          SecureStorageKey.refreshToken,
+          '',
+        ),
+      ).called(1);
+    });
+
+    testWidgets('should use Consumer2 for reactive updates', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+
+      expect(
+        find.byType(Consumer2<SettingsViewModel, FeatureFlagsProvider>),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('should have proper layout structure', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+
+      expect(find.byType(Column), findsWidgets);
+      expect(find.byType(Spacer), findsOneWidget);
+    });
+
+    testWidgets('should handle widget disposal', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+      expect(find.byType(SettingsScreen), findsOneWidget);
+
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+
+      expect(find.byType(SettingsScreen), findsNothing);
     });
   });
 }

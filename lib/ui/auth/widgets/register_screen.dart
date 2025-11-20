@@ -58,20 +58,20 @@ class _RegisterScreenState extends State<RegisterScreen> with ScreenLogger {
 
   void _onViewModelChanged() {
     logger.debug('RegisterScreen view model changed');
-    if (_viewModel.hasError) {
-      logger.warn('Registration failed: ${_viewModel.errorMessage}');
+    if (_viewModel.error != null) {
+      logger.warn('Registration failed: ${_viewModel.error}');
       final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
-            text: _viewModel.errorMessage,
+            text: _viewModel.error!,
             variant: TextVariant.body,
             color: theme.colorScheme.onError,
           ),
           backgroundColor: theme.colorScheme.error,
         ),
       );
-      _viewModel.clearError();
+      _viewModel.setError(null);
     }
   }
 

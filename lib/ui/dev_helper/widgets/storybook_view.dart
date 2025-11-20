@@ -1,18 +1,22 @@
+import 'package:cribe/data/repositories/podcasts/fake_podcast_repository.dart';
+import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/auth/view_models/fake_login_view_model.dart';
 import 'package:cribe/ui/auth/view_models/fake_register_view_model.dart';
+import 'package:cribe/ui/auth/view_models/login_view_model.dart';
+import 'package:cribe/ui/auth/view_models/register_view_model.dart';
 import 'package:cribe/ui/auth/widgets/login_screen.dart';
 import 'package:cribe/ui/auth/widgets/register_screen.dart';
 import 'package:cribe/ui/dev_helper/widgets/component_showcase.dart';
 import 'package:cribe/ui/navigation/widgets/main_navigation_screen.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
-import 'package:cribe/ui/podcasts/view_models/fake_episode_detail_view_model.dart';
 import 'package:cribe/ui/podcasts/view_models/fake_podcast_detail_view_model.dart';
-import 'package:cribe/ui/podcasts/view_models/fake_podcasts_list_view_model.dart';
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
+import 'package:cribe/ui/podcasts/view_models/podcast_list_view_model.dart';
 import 'package:cribe/ui/podcasts/widgets/episode_detail_screen.dart';
 import 'package:cribe/ui/podcasts/widgets/podcast_detail_screen.dart';
 import 'package:cribe/ui/podcasts/widgets/podcasts_list_screen.dart';
 import 'package:cribe/ui/settings/view_models/fake_settings_view_model.dart';
+import 'package:cribe/ui/settings/view_models/settings_view_model.dart';
 import 'package:cribe/ui/settings/widgets/settings_screen.dart';
 import 'package:cribe/ui/shared/widgets/styled_button.dart';
 import 'package:cribe/ui/shared/widgets/styled_dropdown.dart';
@@ -41,7 +45,7 @@ class StorybookView extends StatelessWidget {
     'LoginScreen',
     'RegisterScreen',
     'MainNavigationScreen',
-    'PodcastsListScreen',
+    'PodcastListScreen',
     'PodcastDetailScreen',
     'EpisodeDetailScreen',
     'SettingsScreen',
@@ -274,7 +278,7 @@ class StorybookView extends StatelessWidget {
         return Scaffold(
           appBar:
               AppBar(title: StyledText(text: name, variant: TextVariant.title)),
-          body: ChangeNotifierProvider(
+          body: ChangeNotifierProvider<LoginViewModel>(
             create: (_) => FakeLoginViewModel(),
             child: const LoginScreen(),
           ),
@@ -284,7 +288,7 @@ class StorybookView extends StatelessWidget {
         return Scaffold(
           appBar:
               AppBar(title: StyledText(text: name, variant: TextVariant.title)),
-          body: ChangeNotifierProvider(
+          body: ChangeNotifierProvider<RegisterViewModel>(
             create: (_) => FakeRegisterViewModel(),
             child: const RegisterScreen(),
           ),
@@ -297,7 +301,8 @@ class StorybookView extends StatelessWidget {
           body: MultiProvider(
             providers: [
               ChangeNotifierProvider(
-                create: (_) => FakePodcastsListViewModel(),
+                create: (_) =>
+                    PodcastListViewModel(repository: FakePodcastRepository()),
               ),
               ChangeNotifierProvider(
                 create: (_) => FakeSettingsViewModel(),
@@ -307,13 +312,14 @@ class StorybookView extends StatelessWidget {
           ),
         );
 
-      case 'PodcastsListScreen':
+      case 'PodcastListScreen':
         return Scaffold(
           appBar:
               AppBar(title: StyledText(text: name, variant: TextVariant.title)),
           body: ChangeNotifierProvider(
-            create: (_) => FakePodcastsListViewModel(),
-            child: const PodcastsListScreen(),
+            create: (_) =>
+                PodcastListViewModel(repository: FakePodcastRepository()),
+            child: const PodcastListScreen(),
           ),
         );
 
@@ -331,8 +337,25 @@ class StorybookView extends StatelessWidget {
         return Scaffold(
           appBar:
               AppBar(title: StyledText(text: name, variant: TextVariant.title)),
-          body: ChangeNotifierProvider<EpisodeDetailViewModel>(
-            create: (_) => FakeEpisodeDetailViewModel(),
+          body: ChangeNotifierProvider(
+            create: (_) => EpisodeDetailViewModel(
+              episode: Episode(
+                id: 1,
+                externalId: 'fake-episode-1',
+                podcastId: 1,
+                name: 'Episode 1: The Future of AI and Technology',
+                description:
+                    'In this episode, we dive deep into fascinating topics about artificial intelligence and emerging technologies. Our guest shares incredible insights and experiences that will leave you inspired and informed.',
+                audioUrl: 'https://example.com/audio/episode1.mp3',
+                imageUrl: 'https://picsum.photos/400/400?random=1',
+                datePublished: DateTime.now()
+                    .subtract(const Duration(days: 7))
+                    .toIso8601String(),
+                duration: 3600,
+                createdAt: DateTime.now().subtract(const Duration(days: 7)),
+                updatedAt: DateTime.now(),
+              ),
+            ),
             child: const EpisodeDetailScreen(),
           ),
         );
@@ -341,7 +364,7 @@ class StorybookView extends StatelessWidget {
         return Scaffold(
           appBar:
               AppBar(title: StyledText(text: name, variant: TextVariant.title)),
-          body: ChangeNotifierProvider(
+          body: ChangeNotifierProvider<SettingsViewModel>(
             create: (_) => FakeSettingsViewModel(),
             child: const SettingsScreen(),
           ),

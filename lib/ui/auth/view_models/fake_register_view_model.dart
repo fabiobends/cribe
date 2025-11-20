@@ -1,65 +1,73 @@
-import 'package:cribe/core/constants/ui_state.dart';
-import 'package:cribe/ui/shared/view_models/base_view_model.dart';
+import 'package:cribe/data/model/auth/login_response.dart';
+import 'package:cribe/data/model/auth/register_response.dart';
+import 'package:cribe/data/repositories/auth_repository.dart';
+import 'package:cribe/data/services/api_service.dart';
+import 'package:cribe/ui/auth/view_models/register_view_model.dart';
 
-class FakeRegisterViewModel extends BaseViewModel {
-  UiState _state = UiState.initial;
-  String _errorMessage = '';
+class FakeRegisterViewModel extends RegisterViewModel {
+  FakeRegisterViewModel() : super(_FakeAuthRepo());
 
-  UiState get state => _state;
-  String get errorMessage => _errorMessage;
-  bool get hasError => _state == UiState.error;
-
+  @override
   Future<void> register(
-    String firstName,
-    String lastName,
     String email,
     String password,
+    String firstName,
+    String lastName,
   ) async {
-    _setState(UiState.loading);
-
-    // Simulate API call delay
+    setLoading(true);
     await Future.delayed(const Duration(seconds: 2));
 
-    // Fake validation logic
     if (firstName.isEmpty ||
         lastName.isEmpty ||
         email.isEmpty ||
         password.isEmpty) {
-      _errorMessage = 'All fields are required';
-      _setState(UiState.error);
+      setError('All fields are required');
+      setLoading(false);
       return;
     }
 
     if (email == 'existing@example.com') {
-      _errorMessage = 'Email already exists. Try a different email.';
-      _setState(UiState.error);
+      setError('Email already exists. Try a different email.');
+      setLoading(false);
       return;
     }
 
     if (password.length < 8) {
-      _errorMessage = 'Password must be at least 8 characters long';
-      _setState(UiState.error);
+      setError('Password must be at least 8 characters long');
+      setLoading(false);
       return;
     }
 
-    // Fake success
-    _setState(UiState.success);
+    setSuccess(true);
+    setLoading(false);
   }
+}
 
-  void clearError() {
-    _errorMessage = '';
-    if (_state == UiState.error) {
-      _setState(UiState.initial);
-    }
-  }
+class _FakeAuthRepo extends AuthRepository {
+  _FakeAuthRepo() : super(apiService: null);
 
-  void _setState(UiState newState) {
-    _state = newState;
-    setLoading(newState == UiState.loading);
-    if (newState == UiState.error) {
-      setError(_errorMessage);
-    } else {
-      setError(null);
-    }
-  }
+  @override
+  ApiService? get apiService => null;
+
+  @override
+  Future<ApiResponse<LoginResponse>> login(
+    String email,
+    String password,
+  ) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<ApiResponse<RegisterResponse>> register(
+    String email,
+    String password,
+    String firstName,
+    String lastName,
+  ) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<void> dispose() async {}
 }

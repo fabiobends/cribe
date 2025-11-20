@@ -1,49 +1,57 @@
-import 'package:cribe/core/constants/ui_state.dart';
-import 'package:cribe/ui/shared/view_models/base_view_model.dart';
+import 'package:cribe/data/model/auth/login_response.dart';
+import 'package:cribe/data/model/auth/register_response.dart';
+import 'package:cribe/data/repositories/auth_repository.dart';
+import 'package:cribe/data/services/api_service.dart';
+import 'package:cribe/ui/auth/view_models/login_view_model.dart';
 
-class FakeLoginViewModel extends BaseViewModel {
-  UiState _state = UiState.initial;
-  String _errorMessage = '';
+class FakeLoginViewModel extends LoginViewModel {
+  FakeLoginViewModel() : super(_FakeAuthRepo());
 
-  UiState get state => _state;
-  String get errorMessage => _errorMessage;
-  bool get hasError => _state == UiState.error;
-
+  @override
   Future<void> login(String email, String password) async {
-    _setState(UiState.loading);
-
-    // Simulate API call delay
+    setLoading(true);
     await Future.delayed(const Duration(seconds: 2));
 
-    // Fake validation logic
     if (email.isEmpty || password.isEmpty) {
-      _errorMessage = 'Email and password are required';
-      _setState(UiState.error);
+      setError('Email and password are required');
+      setLoading(false);
       return;
     }
 
     if (email == 'demo@example.com' && password == 'password') {
-      _setState(UiState.success);
+      setSuccess(true);
     } else {
-      _errorMessage = 'Invalid credentials. Try demo@example.com / password';
-      _setState(UiState.error);
+      setError('Invalid credentials. Try demo@example.com / password');
     }
+    setLoading(false);
   }
+}
 
-  void clearError() {
-    _errorMessage = '';
-    if (_state == UiState.error) {
-      _setState(UiState.initial);
-    }
-  }
+class _FakeAuthRepo extends AuthRepository {
+  _FakeAuthRepo() : super(apiService: null);
 
-  void _setState(UiState newState) {
-    _state = newState;
-    setLoading(newState == UiState.loading);
-    if (newState == UiState.error) {
-      setError(_errorMessage);
-    } else {
-      setError(null);
-    }
-  }
+  @override
+  ApiService? get apiService => null;
+
+  @override
+  Future<ApiResponse<LoginResponse>> login(
+    String email,
+    String password,
+  ) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<ApiResponse<RegisterResponse>> register(
+    String email,
+    String password,
+    String firstName,
+    String lastName,
+  ) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<void> dispose() async {}
 }

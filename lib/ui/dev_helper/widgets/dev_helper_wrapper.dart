@@ -1,4 +1,5 @@
 import 'package:cribe/core/constants/spacing.dart';
+import 'package:cribe/main.dart';
 import 'package:cribe/ui/dev_helper/widgets/dev_settings_modal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,17 +15,38 @@ class DevHelperWrapper extends StatefulWidget {
 class _DevHelperWrapperState extends State<DevHelperWrapper> {
   Offset? position;
   static const double buttonSize = Spacing.extraLarge;
+  bool _isModalOpen = false;
 
-  void _openDevModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.9,
-      ),
-      builder: (_) => const DevSettingsModal(),
-    );
+  void _toggleDevModal() {
+    final context = MyApp.navigatorKey.currentContext;
+    if (context == null) return;
+
+    if (_isModalOpen) {
+      // Close the modal if it's already open
+      Navigator.of(context).pop();
+      setState(() {
+        _isModalOpen = false;
+      });
+    } else {
+      // Open the modal
+      setState(() {
+        _isModalOpen = true;
+      });
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
+        builder: (_) => const DevSettingsModal(),
+      ).then((_) {
+        // Reset the flag when modal is closed by any means
+        setState(() {
+          _isModalOpen = false;
+        });
+      });
+    }
   }
 
   @override
@@ -85,7 +107,7 @@ class _DevHelperWrapperState extends State<DevHelperWrapper> {
                     position = Offset(constrainedX, constrainedY);
                   });
                 },
-                onTap: _openDevModal,
+                onTap: _toggleDevModal,
                 child: Container(
                   width: buttonSize,
                   height: buttonSize,

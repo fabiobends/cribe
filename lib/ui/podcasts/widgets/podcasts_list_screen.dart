@@ -1,57 +1,59 @@
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
+import 'package:cribe/data/repositories/podcasts/podcast_repository.dart';
+import 'package:cribe/data/services/api_service.dart';
 import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
-import 'package:cribe/ui/podcasts/view_models/podcasts_list_view_model.dart';
+import 'package:cribe/ui/podcasts/view_models/podcast_list_view_model.dart';
 import 'package:cribe/ui/podcasts/widgets/podcast_detail_screen.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class PodcastsListScreen extends StatefulWidget {
-  const PodcastsListScreen({super.key});
+class PodcastListScreen extends StatefulWidget {
+  const PodcastListScreen({super.key});
 
   @override
-  State<PodcastsListScreen> createState() => _PodcastsListScreenState();
+  State<PodcastListScreen> createState() => _PodcastListScreenState();
 }
 
-class _PodcastsListScreenState extends State<PodcastsListScreen>
+class _PodcastListScreenState extends State<PodcastListScreen>
     with ScreenLogger {
-  late PodcastsListViewModel _viewModel;
+  late PodcastListViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
-    logger.info('PodcastsListScreen initialized');
-    _viewModel = context.read<PodcastsListViewModel>();
+    logger.info('PodcastListScreen initialized');
+    _viewModel = context.read<PodcastListViewModel>();
     _viewModel.addListener(_onViewModelChanged);
   }
 
   @override
   void dispose() {
-    logger.info('Disposing PodcastsListScreen');
+    logger.info('Disposing PodcastListScreen');
     _viewModel.removeListener(_onViewModelChanged);
     super.dispose();
   }
 
   void _onViewModelChanged() {
-    logger.debug('PodcastsListScreen view model changed');
-    if (_viewModel.hasError) {
+    logger.debug('PodcastListScreen view model changed');
+    if (_viewModel.error != null) {
       logger.warn(
-        'PodcastsListScreen encountered an error: ${_viewModel.errorMessage}',
+        'PodcastListScreen encountered an error: ${_viewModel.error}',
       );
       final theme = Theme.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: StyledText(
-            text: _viewModel.errorMessage,
+            text: _viewModel.error!,
             variant: TextVariant.body,
             color: theme.colorScheme.onError,
           ),
           backgroundColor: theme.colorScheme.error,
         ),
       );
-      _viewModel.clearError();
+      _viewModel.setError(null);
     }
   }
 
@@ -62,7 +64,7 @@ class _PodcastsListScreenState extends State<PodcastsListScreen>
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
-        child: Consumer<PodcastsListViewModel>(
+        child: Consumer<PodcastListViewModel>(
           builder: (context, viewModel, child) {
             if (viewModel.isLoading) {
               return const Center(
@@ -110,20 +112,25 @@ class _PodcastCard extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => ChangeNotifierProvider(
-                create: (_) => PodcastDetailViewModel(podcastId: podcast.id),
+              builder: (newContext) => ChangeNotifierProvider(
+                create: (_) => PodcastDetailViewModel(
+                  podcastId: podcast.id,
+                  repository: PodcastRepository(
+                    apiService: context.read<ApiService>(),
+                  ),
+                ),
                 child: const PodcastDetailScreen(),
               ),
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(Spacing.small),
         child: Padding(
           padding: const EdgeInsets.all(Spacing.medium),
           child: Row(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(Spacing.small),
                 child: podcast.imageUrl != null
                     ? Image.network(
                         podcast.imageUrl!,

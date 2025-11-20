@@ -3,19 +3,11 @@ import 'dart:io';
 import 'package:cribe/core/constants/feature_flags.dart';
 import 'package:cribe/core/ui/themes/app_theme.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
-import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
 import 'package:cribe/data/services/logger_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
-import 'package:cribe/ui/auth/view_models/login_view_model.dart';
-import 'package:cribe/ui/auth/view_models/register_view_model.dart';
 import 'package:cribe/ui/auth/widgets/auth_screen.dart';
-import 'package:cribe/ui/auth/widgets/login_screen.dart';
-import 'package:cribe/ui/auth/widgets/register_screen.dart';
 import 'package:cribe/ui/dev_helper/widgets/dev_helper_wrapper.dart';
-import 'package:cribe/ui/navigation/widgets/main_navigation_screen.dart';
-import 'package:cribe/ui/podcasts/view_models/podcasts_list_view_model.dart';
-import 'package:cribe/ui/settings/view_models/settings_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
@@ -39,6 +31,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         Provider<StorageService>.value(value: storageService),
+        Provider<ApiService>.value(value: apiService),
         ChangeNotifierProvider<FeatureFlagsProvider>(
           create: (context) {
             final provider = FeatureFlagsProvider(storageService);
@@ -56,18 +49,6 @@ Future<void> main() async {
             return provider;
           },
         ),
-        ChangeNotifierProvider<LoginViewModel>(
-          create: (context) => LoginViewModel(AuthRepository(apiService)),
-        ),
-        ChangeNotifierProvider<RegisterViewModel>(
-          create: (context) => RegisterViewModel(AuthRepository(apiService)),
-        ),
-        ChangeNotifierProvider<SettingsViewModel>(
-          create: (context) => SettingsViewModel(storageService),
-        ),
-        ChangeNotifierProvider<PodcastsListViewModel>(
-          create: (context) => PodcastsListViewModel(),
-        ),
       ],
       child: const MyApp(),
     ),
@@ -77,21 +58,18 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'Cribe App',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const DevHelperWrapper(child: AuthScreen()),
-        '/login': (context) => const DevHelperWrapper(child: LoginScreen()),
-        '/register': (context) =>
-            const DevHelperWrapper(child: RegisterScreen()),
-        '/home': (context) =>
-            const DevHelperWrapper(child: MainNavigationScreen()),
-      },
+      builder: (context, child) => DevHelperWrapper(child: child!),
+      home: const AuthScreen(),
     );
   }
 }
