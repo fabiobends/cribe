@@ -18,7 +18,7 @@ void main() {
 
   setUp(() {
     mockApiService = MockApiService();
-    authRepository = AuthRepository(mockApiService);
+    authRepository = AuthRepository(apiService: mockApiService);
   });
 
   group('AuthRepository', () {

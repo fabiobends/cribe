@@ -1,4 +1,3 @@
-import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/data/model/auth/login_response.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
@@ -22,10 +21,8 @@ void main() {
   group('LoginViewModel', () {
     group('initial state', () {
       test('should have correct initial values', () {
-        expect(loginViewModel.state, equals(UiState.initial));
-        expect(loginViewModel.errorMessage, equals(''));
         expect(loginViewModel.isLoading, isFalse);
-        expect(loginViewModel.hasError, isFalse);
+        expect(loginViewModel.error, isNull);
       });
     });
 
@@ -52,9 +49,8 @@ void main() {
         final loginFuture = loginViewModel.login(email, password);
 
         // Assert - Check loading state immediately
-        expect(loginViewModel.state, equals(UiState.loading));
         expect(loginViewModel.isLoading, isTrue);
-        expect(loginViewModel.hasError, isFalse);
+        expect(loginViewModel.error, isNull);
 
         // Wait for completion
         await loginFuture;
@@ -82,10 +78,8 @@ void main() {
         await loginViewModel.login(email, password);
 
         // Assert
-        expect(loginViewModel.state, equals(UiState.success));
         expect(loginViewModel.isLoading, isFalse);
-        expect(loginViewModel.hasError, isFalse);
-        expect(loginViewModel.errorMessage, equals(''));
+        expect(loginViewModel.error, isNull);
       });
 
       test('should call AuthRepository.login with correct parameters',
@@ -118,7 +112,7 @@ void main() {
         // Arrange
         const email = 'test@example.com';
         const password = 'password123';
-        const errorMessage = 'Login failed: Invalid credentials';
+        const errorMessage = 'Login failed';
 
         Future<ApiResponse<LoginResponse>> mockLoginCall() =>
             mockAuthRepository.login(email, password);
@@ -130,10 +124,8 @@ void main() {
         await loginViewModel.login(email, password);
 
         // Assert
-        expect(loginViewModel.state, equals(UiState.error));
         expect(loginViewModel.isLoading, isFalse);
-        expect(loginViewModel.hasError, isTrue);
-        expect(loginViewModel.errorMessage, contains(errorMessage));
+        expect(loginViewModel.error, contains(errorMessage));
       });
 
       test('should notify listeners during state changes', () async {
@@ -165,127 +157,8 @@ void main() {
         // Assert
         expect(
           notificationCount,
-          equals(2),
+          equals(3),
         );
-      });
-    });
-
-    group('clearError', () {
-      test('should clear error state and reset to initial', () async {
-        // Arrange - First set the view model to error state
-        const email = 'test@example.com';
-        const password = 'password123';
-        const errorMessage = 'Login failed';
-
-        Future<ApiResponse<LoginResponse>> mockLoginCall() =>
-            mockAuthRepository.login(email, password);
-
-        when(mockLoginCall())
-            .thenThrow(ApiException(errorMessage, statusCode: 401));
-
-        await loginViewModel.login(email, password);
-
-        // Verify we're in error state
-        expect(loginViewModel.state, equals(UiState.error));
-        expect(loginViewModel.hasError, isTrue);
-
-        // Act
-        loginViewModel.clearError();
-
-        // Assert
-        expect(loginViewModel.state, equals(UiState.initial));
-        expect(loginViewModel.hasError, isFalse);
-        expect(loginViewModel.isLoading, isFalse);
-      });
-
-      test('should not change state if not in error state', () {
-        // Arrange - ViewModel is in initial state
-        expect(loginViewModel.state, equals(UiState.initial));
-
-        // Act
-        loginViewModel.clearError();
-
-        // Assert - State should remain unchanged
-        expect(loginViewModel.state, equals(UiState.initial));
-      });
-
-      test('should notify listeners when clearing error', () async {
-        // Arrange - Set to error state first
-        const email = 'test@example.com';
-        const password = 'password123';
-
-        Future<ApiResponse<LoginResponse>> mockLoginCall() =>
-            mockAuthRepository.login(email, password);
-
-        when(mockLoginCall())
-            .thenThrow(ApiException('Login failed', statusCode: 401));
-
-        await loginViewModel.login(email, password);
-
-        int notificationCount = 0;
-        loginViewModel.addListener(() {
-          notificationCount++;
-        });
-
-        // Act
-        loginViewModel.clearError();
-
-        // Assert
-        expect(
-          notificationCount,
-          equals(1),
-        );
-      });
-    });
-
-    group('state getters', () {
-      test('isLoading should return true only when state is loading', () async {
-        // Arrange
-        const email = 'test@example.com';
-        const password = 'password123';
-
-        // Initial state
-        expect(loginViewModel.isLoading, isFalse);
-
-        Future<ApiResponse<LoginResponse>> mockLoginCall() =>
-            mockAuthRepository.login(email, password);
-
-        when(mockLoginCall()).thenAnswer((_) async {
-          await Future.delayed(const Duration(milliseconds: 100));
-          return ApiResponse<LoginResponse>(
-            data: LoginResponse(
-              accessToken: 'access_token',
-              refreshToken: 'refresh_token',
-            ),
-            statusCode: 200,
-          );
-        });
-
-        // Act
-        final loginFuture = loginViewModel.login(email, password);
-
-        // Assert - Should be loading
-        expect(loginViewModel.isLoading, isTrue);
-
-        // Wait for completion
-        await loginFuture;
-
-        // Should no longer be loading
-        expect(loginViewModel.isLoading, isFalse);
-      });
-
-      test('hasError should return true only when state is error', () async {
-        // Initial state
-        expect(loginViewModel.hasError, isFalse);
-
-        Future<ApiResponse<LoginResponse>> mockLoginCall() =>
-            mockAuthRepository.login(any, any);
-
-        // Set to error state
-        when(mockLoginCall()).thenThrow(ApiException('Error', statusCode: 400));
-
-        await loginViewModel.login('test@test.com', 'password');
-        expect(loginViewModel.hasError, isTrue);
       });
     });
   });

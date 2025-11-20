@@ -3,19 +3,23 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i9;
-import 'dart:ui' as _i7;
+import 'dart:async' as _i10;
+import 'dart:io' as _i4;
+import 'dart:ui' as _i8;
 
-import 'package:cribe/core/constants/feature_flags.dart' as _i11;
-import 'package:cribe/core/constants/ui_state.dart' as _i4;
+import 'package:cribe/core/constants/feature_flags.dart' as _i12;
+import 'package:cribe/core/constants/storage_keys.dart' as _i15;
 import 'package:cribe/core/logger/logger_mixins.dart' as _i2;
-import 'package:cribe/data/providers/feature_flags_provider.dart' as _i10;
-import 'package:cribe/domain/models/podcast.dart' as _i6;
-import 'package:cribe/ui/podcasts/view_models/podcasts_list_view_model.dart'
-    as _i3;
-import 'package:cribe/ui/settings/view_models/settings_view_model.dart' as _i8;
+import 'package:cribe/data/model/auth/login_response.dart' as _i14;
+import 'package:cribe/data/providers/feature_flags_provider.dart' as _i11;
+import 'package:cribe/data/services/api_service.dart' as _i5;
+import 'package:cribe/data/services/storage_service.dart' as _i3;
+import 'package:cribe/domain/models/podcast.dart' as _i7;
+import 'package:cribe/ui/podcasts/view_models/podcast_list_view_model.dart'
+    as _i6;
+import 'package:cribe/ui/settings/view_models/settings_view_model.dart' as _i9;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
+import 'package:mockito/src/dummies.dart' as _i13;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -42,45 +46,62 @@ class _FakeContextualLogger_0 extends _i1.SmartFake
         );
 }
 
-/// A class which mocks [PodcastsListViewModel].
+class _FakeStorageService_1 extends _i1.SmartFake
+    implements _i3.StorageService {
+  _FakeStorageService_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeHttpClient_2 extends _i1.SmartFake implements _i4.HttpClient {
+  _FakeHttpClient_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeApiResponse_3<T1> extends _i1.SmartFake
+    implements _i5.ApiResponse<T1> {
+  _FakeApiResponse_3(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+/// A class which mocks [PodcastListViewModel].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockPodcastsListViewModel extends _i1.Mock
-    implements _i3.PodcastsListViewModel {
-  MockPodcastsListViewModel() {
+class MockPodcastListViewModel extends _i1.Mock
+    implements _i6.PodcastListViewModel {
+  MockPodcastListViewModel() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.UiState get state => (super.noSuchMethod(
-        Invocation.getter(#state),
-        returnValue: _i4.UiState.initial,
-      ) as _i4.UiState);
-
-  @override
-  String get errorMessage => (super.noSuchMethod(
-        Invocation.getter(#errorMessage),
-        returnValue: _i5.dummyValue<String>(
-          this,
-          Invocation.getter(#errorMessage),
-        ),
-      ) as String);
-
-  @override
-  bool get hasError => (super.noSuchMethod(
-        Invocation.getter(#hasError),
-        returnValue: false,
-      ) as bool);
-
-  @override
-  List<_i6.Podcast> get podcasts => (super.noSuchMethod(
+  List<_i7.Podcast> get podcasts => (super.noSuchMethod(
         Invocation.getter(#podcasts),
-        returnValue: <_i6.Podcast>[],
-      ) as List<_i6.Podcast>);
+        returnValue: <_i7.Podcast>[],
+      ) as List<_i7.Podcast>);
 
   @override
   bool get isLoading => (super.noSuchMethod(
         Invocation.getter(#isLoading),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get isSuccess => (super.noSuchMethod(
+        Invocation.getter(#isSuccess),
         returnValue: false,
       ) as bool);
 
@@ -98,15 +119,6 @@ class MockPodcastsListViewModel extends _i1.Mock
           Invocation.getter(#logger),
         ),
       ) as _i2.ContextualLogger);
-
-  @override
-  void clearError() => super.noSuchMethod(
-        Invocation.method(
-          #clearError,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
 
   @override
   void setLoading(bool? value) => super.noSuchMethod(
@@ -127,7 +139,16 @@ class MockPodcastsListViewModel extends _i1.Mock
       );
 
   @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void setSuccess(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setSuccess,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -136,7 +157,7 @@ class MockPodcastsListViewModel extends _i1.Mock
       );
 
   @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -166,35 +187,29 @@ class MockPodcastsListViewModel extends _i1.Mock
 /// A class which mocks [SettingsViewModel].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockSettingsViewModel extends _i1.Mock implements _i8.SettingsViewModel {
+class MockSettingsViewModel extends _i1.Mock implements _i9.SettingsViewModel {
   MockSettingsViewModel() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.UiState get state => (super.noSuchMethod(
-        Invocation.getter(#state),
-        returnValue: _i4.UiState.initial,
-      ) as _i4.UiState);
-
-  @override
-  String get errorMessage => (super.noSuchMethod(
-        Invocation.getter(#errorMessage),
-        returnValue: _i5.dummyValue<String>(
+  _i3.StorageService get storageService => (super.noSuchMethod(
+        Invocation.getter(#storageService),
+        returnValue: _FakeStorageService_1(
           this,
-          Invocation.getter(#errorMessage),
+          Invocation.getter(#storageService),
         ),
-      ) as String);
-
-  @override
-  bool get hasError => (super.noSuchMethod(
-        Invocation.getter(#hasError),
-        returnValue: false,
-      ) as bool);
+      ) as _i3.StorageService);
 
   @override
   bool get isLoading => (super.noSuchMethod(
         Invocation.getter(#isLoading),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get isSuccess => (super.noSuchMethod(
+        Invocation.getter(#isSuccess),
         returnValue: false,
       ) as bool);
 
@@ -214,23 +229,14 @@ class MockSettingsViewModel extends _i1.Mock implements _i8.SettingsViewModel {
       ) as _i2.ContextualLogger);
 
   @override
-  _i9.Future<void> logout() => (super.noSuchMethod(
+  _i10.Future<void> logout() => (super.noSuchMethod(
         Invocation.method(
           #logout,
           [],
         ),
-        returnValue: _i9.Future<void>.value(),
-        returnValueForMissingStub: _i9.Future<void>.value(),
-      ) as _i9.Future<void>);
-
-  @override
-  void clearError() => super.noSuchMethod(
-        Invocation.method(
-          #clearError,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i10.Future<void>.value(),
+        returnValueForMissingStub: _i10.Future<void>.value(),
+      ) as _i10.Future<void>);
 
   @override
   void setLoading(bool? value) => super.noSuchMethod(
@@ -251,7 +257,16 @@ class MockSettingsViewModel extends _i1.Mock implements _i8.SettingsViewModel {
       );
 
   @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void setSuccess(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setSuccess,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -260,7 +275,7 @@ class MockSettingsViewModel extends _i1.Mock implements _i8.SettingsViewModel {
       );
 
   @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -291,7 +306,7 @@ class MockSettingsViewModel extends _i1.Mock implements _i8.SettingsViewModel {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFeatureFlagsProvider extends _i1.Mock
-    implements _i10.FeatureFlagsProvider {
+    implements _i11.FeatureFlagsProvider {
   MockFeatureFlagsProvider() {
     _i1.throwOnMissingStub(this);
   }
@@ -312,12 +327,12 @@ class MockFeatureFlagsProvider extends _i1.Mock
       ) as _i2.ContextualLogger);
 
   @override
-  T getFlag<T>(_i11.FeatureFlagKey? key) => (super.noSuchMethod(
+  T getFlag<T>(_i12.FeatureFlagKey? key) => (super.noSuchMethod(
         Invocation.method(
           #getFlag,
           [key],
         ),
-        returnValue: _i5.dummyValue<T>(
+        returnValue: _i13.dummyValue<T>(
           this,
           Invocation.method(
             #getFlag,
@@ -328,7 +343,7 @@ class MockFeatureFlagsProvider extends _i1.Mock
 
   @override
   void setFlag<T>(
-    _i11.FeatureFlagKey? key,
+    _i12.FeatureFlagKey? key,
     T? value,
   ) =>
       super.noSuchMethod(
@@ -361,7 +376,7 @@ class MockFeatureFlagsProvider extends _i1.Mock
       ) as Map<String, dynamic>);
 
   @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -370,7 +385,7 @@ class MockFeatureFlagsProvider extends _i1.Mock
       );
 
   @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -395,4 +410,317 @@ class MockFeatureFlagsProvider extends _i1.Mock
         ),
         returnValueForMissingStub: null,
       );
+}
+
+/// A class which mocks [ApiService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockApiService extends _i1.Mock implements _i5.ApiService {
+  MockApiService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.StorageService get storageService => (super.noSuchMethod(
+        Invocation.getter(#storageService),
+        returnValue: _FakeStorageService_1(
+          this,
+          Invocation.getter(#storageService),
+        ),
+      ) as _i3.StorageService);
+
+  @override
+  _i4.HttpClient get httpClient => (super.noSuchMethod(
+        Invocation.getter(#httpClient),
+        returnValue: _FakeHttpClient_2(
+          this,
+          Invocation.getter(#httpClient),
+        ),
+      ) as _i4.HttpClient);
+
+  @override
+  _i2.ContextualLogger get logger => (super.noSuchMethod(
+        Invocation.getter(#logger),
+        returnValue: _FakeContextualLogger_0(
+          this,
+          Invocation.getter(#logger),
+        ),
+      ) as _i2.ContextualLogger);
+
+  @override
+  _i10.Future<void> init() => (super.noSuchMethod(
+        Invocation.method(
+          #init,
+          [],
+        ),
+        returnValue: _i10.Future<void>.value(),
+        returnValueForMissingStub: _i10.Future<void>.value(),
+      ) as _i10.Future<void>);
+
+  @override
+  dynamic updateBaseUrl(String? newUrl) => super.noSuchMethod(Invocation.method(
+        #updateBaseUrl,
+        [newUrl],
+      ));
+
+  @override
+  _i10.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValue: _i10.Future<void>.value(),
+        returnValueForMissingStub: _i10.Future<void>.value(),
+      ) as _i10.Future<void>);
+
+  @override
+  _i10.Future<void> setTokens(_i14.LoginResponse? tokens) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setTokens,
+          [tokens],
+        ),
+        returnValue: _i10.Future<void>.value(),
+        returnValueForMissingStub: _i10.Future<void>.value(),
+      ) as _i10.Future<void>);
+
+  @override
+  _i10.Future<_i5.ApiResponse<T>> get<T>(
+    String? path,
+    T Function(dynamic)? fromJson,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #get,
+          [
+            path,
+            fromJson,
+          ],
+        ),
+        returnValue:
+            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #get,
+            [
+              path,
+              fromJson,
+            ],
+          ),
+        )),
+      ) as _i10.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i10.Future<_i5.ApiResponse<T>> post<T>(
+    String? path,
+    T Function(dynamic)? fromJson, {
+    Map<String, dynamic>? body,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #post,
+          [
+            path,
+            fromJson,
+          ],
+          {#body: body},
+        ),
+        returnValue:
+            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #post,
+            [
+              path,
+              fromJson,
+            ],
+            {#body: body},
+          ),
+        )),
+      ) as _i10.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i10.Future<_i5.ApiResponse<T>> delete<T>(
+    String? path,
+    T Function(dynamic)? fromJson,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #delete,
+          [
+            path,
+            fromJson,
+          ],
+        ),
+        returnValue:
+            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #delete,
+            [
+              path,
+              fromJson,
+            ],
+          ),
+        )),
+      ) as _i10.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i10.Future<_i5.ApiResponse<T>> put<T>(
+    String? path,
+    T Function(dynamic)? fromJson, {
+    Map<String, dynamic>? body,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #put,
+          [
+            path,
+            fromJson,
+          ],
+          {#body: body},
+        ),
+        returnValue:
+            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #put,
+            [
+              path,
+              fromJson,
+            ],
+            {#body: body},
+          ),
+        )),
+      ) as _i10.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i10.Future<_i5.ApiResponse<T>> patch<T>(
+    String? path,
+    T Function(dynamic)? fromJson, {
+    Map<String, dynamic>? body,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #patch,
+          [
+            path,
+            fromJson,
+          ],
+          {#body: body},
+        ),
+        returnValue:
+            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #patch,
+            [
+              path,
+              fromJson,
+            ],
+            {#body: body},
+          ),
+        )),
+      ) as _i10.Future<_i5.ApiResponse<T>>);
+}
+
+/// A class which mocks [StorageService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockStorageService extends _i1.Mock implements _i3.StorageService {
+  MockStorageService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i2.ContextualLogger get logger => (super.noSuchMethod(
+        Invocation.getter(#logger),
+        returnValue: _FakeContextualLogger_0(
+          this,
+          Invocation.getter(#logger),
+        ),
+      ) as _i2.ContextualLogger);
+
+  @override
+  _i10.Future<void> init() => (super.noSuchMethod(
+        Invocation.method(
+          #init,
+          [],
+        ),
+        returnValue: _i10.Future<void>.value(),
+        returnValueForMissingStub: _i10.Future<void>.value(),
+      ) as _i10.Future<void>);
+
+  @override
+  _i10.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValue: _i10.Future<void>.value(),
+        returnValueForMissingStub: _i10.Future<void>.value(),
+      ) as _i10.Future<void>);
+
+  @override
+  String getValue(_i15.StorageKey? key) => (super.noSuchMethod(
+        Invocation.method(
+          #getValue,
+          [key],
+        ),
+        returnValue: _i13.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getValue,
+            [key],
+          ),
+        ),
+      ) as String);
+
+  @override
+  _i10.Future<String> getSecureValue(_i15.SecureStorageKey? key) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getSecureValue,
+          [key],
+        ),
+        returnValue: _i10.Future<String>.value(_i13.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getSecureValue,
+            [key],
+          ),
+        )),
+      ) as _i10.Future<String>);
+
+  @override
+  _i10.Future<bool> setSecureValue(
+    _i15.SecureStorageKey? key,
+    String? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setSecureValue,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i10.Future<bool>.value(false),
+      ) as _i10.Future<bool>);
+
+  @override
+  _i10.Future<bool> setValue(
+    _i15.StorageKey? key,
+    String? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setValue,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i10.Future<bool>.value(false),
+      ) as _i10.Future<bool>);
 }

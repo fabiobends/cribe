@@ -7,9 +7,7 @@ import 'package:cribe/data/repositories/base_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
 
 class AuthRepository extends BaseRepository {
-  final ApiService _apiService;
-
-  AuthRepository(this._apiService) {
+  AuthRepository({required super.apiService}) {
     logger.info('AuthRepository initialized');
   }
 
@@ -21,7 +19,7 @@ class AuthRepository extends BaseRepository {
 
     try {
       final request = LoginRequest(email: email, password: password);
-      final response = await _apiService.post(
+      final response = await apiService!.post(
         ApiPath.login,
         LoginResponse.fromJson,
         body: request.toJson(),
@@ -29,7 +27,7 @@ class AuthRepository extends BaseRepository {
 
       logger.info('Login request successful');
 
-      _apiService.setTokens(
+      await apiService!.setTokens(
         LoginResponse(
           accessToken: response.data.accessToken,
           refreshToken: response.data.refreshToken,
@@ -67,7 +65,7 @@ class AuthRepository extends BaseRepository {
         lastName: lastName,
       );
 
-      final response = await _apiService.post(
+      final response = await apiService!.post(
         ApiPath.register,
         RegisterResponse.fromJson,
         body: request.toJson(),

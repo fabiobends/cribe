@@ -297,12 +297,15 @@ void main() {
       final buttonFinder = find.widgetWithText(StyledButton, 'Create Account');
       await tester.ensureVisible(buttonFinder);
       await tester.tap(buttonFinder);
-      await tester
-          .pumpAndSettle(); // Wait for all animations and async operations
+      await tester.pump(); // Process the registration attempt
 
       // Assert - Error snackbar should be shown
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.text('Exception: Registration failed'), findsOneWidget);
+      expect(find.textContaining('Registration failed'), findsOneWidget);
+
+      // Verify error was cleared after being shown
+      await tester.pump();
+      expect(registerViewModel.error, isNull);
     });
 
     testWidgets('should have sign in link', (tester) async {

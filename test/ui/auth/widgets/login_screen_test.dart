@@ -1,9 +1,15 @@
+import 'dart:async';
+
+import 'package:cribe/core/constants/feature_flags.dart';
 import 'package:cribe/data/model/auth/login_response.dart';
+import 'package:cribe/data/providers/feature_flags_provider.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
+import 'package:cribe/data/services/storage_service.dart';
 import 'package:cribe/ui/auth/view_models/login_view_model.dart';
 import 'package:cribe/ui/auth/view_models/register_view_model.dart';
 import 'package:cribe/ui/auth/widgets/login_screen.dart';
+import 'package:cribe/ui/navigation/widgets/main_navigation_screen.dart';
 import 'package:cribe/ui/shared/widgets/styled_button.dart';
 import 'package:cribe/ui/shared/widgets/styled_text_field.dart';
 import 'package:flutter/material.dart';
@@ -14,26 +20,46 @@ import 'package:provider/provider.dart';
 
 import 'login_screen_test.mocks.dart';
 
-@GenerateMocks([AuthRepository])
+@GenerateMocks(
+  [AuthRepository, ApiService, StorageService, FeatureFlagsProvider],
+)
 void main() {
   late MockAuthRepository mockAuthRepository;
   late LoginViewModel loginViewModel;
+  late MockApiService mockApiService;
+  late MockStorageService mockStorageService;
+  late MockFeatureFlagsProvider mockFeatureFlagsProvider;
 
   setUp(() {
     mockAuthRepository = MockAuthRepository();
     loginViewModel = LoginViewModel(mockAuthRepository);
+    mockApiService = MockApiService();
+    mockStorageService = MockStorageService();
+    mockFeatureFlagsProvider = MockFeatureFlagsProvider();
   });
-  Widget createTestWidget() {
+
+  Widget createTestWidget({bool withProviders = false}) {
+    if (withProviders) {
+      return MultiProvider(
+        providers: [
+          Provider<ApiService>.value(value: mockApiService),
+          Provider<StorageService>.value(value: mockStorageService),
+          ChangeNotifierProvider<FeatureFlagsProvider>.value(
+            value: mockFeatureFlagsProvider,
+          ),
+          ChangeNotifierProvider<LoginViewModel>.value(value: loginViewModel),
+        ],
+        child: const MaterialApp(
+          home: LoginScreen(),
+        ),
+      );
+    }
+
     return MaterialApp(
       home: ChangeNotifierProvider<LoginViewModel>.value(
         value: loginViewModel,
         child: const LoginScreen(),
       ),
-      routes: {
-        '/home': (context) => const Scaffold(
-              body: Text('Home Screen'),
-            ),
-      },
     );
   }
 
@@ -137,6 +163,7 @@ void main() {
 
     testWidgets('should call login with valid credentials', (tester) async {
       // Arrange
+      final completer = Completer<ApiResponse<LoginResponse>>();
       final mockLoginResponse = LoginResponse(
         accessToken: 'access_token_123',
         refreshToken: 'refresh_token_123',
@@ -146,7 +173,7 @@ void main() {
         statusCode: 200,
       );
       when(mockAuthRepository.login(any, any))
-          .thenAnswer((_) async => mockApiResponse);
+          .thenAnswer((_) => completer.future);
 
       await tester.pumpWidget(createTestWidget());
 
@@ -155,12 +182,15 @@ void main() {
       await tester.enterText(textFields.first, 'test@example.com');
       await tester.enterText(textFields.at(1), 'password123');
       await tester.tap(find.text('Sign In'));
-      await tester
-          .pumpAndSettle(); // Wait for all animations and async operations
+      await tester.pump(); // Process tap
 
       // Assert
       verify(mockAuthRepository.login('test@example.com', 'password123'))
           .called(1);
+
+      // Complete for cleanup
+      completer.complete(mockApiResponse);
+      await Future.microtask(() {});
     });
 
     testWidgets('should show snackbar on login error', (tester) async {
@@ -176,11 +206,11 @@ void main() {
       await tester.enterText(textFields.at(1), 'wrongpassword');
       await tester.tap(find.text('Sign In'));
       await tester
-          .pumpAndSettle(); // Wait for all animations and async operations
+          .pumpAndSettle(); // Error won't navigate, safe to use pumpAndSettle
 
       // Assert - Error snackbar should be shown
       expect(find.byType(SnackBar), findsOneWidget);
-      expect(find.text('Exception: Invalid credentials'), findsOneWidget);
+      expect(find.textContaining('Login failed'), findsOneWidget);
     });
 
     testWidgets('should have sign up link', (tester) async {
@@ -205,7 +235,16 @@ void main() {
       when(mockAuthRepository.login(any, any))
           .thenAnswer((_) async => mockApiResponse);
 
-      await tester.pumpWidget(createTestWidget());
+      // Stub feature flags
+      when(mockFeatureFlagsProvider.getFlag<bool>(FeatureFlagKey.booleanFlag))
+          .thenReturn(true);
+      when(
+        mockFeatureFlagsProvider.getFlag<String>(FeatureFlagKey.abTestVariant),
+      ).thenReturn('A');
+      when(mockFeatureFlagsProvider.getFlag<String>(FeatureFlagKey.apiEndpoint))
+          .thenReturn('http://localhost:8080');
+
+      await tester.pumpWidget(createTestWidget(withProviders: true));
 
       // Act - Fill in valid credentials and submit
       final textFields = find.byType(TextField);
@@ -214,8 +253,10 @@ void main() {
       await tester.tap(find.text('Sign In'));
       await tester.pumpAndSettle();
 
-      // Assert - Should navigate to home screen
-      expect(find.text('Home Screen'), findsOneWidget);
+      // Assert - Should navigate to MainNavigationScreen
+      expect(find.byType(MainNavigationScreen), findsOneWidget);
+      verify(mockAuthRepository.login('test@example.com', 'password123'))
+          .called(1);
     });
 
     testWidgets('should handle password field submission', (tester) async {
@@ -369,7 +410,6 @@ void main() {
     group('FeatureFlagsProvider exception handling', () {
       testWidgets('should handle FeatureFlagsProvider exception in initState',
           (tester) async {
-        // This test covers lines 31-33 and 49-57 in login_screen.dart
         // The initState method has a try-catch that handles when FeatureFlagsProvider
         // is not available and just continues without default values
 
@@ -426,10 +466,8 @@ void main() {
     });
 
     group('Error handling coverage', () {
-      testWidgets('should cover error snackbar display and clearError',
+      testWidgets('should cover error snackbar display and clear error',
           (tester) async {
-        // This test covers lines 111-118 in the _onViewModelChanged method
-
         // Arrange
         when(mockAuthRepository.login(any, any))
             .thenThrow(Exception('Login failed'));
@@ -446,76 +484,11 @@ void main() {
 
         // Assert - Error snackbar should be shown
         expect(find.byType(SnackBar), findsOneWidget);
-        expect(find.text('Exception: Login failed'), findsOneWidget);
+        expect(find.text('Login failed'), findsOneWidget);
 
-        // The _onViewModelChanged method should have called clearError
-        // We can't directly verify this, but the error state should be cleared
-        await tester.pump(); // Let error clear
-      });
-
-      testWidgets('should handle multiple error scenarios', (tester) async {
-        // Test different error scenarios to exercise all error handling paths
-
-        // Arrange
-        await tester.pumpWidget(createTestWidget());
-
-        // Test scenario 1: Network error
-        when(mockAuthRepository.login(any, any))
-            .thenThrow(Exception('Network error'));
-
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.first, 'test@example.com');
-        await tester.enterText(textFields.at(1), 'password123');
-
-        // Act
-        await tester.tap(find.text('Sign In'));
+        // Verify error was cleared after being shown
         await tester.pump();
-        await tester.pump();
-
-        // Assert
-        expect(find.byType(SnackBar), findsOneWidget);
-
-        // Wait for snackbar to disappear
-        await tester.pumpAndSettle();
-
-        // Test scenario 2: Different error
-        when(mockAuthRepository.login(any, any))
-            .thenThrow(Exception('Server error'));
-
-        // Act
-        await tester.tap(find.text('Sign In'));
-        await tester.pumpAndSettle(); // Wait for all async operations
-
-        // Assert - Should handle the new error via SnackBar
-        expect(find.byType(SnackBar), findsOneWidget);
-      });
-
-      testWidgets('should handle successful login navigation', (tester) async {
-        // This ensures the success path is also covered
-
-        // Arrange
-        final mockLoginResponse = LoginResponse(
-          accessToken: 'access_token_123',
-          refreshToken: 'refresh_token_123',
-        );
-        final mockApiResponse = ApiResponse<LoginResponse>(
-          data: mockLoginResponse,
-          statusCode: 200,
-        );
-        when(mockAuthRepository.login(any, any))
-            .thenAnswer((_) async => mockApiResponse);
-
-        await tester.pumpWidget(createTestWidget());
-
-        // Act
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.first, 'test@example.com');
-        await tester.enterText(textFields.at(1), 'password123');
-        await tester.tap(find.text('Sign In'));
-        await tester.pumpAndSettle();
-
-        // Assert - Should navigate to home
-        expect(find.text('Home Screen'), findsOneWidget);
+        expect(loginViewModel.error, isNull);
       });
     });
 
@@ -564,9 +537,6 @@ void main() {
         final passwordField =
             tester.widget<StyledTextField>(passwordFields.at(1));
         expect(passwordField.obscureText, isTrue);
-
-        // Note: We can't easily test the icon tap due to StyledTextField implementation,
-        // but the widget should handle the toggle functionality internally
       });
     });
 
@@ -602,6 +572,7 @@ void main() {
       testWidgets('should handle form submission on valid input',
           (tester) async {
         // Arrange
+        final completer = Completer<ApiResponse<LoginResponse>>();
         final mockLoginResponse = LoginResponse(
           accessToken: 'access_token_123',
           refreshToken: 'refresh_token_123',
@@ -611,7 +582,7 @@ void main() {
           statusCode: 200,
         );
         when(mockAuthRepository.login(any, any))
-            .thenAnswer((_) async => mockApiResponse);
+            .thenAnswer((_) => completer.future);
 
         await tester.pumpWidget(createTestWidget());
 
@@ -620,12 +591,15 @@ void main() {
         await tester.enterText(textFields.first, 'test@example.com');
         await tester.enterText(textFields.at(1), 'validpassword');
         await tester.tap(find.text('Sign In'));
-        await tester.pumpAndSettle();
+        await tester.pump();
 
         // Assert
         verify(mockAuthRepository.login('test@example.com', 'validpassword'))
             .called(1);
-        expect(find.text('Home Screen'), findsOneWidget);
+
+        // Complete the future to clean up
+        completer.complete(mockApiResponse);
+        await Future.microtask(() {});
       });
     });
 
@@ -647,19 +621,10 @@ void main() {
       testWidgets('should handle loading state properly', (tester) async {
         // Test loading state during login
 
-        // Arrange - Make login take some time
-        final mockLoginResponse = LoginResponse(
-          accessToken: 'access_token_123',
-          refreshToken: 'refresh_token_123',
-        );
-        final mockApiResponse = ApiResponse<LoginResponse>(
-          data: mockLoginResponse,
-          statusCode: 200,
-        );
-        when(mockAuthRepository.login(any, any)).thenAnswer((_) async {
-          await Future.delayed(const Duration(milliseconds: 100));
-          return mockApiResponse;
-        });
+        // Arrange - Use Completer to control when login completes
+        final completer = Completer<ApiResponse<LoginResponse>>();
+        when(mockAuthRepository.login(any, any))
+            .thenAnswer((_) => completer.future);
 
         await tester.pumpWidget(createTestWidget());
 
@@ -673,9 +638,17 @@ void main() {
         // Assert - Should show loading indicator
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-        // Wait for completion
-        await tester.pumpAndSettle();
-        expect(find.text('Home Screen'), findsOneWidget);
+        // Complete the login for cleanup
+        final mockLoginResponse = LoginResponse(
+          accessToken: 'access_token_123',
+          refreshToken: 'refresh_token_123',
+        );
+        final mockApiResponse = ApiResponse<LoginResponse>(
+          data: mockLoginResponse,
+          statusCode: 200,
+        );
+        completer.complete(mockApiResponse);
+        await Future.microtask(() {}); // Cleanup
       });
     });
   });

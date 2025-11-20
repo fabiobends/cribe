@@ -3,14 +3,12 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:ui' as _i6;
+import 'dart:ui' as _i4;
 
 import 'package:cribe/core/logger/logger_mixins.dart' as _i2;
-import 'package:cribe/domain/models/podcast.dart' as _i4;
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart'
     as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -47,14 +45,20 @@ class MockPodcastDetailViewModel extends _i1.Mock
   }
 
   @override
-  List<_i4.Episode> get episodes => (super.noSuchMethod(
+  List<_i3.FormattedEpisode> get episodes => (super.noSuchMethod(
         Invocation.getter(#episodes),
-        returnValue: <_i4.Episode>[],
-      ) as List<_i4.Episode>);
+        returnValue: <_i3.FormattedEpisode>[],
+      ) as List<_i3.FormattedEpisode>);
 
   @override
   bool get isLoading => (super.noSuchMethod(
         Invocation.getter(#isLoading),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get isSuccess => (super.noSuchMethod(
+        Invocation.getter(#isSuccess),
         returnValue: false,
       ) as bool);
 
@@ -72,36 +76,6 @@ class MockPodcastDetailViewModel extends _i1.Mock
           Invocation.getter(#logger),
         ),
       ) as _i2.ContextualLogger);
-
-  @override
-  String formatDuration(int? seconds) => (super.noSuchMethod(
-        Invocation.method(
-          #formatDuration,
-          [seconds],
-        ),
-        returnValue: _i5.dummyValue<String>(
-          this,
-          Invocation.method(
-            #formatDuration,
-            [seconds],
-          ),
-        ),
-      ) as String);
-
-  @override
-  String formatDate(String? dateString) => (super.noSuchMethod(
-        Invocation.method(
-          #formatDate,
-          [dateString],
-        ),
-        returnValue: _i5.dummyValue<String>(
-          this,
-          Invocation.method(
-            #formatDate,
-            [dateString],
-          ),
-        ),
-      ) as String);
 
   @override
   void setLoading(bool? value) => super.noSuchMethod(
@@ -122,7 +96,16 @@ class MockPodcastDetailViewModel extends _i1.Mock
       );
 
   @override
-  void addListener(_i6.VoidCallback? listener) => super.noSuchMethod(
+  void setSuccess(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setSuccess,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void addListener(_i4.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -131,7 +114,7 @@ class MockPodcastDetailViewModel extends _i1.Mock
       );
 
   @override
-  void removeListener(_i6.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i4.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],

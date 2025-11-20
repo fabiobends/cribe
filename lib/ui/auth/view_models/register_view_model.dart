@@ -1,4 +1,3 @@
-import 'package:cribe/core/constants/ui_state.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/validation_service.dart';
 import 'package:cribe/ui/shared/view_models/base_view_model.dart';
@@ -9,13 +8,6 @@ class RegisterViewModel extends BaseViewModel {
   RegisterViewModel(this._authRepository) {
     logger.info('RegisterViewModel initialized');
   }
-
-  UiState _state = UiState.initial;
-  String _errorMessage = '';
-
-  UiState get state => _state;
-  String get errorMessage => _errorMessage;
-  bool get hasError => _state == UiState.error;
 
   String? validateFirstName(String? firstName) {
     final result = ValidationService.validateName(firstName ?? '');
@@ -57,7 +49,7 @@ class RegisterViewModel extends BaseViewModel {
     String lastName,
   ) async {
     logger.info('Starting user registration process');
-    _setState(UiState.loading);
+    setLoading(true);
 
     try {
       logger.debug('Calling auth repository register method');
@@ -68,29 +60,12 @@ class RegisterViewModel extends BaseViewModel {
         lastName,
       );
       logger.info('User registration successful');
-      _setState(UiState.success);
     } catch (e) {
-      logger.error('Registration failed', error: e);
-      _errorMessage = e.toString();
-      _setState(UiState.error);
-    }
-  }
-
-  void clearError() {
-    if (_state == UiState.error) {
-      logger.debug('Clearing error state');
-      _setState(UiState.initial);
-    }
-  }
-
-  void _setState(UiState newState) {
-    logger.debug('State changed: $_state -> $newState');
-    _state = newState;
-    setLoading(newState == UiState.loading);
-    if (newState == UiState.error) {
-      setError(_errorMessage);
-    } else {
-      setError(null);
+      final errorMessage = 'Registration failed';
+      logger.error(errorMessage, error: e);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   }
 }

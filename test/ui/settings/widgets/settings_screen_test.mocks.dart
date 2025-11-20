@@ -4,17 +4,18 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i6;
-import 'dart:ui' as _i7;
+import 'dart:io' as _i4;
+import 'dart:ui' as _i11;
 
-import 'package:cribe/core/constants/feature_flags.dart' as _i11;
-import 'package:cribe/core/constants/storage_keys.dart' as _i9;
-import 'package:cribe/core/constants/ui_state.dart' as _i4;
+import 'package:cribe/core/constants/feature_flags.dart' as _i10;
+import 'package:cribe/core/constants/storage_keys.dart' as _i7;
 import 'package:cribe/core/logger/logger_mixins.dart' as _i2;
-import 'package:cribe/data/providers/feature_flags_provider.dart' as _i10;
-import 'package:cribe/data/services/storage_service.dart' as _i8;
-import 'package:cribe/ui/settings/view_models/settings_view_model.dart' as _i3;
+import 'package:cribe/data/model/auth/login_response.dart' as _i12;
+import 'package:cribe/data/providers/feature_flags_provider.dart' as _i9;
+import 'package:cribe/data/services/api_service.dart' as _i5;
+import 'package:cribe/data/services/storage_service.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
+import 'package:mockito/src/dummies.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -41,134 +42,42 @@ class _FakeContextualLogger_0 extends _i1.SmartFake
         );
 }
 
-/// A class which mocks [SettingsViewModel].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockSettingsViewModel extends _i1.Mock implements _i3.SettingsViewModel {
-  MockSettingsViewModel() {
-    _i1.throwOnMissingStub(this);
-  }
+class _FakeStorageService_1 extends _i1.SmartFake
+    implements _i3.StorageService {
+  _FakeStorageService_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
 
-  @override
-  _i4.UiState get state => (super.noSuchMethod(
-        Invocation.getter(#state),
-        returnValue: _i4.UiState.initial,
-      ) as _i4.UiState);
+class _FakeHttpClient_2 extends _i1.SmartFake implements _i4.HttpClient {
+  _FakeHttpClient_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
 
-  @override
-  String get errorMessage => (super.noSuchMethod(
-        Invocation.getter(#errorMessage),
-        returnValue: _i5.dummyValue<String>(
-          this,
-          Invocation.getter(#errorMessage),
-        ),
-      ) as String);
-
-  @override
-  bool get hasError => (super.noSuchMethod(
-        Invocation.getter(#hasError),
-        returnValue: false,
-      ) as bool);
-
-  @override
-  bool get isLoading => (super.noSuchMethod(
-        Invocation.getter(#isLoading),
-        returnValue: false,
-      ) as bool);
-
-  @override
-  bool get hasListeners => (super.noSuchMethod(
-        Invocation.getter(#hasListeners),
-        returnValue: false,
-      ) as bool);
-
-  @override
-  _i2.ContextualLogger get logger => (super.noSuchMethod(
-        Invocation.getter(#logger),
-        returnValue: _FakeContextualLogger_0(
-          this,
-          Invocation.getter(#logger),
-        ),
-      ) as _i2.ContextualLogger);
-
-  @override
-  _i6.Future<void> logout() => (super.noSuchMethod(
-        Invocation.method(
-          #logout,
-          [],
-        ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
-
-  @override
-  void clearError() => super.noSuchMethod(
-        Invocation.method(
-          #clearError,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void setLoading(bool? value) => super.noSuchMethod(
-        Invocation.method(
-          #setLoading,
-          [value],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void setError(String? value) => super.noSuchMethod(
-        Invocation.method(
-          #setError,
-          [value],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
-        Invocation.method(
-          #addListener,
-          [listener],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
-        Invocation.method(
-          #removeListener,
-          [listener],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void dispose() => super.noSuchMethod(
-        Invocation.method(
-          #dispose,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void notifyListeners() => super.noSuchMethod(
-        Invocation.method(
-          #notifyListeners,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
+class _FakeApiResponse_3<T1> extends _i1.SmartFake
+    implements _i5.ApiResponse<T1> {
+  _FakeApiResponse_3(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
 }
 
 /// A class which mocks [StorageService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockStorageService extends _i1.Mock implements _i8.StorageService {
+class MockStorageService extends _i1.Mock implements _i3.StorageService {
   MockStorageService() {
     _i1.throwOnMissingStub(this);
   }
@@ -203,12 +112,12 @@ class MockStorageService extends _i1.Mock implements _i8.StorageService {
       ) as _i6.Future<void>);
 
   @override
-  String getValue(_i9.StorageKey? key) => (super.noSuchMethod(
+  String getValue(_i7.StorageKey? key) => (super.noSuchMethod(
         Invocation.method(
           #getValue,
           [key],
         ),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i8.dummyValue<String>(
           this,
           Invocation.method(
             #getValue,
@@ -218,13 +127,13 @@ class MockStorageService extends _i1.Mock implements _i8.StorageService {
       ) as String);
 
   @override
-  _i6.Future<String> getSecureValue(_i9.SecureStorageKey? key) =>
+  _i6.Future<String> getSecureValue(_i7.SecureStorageKey? key) =>
       (super.noSuchMethod(
         Invocation.method(
           #getSecureValue,
           [key],
         ),
-        returnValue: _i6.Future<String>.value(_i5.dummyValue<String>(
+        returnValue: _i6.Future<String>.value(_i8.dummyValue<String>(
           this,
           Invocation.method(
             #getSecureValue,
@@ -235,7 +144,7 @@ class MockStorageService extends _i1.Mock implements _i8.StorageService {
 
   @override
   _i6.Future<bool> setSecureValue(
-    _i9.SecureStorageKey? key,
+    _i7.SecureStorageKey? key,
     String? value,
   ) =>
       (super.noSuchMethod(
@@ -251,7 +160,7 @@ class MockStorageService extends _i1.Mock implements _i8.StorageService {
 
   @override
   _i6.Future<bool> setValue(
-    _i9.StorageKey? key,
+    _i7.StorageKey? key,
     String? value,
   ) =>
       (super.noSuchMethod(
@@ -270,7 +179,7 @@ class MockStorageService extends _i1.Mock implements _i8.StorageService {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockFeatureFlagsProvider extends _i1.Mock
-    implements _i10.FeatureFlagsProvider {
+    implements _i9.FeatureFlagsProvider {
   MockFeatureFlagsProvider() {
     _i1.throwOnMissingStub(this);
   }
@@ -291,12 +200,12 @@ class MockFeatureFlagsProvider extends _i1.Mock
       ) as _i2.ContextualLogger);
 
   @override
-  T getFlag<T>(_i11.FeatureFlagKey? key) => (super.noSuchMethod(
+  T getFlag<T>(_i10.FeatureFlagKey? key) => (super.noSuchMethod(
         Invocation.method(
           #getFlag,
           [key],
         ),
-        returnValue: _i5.dummyValue<T>(
+        returnValue: _i8.dummyValue<T>(
           this,
           Invocation.method(
             #getFlag,
@@ -307,7 +216,7 @@ class MockFeatureFlagsProvider extends _i1.Mock
 
   @override
   void setFlag<T>(
-    _i11.FeatureFlagKey? key,
+    _i10.FeatureFlagKey? key,
     T? value,
   ) =>
       super.noSuchMethod(
@@ -340,7 +249,7 @@ class MockFeatureFlagsProvider extends _i1.Mock
       ) as Map<String, dynamic>);
 
   @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i11.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -349,7 +258,7 @@ class MockFeatureFlagsProvider extends _i1.Mock
       );
 
   @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i11.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -374,4 +283,210 @@ class MockFeatureFlagsProvider extends _i1.Mock
         ),
         returnValueForMissingStub: null,
       );
+}
+
+/// A class which mocks [ApiService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockApiService extends _i1.Mock implements _i5.ApiService {
+  MockApiService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.StorageService get storageService => (super.noSuchMethod(
+        Invocation.getter(#storageService),
+        returnValue: _FakeStorageService_1(
+          this,
+          Invocation.getter(#storageService),
+        ),
+      ) as _i3.StorageService);
+
+  @override
+  _i4.HttpClient get httpClient => (super.noSuchMethod(
+        Invocation.getter(#httpClient),
+        returnValue: _FakeHttpClient_2(
+          this,
+          Invocation.getter(#httpClient),
+        ),
+      ) as _i4.HttpClient);
+
+  @override
+  _i2.ContextualLogger get logger => (super.noSuchMethod(
+        Invocation.getter(#logger),
+        returnValue: _FakeContextualLogger_0(
+          this,
+          Invocation.getter(#logger),
+        ),
+      ) as _i2.ContextualLogger);
+
+  @override
+  _i6.Future<void> init() => (super.noSuchMethod(
+        Invocation.method(
+          #init,
+          [],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  dynamic updateBaseUrl(String? newUrl) => super.noSuchMethod(Invocation.method(
+        #updateBaseUrl,
+        [newUrl],
+      ));
+
+  @override
+  _i6.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> setTokens(_i12.LoginResponse? tokens) => (super.noSuchMethod(
+        Invocation.method(
+          #setTokens,
+          [tokens],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<_i5.ApiResponse<T>> get<T>(
+    String? path,
+    T Function(dynamic)? fromJson,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #get,
+          [
+            path,
+            fromJson,
+          ],
+        ),
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #get,
+            [
+              path,
+              fromJson,
+            ],
+          ),
+        )),
+      ) as _i6.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i6.Future<_i5.ApiResponse<T>> post<T>(
+    String? path,
+    T Function(dynamic)? fromJson, {
+    Map<String, dynamic>? body,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #post,
+          [
+            path,
+            fromJson,
+          ],
+          {#body: body},
+        ),
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #post,
+            [
+              path,
+              fromJson,
+            ],
+            {#body: body},
+          ),
+        )),
+      ) as _i6.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i6.Future<_i5.ApiResponse<T>> delete<T>(
+    String? path,
+    T Function(dynamic)? fromJson,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #delete,
+          [
+            path,
+            fromJson,
+          ],
+        ),
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #delete,
+            [
+              path,
+              fromJson,
+            ],
+          ),
+        )),
+      ) as _i6.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i6.Future<_i5.ApiResponse<T>> put<T>(
+    String? path,
+    T Function(dynamic)? fromJson, {
+    Map<String, dynamic>? body,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #put,
+          [
+            path,
+            fromJson,
+          ],
+          {#body: body},
+        ),
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #put,
+            [
+              path,
+              fromJson,
+            ],
+            {#body: body},
+          ),
+        )),
+      ) as _i6.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i6.Future<_i5.ApiResponse<T>> patch<T>(
+    String? path,
+    T Function(dynamic)? fromJson, {
+    Map<String, dynamic>? body,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #patch,
+          [
+            path,
+            fromJson,
+          ],
+          {#body: body},
+        ),
+        returnValue: _i6.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #patch,
+            [
+              path,
+              fromJson,
+            ],
+            {#body: body},
+          ),
+        )),
+      ) as _i6.Future<_i5.ApiResponse<T>>);
 }

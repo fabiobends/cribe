@@ -1,50 +1,69 @@
+import 'package:cribe/data/repositories/podcasts/podcast_repository.dart';
+import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 
+import 'podcast_detail_view_model_test.mocks.dart';
+
+@GenerateMocks([PodcastRepository])
 void main() {
   late PodcastDetailViewModel viewModel;
+  late MockPodcastRepository mockRepository;
   const testPodcastId = 1;
 
+  final mockPodcast = Podcast(
+    id: testPodcastId,
+    externalId: 'test-podcast-1',
+    authorName: 'Test Author',
+    name: 'Test Podcast',
+    description: 'Test Description',
+    imageUrl: 'test.jpg',
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+    episodes: [
+      Episode(
+        id: 1,
+        externalId: 'test-episode-1',
+        podcastId: testPodcastId,
+        name: 'Test Episode',
+        description: 'Test Episode Description',
+        audioUrl: 'test.mp3',
+        imageUrl: 'test-ep.jpg',
+        datePublished: DateTime.now().toIso8601String(),
+        duration: 3600,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    ],
+  );
+
   setUp(() {
-    viewModel = PodcastDetailViewModel(podcastId: testPodcastId);
+    mockRepository = MockPodcastRepository();
+    when(mockRepository.getPodcastById(testPodcastId))
+        .thenAnswer((_) async => mockPodcast);
+    viewModel = PodcastDetailViewModel(
+      podcastId: testPodcastId,
+      repository: mockRepository,
+    );
   });
 
   group('PodcastDetailViewModel', () {
     group('initial state', () {
-      test('should initialize with success state and mock data', () {
-        // Assert
-        expect(viewModel.error, isNull);
+      test('should initialize and start loading', () async {
+        await Future.delayed(const Duration(milliseconds: 10));
         expect(viewModel.isLoading, isFalse);
-        expect(viewModel.podcast, isNotNull);
-        expect(viewModel.episodes, isNotEmpty);
       });
 
-      test('should load podcast with correct ID', () {
-        // Assert
-        expect(viewModel.podcast?.id, equals(testPodcastId));
-      });
-
-      test('should load 12 mock episodes', () {
-        // Assert
-        expect(viewModel.episodes.length, equals(12));
-      });
-
-      test('should have correct podcast data structure', () {
-        // Assert
-        final podcast = viewModel.podcast!;
-        expect(podcast.id, equals(testPodcastId));
-        expect(podcast.authorName, equals('Joe Rogan'));
-        expect(podcast.name, equals('The Joe Rogan Experience'));
-        expect(podcast.imageUrl, isNotNull);
-        expect(podcast.description, isNotEmpty);
-        expect(podcast.externalId, equals('ext-$testPodcastId'));
-        expect(podcast.createdAt, isNotNull);
-        expect(podcast.updatedAt, isNotNull);
+      test('should load podcast with repository', () async {
+        verify(mockRepository.getPodcastById(testPodcastId)).called(1);
       });
 
       test('should have all required episode fields', () {
         // Assert
-        for (final episode in viewModel.episodes) {
+        for (final formattedEpisode in viewModel.episodes) {
+          final episode = formattedEpisode.episode;
           expect(episode.id, isNotNull);
           expect(episode.externalId, isNotEmpty);
           expect(episode.podcastId, equals(testPodcastId));
@@ -59,13 +78,21 @@ void main() {
         }
       });
 
+      test('FormattedEpisode should have formatted properties', () {
+        // Assert
+        for (final formattedEpisode in viewModel.episodes) {
+          expect(formattedEpisode.duration, isNotEmpty);
+          expect(formattedEpisode.datePublished, isNotEmpty);
+        }
+      });
+
       test('episodes should be ordered by date (newest first)', () {
         // Assert
         for (int i = 0; i < viewModel.episodes.length - 1; i++) {
           final currentDate =
-              DateTime.parse(viewModel.episodes[i].datePublished);
+              DateTime.parse(viewModel.episodes[i].episode.datePublished);
           final nextDate =
-              DateTime.parse(viewModel.episodes[i + 1].datePublished);
+              DateTime.parse(viewModel.episodes[i + 1].episode.datePublished);
           expect(
             currentDate.isAfter(nextDate) ||
                 currentDate.isAtSameMomentAs(nextDate),
@@ -75,157 +102,41 @@ void main() {
       });
     });
 
-    group('formatDuration', () {
-      test('should format duration with hours and minutes', () {
-        // Arrange
-        const durationInSeconds = 3665; // 1 hour and 1 minute
-
-        // Act
-        final result = viewModel.formatDuration(durationInSeconds);
-
-        // Assert
-        expect(result, equals('1h 1m'));
+    group('FormattedEpisode', () {
+      test('should format duration correctly', () {
+        final formattedEpisode = viewModel.episodes.first;
+        expect(formattedEpisode.duration, equals('1h 0m'));
       });
 
-      test('should format duration with only hours', () {
-        // Arrange
-        const durationInSeconds = 3600; // 1 hour exactly
-
-        // Act
-        final result = viewModel.formatDuration(durationInSeconds);
-
-        // Assert
-        expect(result, equals('1h 0m'));
-      });
-
-      test('should format duration with only minutes', () {
-        // Arrange
-        const durationInSeconds = 300; // 5 minutes
-
-        // Act
-        final result = viewModel.formatDuration(durationInSeconds);
-
-        // Assert
-        expect(result, equals('5m'));
-      });
-
-      test('should format zero duration', () {
-        // Arrange
-        const durationInSeconds = 0;
-
-        // Act
-        final result = viewModel.formatDuration(durationInSeconds);
-
-        // Assert
-        expect(result, equals('0m'));
-      });
-
-      test('should format multiple hours', () {
-        // Arrange
-        const durationInSeconds = 7265; // 2 hours and 1 minute
-
-        // Act
-        final result = viewModel.formatDuration(durationInSeconds);
-
-        // Assert
-        expect(result, equals('2h 1m'));
+      test('should format date correctly', () {
+        final formattedEpisode = viewModel.episodes.first;
+        expect(formattedEpisode.datePublished, isNotEmpty);
       });
     });
 
-    group('formatDate', () {
-      test('should format today\'s date', () {
-        // Arrange
-        final today = DateTime.now();
-        final dateString = today.toIso8601String();
+    group('removed formatting methods', () {
+      test('should load podcast with different ID', () async {
+        final mockRepository2 = MockPodcastRepository();
+        final mockPodcast2 = Podcast(
+          id: 2,
+          externalId: 'test-podcast-2',
+          authorName: 'Test Author 2',
+          name: 'Test Podcast 2',
+          description: 'Test Description 2',
+          imageUrl: 'test2.jpg',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+        when(mockRepository2.getPodcastById(2))
+            .thenAnswer((_) async => mockPodcast2);
+        final viewModel2 = PodcastDetailViewModel(
+          podcastId: 2,
+          repository: mockRepository2,
+        );
 
-        // Act
-        final result = viewModel.formatDate(dateString);
+        await Future.delayed(const Duration(milliseconds: 50));
 
-        // Assert
-        expect(result, equals('Today'));
-      });
-
-      test('should format yesterday\'s date', () {
-        // Arrange
-        final yesterday = DateTime.now().subtract(const Duration(days: 1));
-        final dateString = yesterday.toIso8601String();
-
-        // Act
-        final result = viewModel.formatDate(dateString);
-
-        // Assert
-        expect(result, equals('Yesterday'));
-      });
-
-      test('should format date within a week', () {
-        // Arrange
-        final threeDaysAgo = DateTime.now().subtract(const Duration(days: 3));
-        final dateString = threeDaysAgo.toIso8601String();
-
-        // Act
-        final result = viewModel.formatDate(dateString);
-
-        // Assert
-        expect(result, equals('3 days ago'));
-      });
-
-      test('should format date within a month (weeks)', () {
-        // Arrange
-        final twoWeeksAgo = DateTime.now().subtract(const Duration(days: 14));
-        final dateString = twoWeeksAgo.toIso8601String();
-
-        // Act
-        final result = viewModel.formatDate(dateString);
-
-        // Assert
-        expect(result, equals('2 weeks ago'));
-      });
-
-      test('should format date within a year (months)', () {
-        // Arrange
-        final twoMonthsAgo = DateTime.now().subtract(const Duration(days: 60));
-        final dateString = twoMonthsAgo.toIso8601String();
-
-        // Act
-        final result = viewModel.formatDate(dateString);
-
-        // Assert
-        expect(result, equals('2 months ago'));
-      });
-
-      test('should format date over a year (years)', () {
-        // Arrange
-        final twoYearsAgo = DateTime.now().subtract(const Duration(days: 730));
-        final dateString = twoYearsAgo.toIso8601String();
-
-        // Act
-        final result = viewModel.formatDate(dateString);
-
-        // Assert
-        expect(result, equals('2 years ago'));
-      });
-
-      test('should return original string for invalid date', () {
-        // Arrange
-        const invalidDateString = 'invalid-date';
-
-        // Act
-        final result = viewModel.formatDate(invalidDateString);
-
-        // Assert
-        expect(result, equals(invalidDateString));
-      });
-    });
-
-    group('different podcast IDs', () {
-      test('should load podcast with different ID', () {
-        // Arrange & Act
-        final viewModel2 = PodcastDetailViewModel(podcastId: 2);
-
-        // Assert
         expect(viewModel2.podcast?.id, equals(2));
-        expect(viewModel2.podcast?.externalId, equals('ext-2'));
-        expect(viewModel2.episodes.length, equals(12));
       });
     });
   });

@@ -1,7 +1,9 @@
 import 'package:cribe/core/constants/feature_flags.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
+import 'package:cribe/data/services/api_service.dart';
+import 'package:cribe/data/services/storage_service.dart';
 import 'package:cribe/ui/navigation/widgets/main_navigation_screen.dart';
-import 'package:cribe/ui/podcasts/view_models/podcasts_list_view_model.dart';
+import 'package:cribe/ui/podcasts/view_models/podcast_list_view_model.dart';
 import 'package:cribe/ui/podcasts/widgets/podcasts_list_screen.dart';
 import 'package:cribe/ui/settings/view_models/settings_view_model.dart';
 import 'package:flutter/material.dart';
@@ -12,27 +14,34 @@ import 'package:provider/provider.dart';
 
 import 'main_navigation_screen_test.mocks.dart';
 
-@GenerateMocks([PodcastsListViewModel, SettingsViewModel, FeatureFlagsProvider])
+@GenerateMocks([
+  PodcastListViewModel,
+  SettingsViewModel,
+  FeatureFlagsProvider,
+  ApiService,
+  StorageService,
+])
 void main() {
-  late MockPodcastsListViewModel mockPodcastsViewModel;
+  late MockPodcastListViewModel mockPodcastsViewModel;
   late MockSettingsViewModel mockSettingsViewModel;
   late MockFeatureFlagsProvider mockFeatureFlagsProvider;
+  late MockApiService mockApiService;
+  late MockStorageService mockStorageService;
 
   setUp(() {
-    mockPodcastsViewModel = MockPodcastsListViewModel();
+    mockPodcastsViewModel = MockPodcastListViewModel();
     mockSettingsViewModel = MockSettingsViewModel();
     mockFeatureFlagsProvider = MockFeatureFlagsProvider();
+    mockApiService = MockApiService();
+    mockStorageService = MockStorageService();
 
-    // Default mock behavior for PodcastsListViewModel
+    // Default mock behavior for PodcastListViewModel
     when(mockPodcastsViewModel.isLoading).thenReturn(false);
-    when(mockPodcastsViewModel.hasError).thenReturn(false);
-    when(mockPodcastsViewModel.errorMessage).thenReturn('');
     when(mockPodcastsViewModel.podcasts).thenReturn([]);
 
     // Default mock behavior for SettingsViewModel
     when(mockSettingsViewModel.isLoading).thenReturn(false);
-    when(mockSettingsViewModel.hasError).thenReturn(false);
-    when(mockSettingsViewModel.errorMessage).thenReturn('');
+    when(mockSettingsViewModel.error).thenReturn(null);
 
     // Default mock behavior for FeatureFlagsProvider
     when(mockFeatureFlagsProvider.getFlag<bool>(FeatureFlagKey.booleanFlag))
@@ -47,14 +56,16 @@ void main() {
     return MaterialApp(
       home: MultiProvider(
         providers: [
-          ChangeNotifierProvider<PodcastsListViewModel>.value(
+          Provider<ApiService>.value(value: mockApiService),
+          Provider<StorageService>.value(value: mockStorageService),
+          ChangeNotifierProvider<FeatureFlagsProvider>.value(
+            value: mockFeatureFlagsProvider,
+          ),
+          ChangeNotifierProvider<PodcastListViewModel>.value(
             value: mockPodcastsViewModel,
           ),
           ChangeNotifierProvider<SettingsViewModel>.value(
             value: mockSettingsViewModel,
-          ),
-          ChangeNotifierProvider<FeatureFlagsProvider>.value(
-            value: mockFeatureFlagsProvider,
           ),
         ],
         child: const MainNavigationScreen(),
@@ -99,10 +110,10 @@ void main() {
       expect(bottomNav.currentIndex, equals(0));
     });
 
-    testWidgets('should display PodcastsListScreen initially', (tester) async {
+    testWidgets('should display PodcastListScreen initially', (tester) async {
       await tester.pumpWidget(createTestWidget());
 
-      expect(find.byType(PodcastsListScreen), findsOneWidget);
+      expect(find.byType(PodcastListScreen), findsOneWidget);
     });
 
     testWidgets('should switch tab index when second tab is tapped',

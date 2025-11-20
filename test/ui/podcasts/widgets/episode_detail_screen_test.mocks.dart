@@ -3,13 +3,14 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:ui' as _i5;
+import 'dart:ui' as _i6;
 
-import 'package:cribe/core/logger/logger_mixins.dart' as _i2;
+import 'package:cribe/core/logger/logger_mixins.dart' as _i3;
+import 'package:cribe/domain/models/podcast.dart' as _i2;
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart'
-    as _i3;
+    as _i4;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i4;
+import 'package:mockito/src/dummies.dart' as _i5;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -25,9 +26,19 @@ import 'package:mockito/src/dummies.dart' as _i4;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeContextualLogger_0 extends _i1.SmartFake
-    implements _i2.ContextualLogger {
-  _FakeContextualLogger_0(
+class _FakeEpisode_0 extends _i1.SmartFake implements _i2.Episode {
+  _FakeEpisode_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeContextualLogger_1 extends _i1.SmartFake
+    implements _i3.ContextualLogger {
+  _FakeContextualLogger_1(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -40,10 +51,19 @@ class _FakeContextualLogger_0 extends _i1.SmartFake
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockEpisodeDetailViewModel extends _i1.Mock
-    implements _i3.EpisodeDetailViewModel {
+    implements _i4.EpisodeDetailViewModel {
   MockEpisodeDetailViewModel() {
     _i1.throwOnMissingStub(this);
   }
+
+  @override
+  _i2.Episode get episode => (super.noSuchMethod(
+        Invocation.getter(#episode),
+        returnValue: _FakeEpisode_0(
+          this,
+          Invocation.getter(#episode),
+        ),
+      ) as _i2.Episode);
 
   @override
   double get playbackProgress => (super.noSuchMethod(
@@ -58,8 +78,41 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       ) as bool);
 
   @override
+  String get duration => (super.noSuchMethod(
+        Invocation.getter(#duration),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#duration),
+        ),
+      ) as String);
+
+  @override
+  String get datePublished => (super.noSuchMethod(
+        Invocation.getter(#datePublished),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#datePublished),
+        ),
+      ) as String);
+
+  @override
+  String get elapsedTime => (super.noSuchMethod(
+        Invocation.getter(#elapsedTime),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#elapsedTime),
+        ),
+      ) as String);
+
+  @override
   bool get isLoading => (super.noSuchMethod(
         Invocation.getter(#isLoading),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get isSuccess => (super.noSuchMethod(
+        Invocation.getter(#isSuccess),
         returnValue: false,
       ) as bool);
 
@@ -70,13 +123,13 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       ) as bool);
 
   @override
-  _i2.ContextualLogger get logger => (super.noSuchMethod(
+  _i3.ContextualLogger get logger => (super.noSuchMethod(
         Invocation.getter(#logger),
-        returnValue: _FakeContextualLogger_0(
+        returnValue: _FakeContextualLogger_1(
           this,
           Invocation.getter(#logger),
         ),
-      ) as _i2.ContextualLogger);
+      ) as _i3.ContextualLogger);
 
   @override
   void togglePlayPause() => super.noSuchMethod(
@@ -97,66 +150,6 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       );
 
   @override
-  String formatDuration(int? seconds) => (super.noSuchMethod(
-        Invocation.method(
-          #formatDuration,
-          [seconds],
-        ),
-        returnValue: _i4.dummyValue<String>(
-          this,
-          Invocation.method(
-            #formatDuration,
-            [seconds],
-          ),
-        ),
-      ) as String);
-
-  @override
-  String formatDate(String? dateString) => (super.noSuchMethod(
-        Invocation.method(
-          #formatDate,
-          [dateString],
-        ),
-        returnValue: _i4.dummyValue<String>(
-          this,
-          Invocation.method(
-            #formatDate,
-            [dateString],
-          ),
-        ),
-      ) as String);
-
-  @override
-  String getCurrentTime() => (super.noSuchMethod(
-        Invocation.method(
-          #getCurrentTime,
-          [],
-        ),
-        returnValue: _i4.dummyValue<String>(
-          this,
-          Invocation.method(
-            #getCurrentTime,
-            [],
-          ),
-        ),
-      ) as String);
-
-  @override
-  String getTotalTime() => (super.noSuchMethod(
-        Invocation.method(
-          #getTotalTime,
-          [],
-        ),
-        returnValue: _i4.dummyValue<String>(
-          this,
-          Invocation.method(
-            #getTotalTime,
-            [],
-          ),
-        ),
-      ) as String);
-
-  @override
   void setLoading(bool? value) => super.noSuchMethod(
         Invocation.method(
           #setLoading,
@@ -175,7 +168,16 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       );
 
   @override
-  void addListener(_i5.VoidCallback? listener) => super.noSuchMethod(
+  void setSuccess(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setSuccess,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void addListener(_i6.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -184,7 +186,7 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       );
 
   @override
-  void removeListener(_i5.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i6.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
