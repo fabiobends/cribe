@@ -73,22 +73,40 @@ class _PodcastListScreenState extends State<PodcastListScreen>
             }
 
             if (viewModel.podcasts.isEmpty) {
-              return Center(
-                child: StyledText(
-                  text: 'No podcasts available',
-                  variant: TextVariant.body,
-                  color: theme.colorScheme.onSurfaceVariant,
+              return RefreshIndicator(
+                onRefresh: viewModel.refresh,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Center(
+                          child: StyledText(
+                            text: 'No podcasts available',
+                            variant: TextVariant.body,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               );
             }
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(Spacing.medium),
-              itemCount: viewModel.podcasts.length,
-              itemBuilder: (context, index) {
-                final podcast = viewModel.podcasts[index];
-                return _PodcastCard(podcast: podcast);
-              },
+            return RefreshIndicator(
+              onRefresh: viewModel.refresh,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(Spacing.medium),
+                itemCount: viewModel.podcasts.length,
+                itemBuilder: (context, index) {
+                  final podcast = viewModel.podcasts[index];
+                  return _PodcastCard(podcast: podcast);
+                },
+              ),
             );
           },
         ),

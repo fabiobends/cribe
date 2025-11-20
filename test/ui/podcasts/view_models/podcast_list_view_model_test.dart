@@ -45,26 +45,65 @@ void main() {
       });
     });
 
-    group('BaseViewModel integration', () {
-      test('should extend BaseViewModel', () {
-        expect(viewModel.isLoading, isNotNull);
-        expect(viewModel.error, isNull);
+    group('loadPodcasts', () {
+      test('should call getPodcasts on repository', () async {
+        reset(mockRepository);
+        when(mockRepository.getPodcasts()).thenAnswer((_) async {});
+        when(mockRepository.podcasts).thenReturn([]);
+
+        await viewModel.loadPodcasts();
+
+        verify(mockRepository.getPodcasts()).called(1);
       });
 
-      test('setLoading should update loading state', () {
-        viewModel.setLoading(true);
-        expect(viewModel.isLoading, isTrue);
+      test('should set loading state during load', () async {
+        when(mockRepository.getPodcasts()).thenAnswer((_) async {});
 
-        viewModel.setLoading(false);
+        expect(viewModel.isLoading, isFalse);
+        final future = viewModel.loadPodcasts();
+        expect(viewModel.isLoading, isTrue);
+        await future;
         expect(viewModel.isLoading, isFalse);
       });
 
-      test('setError should update error state', () {
-        viewModel.setError('Test error');
-        expect(viewModel.error, equals('Test error'));
+      test('should set error when load fails', () async {
+        when(mockRepository.getPodcasts())
+            .thenThrow(Exception('Network error'));
 
-        viewModel.setError(null);
-        expect(viewModel.error, isNull);
+        await viewModel.loadPodcasts();
+
+        expect(viewModel.error, equals('Failed to load podcasts'));
+        expect(viewModel.isLoading, isFalse);
+      });
+    });
+
+    group('refresh', () {
+      test('should call getPodcasts on repository', () async {
+        reset(mockRepository);
+        when(mockRepository.getPodcasts()).thenAnswer((_) async {});
+        when(mockRepository.podcasts).thenReturn([]);
+
+        await viewModel.refresh();
+
+        verify(mockRepository.getPodcasts()).called(1);
+      });
+
+      test('should not set loading state during refresh', () async {
+        when(mockRepository.getPodcasts()).thenAnswer((_) async {});
+
+        final initialLoadingState = viewModel.isLoading;
+        await viewModel.refresh();
+
+        expect(viewModel.isLoading, equals(initialLoadingState));
+      });
+
+      test('should set error when refresh fails', () async {
+        when(mockRepository.getPodcasts())
+            .thenThrow(Exception('Network error'));
+
+        await viewModel.refresh();
+
+        expect(viewModel.error, equals('Failed to refresh podcasts'));
       });
     });
   });
