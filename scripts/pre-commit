@@ -8,8 +8,8 @@ trap 'echo "\n❌ Pre-commit hook interrupted. Aborting commit."; exit 1' INT TE
 
 echo "🔍 Running pre-commit hook..."
 
-# Get all staged Dart files
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=d | grep '\.dart$')
+# Get all staged Dart files (grep returns non-zero if no matches, so we need to handle that)
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=d | grep '\.dart$' || true)
 
 if [ -z "$STAGED_FILES" ]; then
     echo "✅ No Dart files to check."
@@ -56,6 +56,98 @@ if [ $? -ne 0 ]; then
     echo "❌ Analysis failed. Please fix the issues before committing."
     exit 1
 fi
+
+# Check if staged files have passing tests
+echo "🧪 Checking tests for staged files..."
+TEMP_TEST_FILES=$(mktemp)
+TEMP_FAILED_TESTS=$(mktemp)
+TEMP_MISSING_TESTS=$(mktemp)
+
+# Patterns to exclude from test requirements (same as coverage-check)
+should_skip_test_check() {
+    file="$1"
+    
+    # Exclude patterns
+    case "$file" in
+        lib/core/*) return 0 ;;
+        lib/main.dart) return 0 ;;
+        lib/data/services/logger_service.dart) return 0 ;;
+        lib/data/providers/feature_flags_provider.dart) return 0 ;;
+        lib/ui/dev_helper/*) return 0 ;;
+        */fake_*) return 0 ;;
+        */base_*) return 0 ;;
+        *.g.dart) return 0 ;;
+        *.freezed.dart) return 0 ;;
+        *.mocks.dart) return 0 ;;
+        test/*) return 0 ;;
+    esac
+    return 1
+}
+
+printf "%s\n" "$STAGED_FILES" | while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    
+    # Skip excluded files
+    if should_skip_test_check "$file"; then
+        continue
+    fi
+    
+    # Convert lib/path/file.dart to test/path/file_test.dart
+    test_file=$(echo "$file" | sed 's|^lib/|test/|' | sed 's|\.dart$|_test.dart|')
+    
+    if [ -f "$test_file" ]; then
+        echo "$test_file" >> "$TEMP_TEST_FILES"
+    else
+        echo "❌ No test file found for: $file"
+        echo "   Expected: $test_file"
+        echo "$file" >> "$TEMP_MISSING_TESTS"
+    fi
+done
+
+# Check if any files are missing tests
+if [ -s "$TEMP_MISSING_TESTS" ]; then
+    echo ""
+    echo "❌ Some staged Dart files are missing corresponding tests."
+    echo "Files without tests:"
+    cat "$TEMP_MISSING_TESTS" | while IFS= read -r missing_file; do
+        [ -n "$missing_file" ] || continue
+        echo "   - $missing_file"
+    done
+    rm -f "$TEMP_TEST_FILES" "$TEMP_FAILED_TESTS" "$TEMP_MISSING_TESTS"
+    exit 1
+fi
+
+if [ -s "$TEMP_TEST_FILES" ]; then
+    echo "🏃 Running tests for staged files..."
+    
+    # Get unique test files and run them
+    sort -u "$TEMP_TEST_FILES" | while IFS= read -r test_file; do
+        [ -n "$test_file" ] || continue
+        echo "  Testing: $test_file"
+        
+        # Run test and fail on non-zero exit status
+        if ! flutter test "$test_file" --reporter=compact; then
+            echo "$test_file" >> "$TEMP_FAILED_TESTS"
+            echo "  ❌ Tests failed for: $test_file"
+        fi
+    done
+    
+    # Check if any tests failed
+    if [ -s "$TEMP_FAILED_TESTS" ]; then
+        echo ""
+        echo "❌ Some tests failed. Please fix them before committing."
+        echo "Failed test files:"
+        cat "$TEMP_FAILED_TESTS" | while IFS= read -r failed_file; do
+            echo "   - $failed_file"
+        done
+        rm -f "$TEMP_TEST_FILES" "$TEMP_FAILED_TESTS" "$TEMP_MISSING_TESTS"
+        exit 1
+    fi
+    
+    echo "✅ All tests passed!"
+fi
+
+rm -f "$TEMP_TEST_FILES" "$TEMP_FAILED_TESTS" "$TEMP_MISSING_TESTS"
 
 # Re-stage all the originally staged Dart files (they may have been formatted/fixed)
 echo "📦 Re-staging formatted and fixed files..."
