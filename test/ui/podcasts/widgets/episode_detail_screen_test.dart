@@ -37,6 +37,8 @@ void main() {
     when(mockViewModel.episode).thenReturn(testEpisode);
     when(mockViewModel.playbackProgress).thenReturn(0.0);
     when(mockViewModel.isPlaying).thenReturn(false);
+    when(mockViewModel.isCompleted).thenReturn(false);
+    when(mockViewModel.isBuffering).thenReturn(false);
   });
 
   Episode createMockEpisode() {

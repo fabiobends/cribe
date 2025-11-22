@@ -6,6 +6,10 @@ import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/shared/view_models/base_view_model.dart';
 
 class EpisodeDetailViewModel extends BaseViewModel {
+  static const double _minProgress = 0.0;
+  static const double _maxProgress = 1.0;
+  static const double _completedThreshold = 0.999;
+
   final Episode episode;
   final PlayerService _playerService;
 
@@ -27,6 +31,8 @@ class EpisodeDetailViewModel extends BaseViewModel {
 
   double get playbackProgress => _playbackProgress;
   bool get isPlaying => _isPlaying;
+  bool get isCompleted => _playbackProgress >= _completedThreshold;
+  bool get isBuffering => _isPlaying && _playbackProgress == _minProgress;
 
   // Computed properties for formatted data
   String get duration => TimeUtils.formatDuration(
@@ -75,18 +81,25 @@ class EpisodeDetailViewModel extends BaseViewModel {
 
   void togglePlayPause() {
     logger.info('Toggle play/pause');
-    if (_isPlaying) {
+
+    if (isCompleted) {
+      logger.info('Restarting episode from beginning');
+      seekTo(_minProgress);
+      _playerService.play();
+      _isPlaying = true;
+    } else if (_isPlaying) {
       _playerService.pause();
+      _isPlaying = false;
     } else {
       _playerService.play();
+      _isPlaying = true;
     }
-    _isPlaying = !_isPlaying;
     notifyListeners();
   }
 
   void seekTo(double progress) {
     logger.info('Seeking to progress: $progress');
-    if (progress >= 0.0 && progress <= 1.0) {
+    if (progress >= _minProgress && progress <= _maxProgress) {
       final totalDuration =
           _audioDuration > 0 ? _audioDuration : episode.duration;
       final position = Duration(seconds: (totalDuration * progress).toInt());

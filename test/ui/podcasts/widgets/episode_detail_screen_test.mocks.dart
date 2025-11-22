@@ -78,6 +78,18 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       ) as bool);
 
   @override
+  bool get isCompleted => (super.noSuchMethod(
+        Invocation.getter(#isCompleted),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get isBuffering => (super.noSuchMethod(
+        Invocation.getter(#isBuffering),
+        returnValue: false,
+      ) as bool);
+
+  @override
   String get duration => (super.noSuchMethod(
         Invocation.getter(#duration),
         returnValue: _i5.dummyValue<String>(
