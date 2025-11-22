@@ -1,3 +1,4 @@
+import 'package:cribe/data/services/player_service.dart';
 import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
 
@@ -20,6 +21,7 @@ class FakeEpisodeDetailViewModel extends EpisodeDetailViewModel {
             createdAt: DateTime.now().subtract(const Duration(days: 7)),
             updatedAt: DateTime.now(),
           ),
+          playerService: PlayerService(),
         ) {
     logger.info('FakeEpisodeDetailViewModel initialized');
   }

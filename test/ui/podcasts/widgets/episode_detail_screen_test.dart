@@ -76,6 +76,7 @@ void main() {
         when(mockViewModel.episode).thenReturn(mockEpisode);
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
         when(mockViewModel.elapsedTime).thenReturn('0m 0s');
         when(mockViewModel.duration).thenReturn('1h 5m');
 
@@ -96,6 +97,7 @@ void main() {
         when(mockViewModel.episode).thenReturn(mockEpisode);
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
         when(mockViewModel.elapsedTime).thenReturn('0m 0s');
         when(mockViewModel.duration).thenReturn('1h 5m');
 
@@ -116,6 +118,7 @@ void main() {
         when(mockViewModel.episode).thenReturn(mockEpisode);
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
         when(mockViewModel.elapsedTime).thenReturn('0m 0s');
         when(mockViewModel.duration).thenReturn('1h 5m');
 
@@ -136,6 +139,7 @@ void main() {
         when(mockViewModel.episode).thenReturn(mockEpisode);
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
         when(mockViewModel.elapsedTime).thenReturn('0m');
         when(mockViewModel.playbackProgress).thenReturn(0.25);
         when(mockViewModel.isPlaying).thenReturn(false);
@@ -158,6 +162,7 @@ void main() {
         when(mockViewModel.episode).thenReturn(mockEpisode);
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
         when(mockViewModel.elapsedTime).thenReturn('15m');
         when(mockViewModel.playbackProgress).thenReturn(0.25);
         when(mockViewModel.isPlaying).thenReturn(true);
@@ -178,6 +183,7 @@ void main() {
         when(mockViewModel.episode).thenReturn(mockEpisode);
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
         when(mockViewModel.elapsedTime).thenReturn('0m 0s');
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.playbackProgress).thenReturn(0.0);
@@ -202,6 +208,7 @@ void main() {
         when(mockViewModel.episode).thenReturn(mockEpisode);
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
         when(mockViewModel.elapsedTime).thenReturn('0m 0s');
         when(mockViewModel.duration).thenReturn('1h 5m');
 
@@ -223,6 +230,7 @@ void main() {
         when(mockViewModel.episode).thenReturn(mockEpisode);
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
         when(mockViewModel.elapsedTime).thenReturn('0m');
 
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
@@ -245,6 +253,7 @@ void main() {
         when(mockViewModel.episode).thenReturn(mockEpisode);
         when(mockViewModel.duration).thenReturn('1h 5m');
         when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
         when(mockViewModel.elapsedTime).thenReturn('0m 0s');
         when(mockViewModel.duration).thenReturn('1h 5m');
 

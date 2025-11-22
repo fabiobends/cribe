@@ -1,5 +1,6 @@
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
+import 'package:cribe/data/services/player_service.dart';
 import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
@@ -225,8 +226,10 @@ class _EpisodeCard extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider(
-          create: (_) =>
-              EpisodeDetailViewModel(episode: formattedEpisode.episode),
+          create: (_) => EpisodeDetailViewModel(
+            episode: formattedEpisode.episode,
+            playerService: PlayerService(),
+          ),
           child: const EpisodeDetailScreen(),
         ),
       ),
