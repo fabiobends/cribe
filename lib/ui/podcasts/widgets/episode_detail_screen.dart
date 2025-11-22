@@ -232,7 +232,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                             color: theme.colorScheme.onSurface,
                           ),
                           StyledText(
-                            text: viewModel.duration,
+                            text: viewModel.remainingTime,
                             variant: TextVariant.caption,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
