@@ -613,8 +613,6 @@ void main() {
         // Find the sign up button
         expect(find.text('Sign Up'), findsOneWidget);
 
-        // Note: We can't easily test the actual navigation due to RegisterScreen
-        // provider requirements, but we can verify the UI is present
         expect(find.text("Don't have an account?"), findsOneWidget);
       });
 
