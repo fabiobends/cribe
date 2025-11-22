@@ -198,9 +198,11 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                   children: [
                     IconButton(
                       icon: Icon(
-                        viewModel.isPlaying
-                            ? Icons.pause_circle_filled
-                            : Icons.play_circle_filled,
+                        viewModel.isCompleted
+                            ? Icons.replay_circle_filled
+                            : (viewModel.isPlaying
+                                ? Icons.pause_circle_filled
+                                : Icons.play_circle_filled),
                         size: Spacing.extraLarge,
                         color: theme.colorScheme.primary,
                       ),
@@ -226,11 +228,19 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          StyledText(
-                            text: viewModel.elapsedTime,
-                            variant: TextVariant.caption,
-                            color: theme.colorScheme.onSurface,
-                          ),
+                          viewModel.isBuffering
+                              ? const SizedBox(
+                                  width: Spacing.medium,
+                                  height: Spacing.medium,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: Spacing.tiny,
+                                  ),
+                                )
+                              : StyledText(
+                                  text: viewModel.elapsedTime,
+                                  variant: TextVariant.caption,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                           StyledText(
                             text: viewModel.remainingTime,
                             variant: TextVariant.caption,
