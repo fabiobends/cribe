@@ -1,3 +1,9 @@
 #!/bin/sh
 
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Handle Ctrl+C and other interrupts
+trap 'echo "\n❌ Pre-push hook interrupted. Aborting push."; exit 1' INT TERM
+
 make test

@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+# Handle Ctrl+C and other interrupts
+trap 'echo "\n❌ Pre-commit hook interrupted. Aborting commit."; exit 1' INT TERM
+
 echo "🔍 Running pre-commit hook..."
 
 # Get all staged Dart files
