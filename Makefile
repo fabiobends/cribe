@@ -45,4 +45,3 @@ setup-hooks:
 	@git config core.hooksPath scripts
 	@chmod +x scripts/pre-commit scripts/pre-push
 	@echo "Git hooks installed successfully!"
-	@echo "Hooks directory: scripts/"
