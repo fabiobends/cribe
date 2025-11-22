@@ -80,7 +80,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                     color: theme.colorScheme.surfaceContainerHighest,
                     child: Icon(
                       Icons.headphones,
-                      size: 100,
+                      size: Spacing.huge,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   );
@@ -91,7 +91,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                 color: theme.colorScheme.surfaceContainerHighest,
                 child: Icon(
                   Icons.headphones,
-                  size: 100,
+                  size: Spacing.huge,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -132,7 +132,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                   children: [
                     Icon(
                       Icons.calendar_today,
-                      size: 16,
+                      size: Spacing.medium,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: Spacing.small),
@@ -144,7 +144,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                     const SizedBox(width: Spacing.medium),
                     Icon(
                       Icons.access_time,
-                      size: 16,
+                      size: Spacing.medium,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: Spacing.small),
@@ -201,7 +201,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                         viewModel.isPlaying
                             ? Icons.pause_circle_filled
                             : Icons.play_circle_filled,
-                        size: 64,
+                        size: Spacing.extraLarge,
                         color: theme.colorScheme.primary,
                       ),
                       onPressed: viewModel.togglePlayPause,
