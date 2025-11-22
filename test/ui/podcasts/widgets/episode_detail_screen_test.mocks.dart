@@ -105,6 +105,15 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       ) as String);
 
   @override
+  String get remainingTime => (super.noSuchMethod(
+        Invocation.getter(#remainingTime),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#remainingTime),
+        ),
+      ) as String);
+
+  @override
   bool get isLoading => (super.noSuchMethod(
         Invocation.getter(#isLoading),
         returnValue: false,
@@ -150,6 +159,15 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       );
 
   @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void setLoading(bool? value) => super.noSuchMethod(
         Invocation.method(
           #setLoading,
@@ -190,15 +208,6 @@ class MockEpisodeDetailViewModel extends _i1.Mock
         Invocation.method(
           #removeListener,
           [listener],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void dispose() => super.noSuchMethod(
-        Invocation.method(
-          #dispose,
-          [],
         ),
         returnValueForMissingStub: null,
       );

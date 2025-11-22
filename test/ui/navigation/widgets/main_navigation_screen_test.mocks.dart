@@ -3,9 +3,9 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i10;
+import 'dart:async' as _i8;
 import 'dart:io' as _i4;
-import 'dart:ui' as _i8;
+import 'dart:ui' as _i9;
 
 import 'package:cribe/core/constants/feature_flags.dart' as _i12;
 import 'package:cribe/core/constants/storage_keys.dart' as _i15;
@@ -17,7 +17,7 @@ import 'package:cribe/data/services/storage_service.dart' as _i3;
 import 'package:cribe/domain/models/podcast.dart' as _i7;
 import 'package:cribe/ui/podcasts/view_models/podcast_list_view_model.dart'
     as _i6;
-import 'package:cribe/ui/settings/view_models/settings_view_model.dart' as _i9;
+import 'package:cribe/ui/settings/view_models/settings_view_model.dart' as _i10;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i13;
 
@@ -121,6 +121,26 @@ class MockPodcastListViewModel extends _i1.Mock
       ) as _i2.ContextualLogger);
 
   @override
+  _i8.Future<void> loadPodcasts() => (super.noSuchMethod(
+        Invocation.method(
+          #loadPodcasts,
+          [],
+        ),
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
+
+  @override
+  _i8.Future<void> refresh() => (super.noSuchMethod(
+        Invocation.method(
+          #refresh,
+          [],
+        ),
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
+
+  @override
   void setLoading(bool? value) => super.noSuchMethod(
         Invocation.method(
           #setLoading,
@@ -148,7 +168,7 @@ class MockPodcastListViewModel extends _i1.Mock
       );
 
   @override
-  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -157,7 +177,7 @@ class MockPodcastListViewModel extends _i1.Mock
       );
 
   @override
-  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -187,7 +207,7 @@ class MockPodcastListViewModel extends _i1.Mock
 /// A class which mocks [SettingsViewModel].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockSettingsViewModel extends _i1.Mock implements _i9.SettingsViewModel {
+class MockSettingsViewModel extends _i1.Mock implements _i10.SettingsViewModel {
   MockSettingsViewModel() {
     _i1.throwOnMissingStub(this);
   }
@@ -229,14 +249,14 @@ class MockSettingsViewModel extends _i1.Mock implements _i9.SettingsViewModel {
       ) as _i2.ContextualLogger);
 
   @override
-  _i10.Future<void> logout() => (super.noSuchMethod(
+  _i8.Future<void> logout() => (super.noSuchMethod(
         Invocation.method(
           #logout,
           [],
         ),
-        returnValue: _i10.Future<void>.value(),
-        returnValueForMissingStub: _i10.Future<void>.value(),
-      ) as _i10.Future<void>);
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
 
   @override
   void setLoading(bool? value) => super.noSuchMethod(
@@ -266,7 +286,7 @@ class MockSettingsViewModel extends _i1.Mock implements _i9.SettingsViewModel {
       );
 
   @override
-  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -275,7 +295,7 @@ class MockSettingsViewModel extends _i1.Mock implements _i9.SettingsViewModel {
       );
 
   @override
-  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -376,7 +396,7 @@ class MockFeatureFlagsProvider extends _i1.Mock
       ) as Map<String, dynamic>);
 
   @override
-  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -385,7 +405,7 @@ class MockFeatureFlagsProvider extends _i1.Mock
       );
 
   @override
-  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -448,14 +468,14 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
       ) as _i2.ContextualLogger);
 
   @override
-  _i10.Future<void> init() => (super.noSuchMethod(
+  _i8.Future<void> init() => (super.noSuchMethod(
         Invocation.method(
           #init,
           [],
         ),
-        returnValue: _i10.Future<void>.value(),
-        returnValueForMissingStub: _i10.Future<void>.value(),
-      ) as _i10.Future<void>);
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
 
   @override
   dynamic updateBaseUrl(String? newUrl) => super.noSuchMethod(Invocation.method(
@@ -464,28 +484,27 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
       ));
 
   @override
-  _i10.Future<void> dispose() => (super.noSuchMethod(
+  _i8.Future<void> dispose() => (super.noSuchMethod(
         Invocation.method(
           #dispose,
           [],
         ),
-        returnValue: _i10.Future<void>.value(),
-        returnValueForMissingStub: _i10.Future<void>.value(),
-      ) as _i10.Future<void>);
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
 
   @override
-  _i10.Future<void> setTokens(_i14.LoginResponse? tokens) =>
-      (super.noSuchMethod(
+  _i8.Future<void> setTokens(_i14.LoginResponse? tokens) => (super.noSuchMethod(
         Invocation.method(
           #setTokens,
           [tokens],
         ),
-        returnValue: _i10.Future<void>.value(),
-        returnValueForMissingStub: _i10.Future<void>.value(),
-      ) as _i10.Future<void>);
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
 
   @override
-  _i10.Future<_i5.ApiResponse<T>> get<T>(
+  _i8.Future<_i5.ApiResponse<T>> get<T>(
     String? path,
     T Function(dynamic)? fromJson,
   ) =>
@@ -497,8 +516,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             fromJson,
           ],
         ),
-        returnValue:
-            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #get,
@@ -508,10 +526,10 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             ],
           ),
         )),
-      ) as _i10.Future<_i5.ApiResponse<T>>);
+      ) as _i8.Future<_i5.ApiResponse<T>>);
 
   @override
-  _i10.Future<_i5.ApiResponse<T>> post<T>(
+  _i8.Future<_i5.ApiResponse<T>> post<T>(
     String? path,
     T Function(dynamic)? fromJson, {
     Map<String, dynamic>? body,
@@ -525,8 +543,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
           ],
           {#body: body},
         ),
-        returnValue:
-            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #post,
@@ -537,10 +554,10 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             {#body: body},
           ),
         )),
-      ) as _i10.Future<_i5.ApiResponse<T>>);
+      ) as _i8.Future<_i5.ApiResponse<T>>);
 
   @override
-  _i10.Future<_i5.ApiResponse<T>> delete<T>(
+  _i8.Future<_i5.ApiResponse<T>> delete<T>(
     String? path,
     T Function(dynamic)? fromJson,
   ) =>
@@ -552,8 +569,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             fromJson,
           ],
         ),
-        returnValue:
-            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #delete,
@@ -563,10 +579,10 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             ],
           ),
         )),
-      ) as _i10.Future<_i5.ApiResponse<T>>);
+      ) as _i8.Future<_i5.ApiResponse<T>>);
 
   @override
-  _i10.Future<_i5.ApiResponse<T>> put<T>(
+  _i8.Future<_i5.ApiResponse<T>> put<T>(
     String? path,
     T Function(dynamic)? fromJson, {
     Map<String, dynamic>? body,
@@ -580,8 +596,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
           ],
           {#body: body},
         ),
-        returnValue:
-            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #put,
@@ -592,10 +607,10 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             {#body: body},
           ),
         )),
-      ) as _i10.Future<_i5.ApiResponse<T>>);
+      ) as _i8.Future<_i5.ApiResponse<T>>);
 
   @override
-  _i10.Future<_i5.ApiResponse<T>> patch<T>(
+  _i8.Future<_i5.ApiResponse<T>> patch<T>(
     String? path,
     T Function(dynamic)? fromJson, {
     Map<String, dynamic>? body,
@@ -609,8 +624,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
           ],
           {#body: body},
         ),
-        returnValue:
-            _i10.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
           this,
           Invocation.method(
             #patch,
@@ -621,7 +635,7 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
             {#body: body},
           ),
         )),
-      ) as _i10.Future<_i5.ApiResponse<T>>);
+      ) as _i8.Future<_i5.ApiResponse<T>>);
 }
 
 /// A class which mocks [StorageService].
@@ -642,24 +656,24 @@ class MockStorageService extends _i1.Mock implements _i3.StorageService {
       ) as _i2.ContextualLogger);
 
   @override
-  _i10.Future<void> init() => (super.noSuchMethod(
+  _i8.Future<void> init() => (super.noSuchMethod(
         Invocation.method(
           #init,
           [],
         ),
-        returnValue: _i10.Future<void>.value(),
-        returnValueForMissingStub: _i10.Future<void>.value(),
-      ) as _i10.Future<void>);
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
 
   @override
-  _i10.Future<void> dispose() => (super.noSuchMethod(
+  _i8.Future<void> dispose() => (super.noSuchMethod(
         Invocation.method(
           #dispose,
           [],
         ),
-        returnValue: _i10.Future<void>.value(),
-        returnValueForMissingStub: _i10.Future<void>.value(),
-      ) as _i10.Future<void>);
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
 
   @override
   String getValue(_i15.StorageKey? key) => (super.noSuchMethod(
@@ -677,23 +691,23 @@ class MockStorageService extends _i1.Mock implements _i3.StorageService {
       ) as String);
 
   @override
-  _i10.Future<String> getSecureValue(_i15.SecureStorageKey? key) =>
+  _i8.Future<String> getSecureValue(_i15.SecureStorageKey? key) =>
       (super.noSuchMethod(
         Invocation.method(
           #getSecureValue,
           [key],
         ),
-        returnValue: _i10.Future<String>.value(_i13.dummyValue<String>(
+        returnValue: _i8.Future<String>.value(_i13.dummyValue<String>(
           this,
           Invocation.method(
             #getSecureValue,
             [key],
           ),
         )),
-      ) as _i10.Future<String>);
+      ) as _i8.Future<String>);
 
   @override
-  _i10.Future<bool> setSecureValue(
+  _i8.Future<bool> setSecureValue(
     _i15.SecureStorageKey? key,
     String? value,
   ) =>
@@ -705,11 +719,11 @@ class MockStorageService extends _i1.Mock implements _i3.StorageService {
             value,
           ],
         ),
-        returnValue: _i10.Future<bool>.value(false),
-      ) as _i10.Future<bool>);
+        returnValue: _i8.Future<bool>.value(false),
+      ) as _i8.Future<bool>);
 
   @override
-  _i10.Future<bool> setValue(
+  _i8.Future<bool> setValue(
     _i15.StorageKey? key,
     String? value,
   ) =>
@@ -721,6 +735,6 @@ class MockStorageService extends _i1.Mock implements _i3.StorageService {
             value,
           ],
         ),
-        returnValue: _i10.Future<bool>.value(false),
-      ) as _i10.Future<bool>);
+        returnValue: _i8.Future<bool>.value(false),
+      ) as _i8.Future<bool>);
 }
