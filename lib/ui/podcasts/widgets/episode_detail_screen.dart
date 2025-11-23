@@ -80,7 +80,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                     color: theme.colorScheme.surfaceContainerHighest,
                     child: Icon(
                       Icons.headphones,
-                      size: 100,
+                      size: Spacing.huge,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   );
@@ -91,7 +91,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                 color: theme.colorScheme.surfaceContainerHighest,
                 child: Icon(
                   Icons.headphones,
-                  size: 100,
+                  size: Spacing.huge,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -132,7 +132,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                   children: [
                     Icon(
                       Icons.calendar_today,
-                      size: 16,
+                      size: Spacing.medium,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: Spacing.small),
@@ -144,7 +144,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                     const SizedBox(width: Spacing.medium),
                     Icon(
                       Icons.access_time,
-                      size: 16,
+                      size: Spacing.medium,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: Spacing.small),
@@ -198,10 +198,12 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                   children: [
                     IconButton(
                       icon: Icon(
-                        viewModel.isPlaying
-                            ? Icons.pause_circle_filled
-                            : Icons.play_circle_filled,
-                        size: 64,
+                        viewModel.isCompleted
+                            ? Icons.replay_circle_filled
+                            : (viewModel.isPlaying
+                                ? Icons.pause_circle_filled
+                                : Icons.play_circle_filled),
+                        size: Spacing.extraLarge,
                         color: theme.colorScheme.primary,
                       ),
                       onPressed: viewModel.togglePlayPause,
@@ -226,13 +228,21 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          viewModel.isBuffering
+                              ? const SizedBox(
+                                  width: Spacing.medium,
+                                  height: Spacing.medium,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: Spacing.tiny,
+                                  ),
+                                )
+                              : StyledText(
+                                  text: viewModel.elapsedTime,
+                                  variant: TextVariant.caption,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                           StyledText(
-                            text: viewModel.elapsedTime,
-                            variant: TextVariant.caption,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                          StyledText(
-                            text: viewModel.duration,
+                            text: viewModel.remainingTime,
                             variant: TextVariant.caption,
                             color: theme.colorScheme.onSurfaceVariant,
                           ),

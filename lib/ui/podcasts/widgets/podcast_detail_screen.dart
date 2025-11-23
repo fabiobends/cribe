@@ -1,5 +1,6 @@
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
+import 'package:cribe/data/services/player_service.dart';
 import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
@@ -145,7 +146,7 @@ class _PodcastDetailScreenState extends State<PodcastDetailScreen>
                 color: theme.colorScheme.surfaceContainerHighest,
                 child: Icon(
                   Icons.mic,
-                  size: Spacing.huge * 2,
+                  size: Spacing.huge,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
@@ -225,8 +226,10 @@ class _EpisodeCard extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider(
-          create: (_) =>
-              EpisodeDetailViewModel(episode: formattedEpisode.episode),
+          create: (_) => EpisodeDetailViewModel(
+            episode: formattedEpisode.episode,
+            playerService: PlayerService(),
+          ),
           child: const EpisodeDetailScreen(),
         ),
       ),
@@ -306,7 +309,7 @@ class _EpisodeCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.access_time,
-                          size: 14,
+                          size: Spacing.medium,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: Spacing.extraSmall),
@@ -318,7 +321,7 @@ class _EpisodeCard extends StatelessWidget {
                         const SizedBox(width: Spacing.small),
                         Icon(
                           Icons.calendar_today,
-                          size: 14,
+                          size: Spacing.medium,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: Spacing.extraSmall),

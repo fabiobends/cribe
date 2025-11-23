@@ -9,7 +9,6 @@ on:
       - main
 
 jobs:
-
   sanitize:
     runs-on: ubuntu-latest
     environment: Production
@@ -24,19 +23,9 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.2'
-          channel: 'stable'
+          flutter-version: "3.29.2"
+          channel: "stable"
           cache: true
-
-      - name: Cache pub dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            ${{ runner.tool_cache }}/flutter
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
 
       - name: Install dependencies
         run: flutter pub get
@@ -62,19 +51,9 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.2'
-          channel: 'stable'
+          flutter-version: "3.29.2"
+          channel: "stable"
           cache: true
-
-      - name: Cache pub dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            ${{ runner.tool_cache }}/flutter
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
 
       - name: Install dependencies
         run: flutter pub get
@@ -97,19 +76,9 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.2'
-          channel: 'stable'
+          flutter-version: "3.29.2"
+          channel: "stable"
           cache: true
-
-      - name: Cache pub dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            ${{ runner.tool_cache }}/flutter
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
 
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
@@ -147,31 +116,10 @@ jobs:
           echo "API_URL=${{ vars.API_URL }}" > .env
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@v2.16.0
         with:
-          flutter-version: '3.29.2'
-          channel: 'stable'
-          cache: true
-
-      - name: Cache pub dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.pub-cache
-            ${{ runner.tool_cache }}/flutter
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
-      - name: Cache CocoaPods
-        uses: actions/cache@v4
-        with:
-          path: |
-            ios/Pods
-            ~/.cocoapods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+          flutter-version: "3.29.2"
+          channel: "stable"
 
       - name: Install dependencies
         run: flutter pub get

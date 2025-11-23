@@ -10,6 +10,18 @@ class TimeUtils {
     return '${minutes}m';
   }
 
+  /// Formats seconds to time format (HH:MM:SS or MM:SS)
+  static String formatTime(int seconds) {
+    final hours = seconds ~/ 3600;
+    final minutes = (seconds % 3600) ~/ 60;
+    final secs = seconds % 60;
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    }
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
+
   /// Formats a date string to relative time (e.g., "2 days ago")
   static String formatRelativeDate(String dateString) {
     try {

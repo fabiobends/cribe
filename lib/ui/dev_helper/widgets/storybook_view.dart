@@ -1,4 +1,5 @@
 import 'package:cribe/data/repositories/podcasts/fake_podcast_repository.dart';
+import 'package:cribe/data/services/player_service.dart';
 import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/auth/view_models/fake_login_view_model.dart';
 import 'package:cribe/ui/auth/view_models/fake_register_view_model.dart';
@@ -334,30 +335,37 @@ class StorybookView extends StatelessWidget {
         );
 
       case 'EpisodeDetailScreen':
-        return Scaffold(
-          appBar:
-              AppBar(title: StyledText(text: name, variant: TextVariant.title)),
-          body: ChangeNotifierProvider(
-            create: (_) => EpisodeDetailViewModel(
-              episode: Episode(
-                id: 1,
-                externalId: 'fake-episode-1',
-                podcastId: 1,
-                name: 'Episode 1: The Future of AI and Technology',
-                description:
-                    'In this episode, we dive deep into fascinating topics about artificial intelligence and emerging technologies. Our guest shares incredible insights and experiences that will leave you inspired and informed.',
-                audioUrl: 'https://example.com/audio/episode1.mp3',
-                imageUrl: 'https://picsum.photos/400/400?random=1',
-                datePublished: DateTime.now()
-                    .subtract(const Duration(days: 7))
-                    .toIso8601String(),
-                duration: 3600,
-                createdAt: DateTime.now().subtract(const Duration(days: 7)),
-                updatedAt: DateTime.now(),
+        return Builder(
+          builder: (context) {
+            return Scaffold(
+              appBar: AppBar(
+                title: StyledText(text: name, variant: TextVariant.title),
               ),
-            ),
-            child: const EpisodeDetailScreen(),
-          ),
+              body: ChangeNotifierProvider(
+                create: (_) => EpisodeDetailViewModel(
+                  episode: Episode(
+                    id: 1,
+                    externalId: 'fake-episode-1',
+                    podcastId: 1,
+                    name: 'An Update from Ira',
+                    description:
+                        '<p>Ira Glass shares some news about This American Life</p>\n\n<p>To sign up as a Life Partner, visit <a href="https://thisamericanlife.supercast.com?utm_campaign=lifepartners&amp;utm_source=rss&amp;utm_medium=shownotes">thisamericanlife.org/lifepartners</a></p>',
+                    audioUrl:
+                        'https://www.thisamericanlife.org/sites/default/files/audio/upload/extra/life_partners_standalone_promo_10_15_2025_v2.mp3',
+                    imageUrl: 'https://picsum.photos/400/400?random=1',
+                    datePublished: DateTime.now()
+                        .subtract(const Duration(days: 7))
+                        .toIso8601String(),
+                    duration: 3600,
+                    createdAt: DateTime.now().subtract(const Duration(days: 7)),
+                    updatedAt: DateTime.now(),
+                  ),
+                  playerService: PlayerService(),
+                ),
+                child: const EpisodeDetailScreen(),
+              ),
+            );
+          },
         );
 
       case 'SettingsScreen':
