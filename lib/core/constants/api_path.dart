@@ -8,4 +8,8 @@ class ApiPath {
   static const String podcasts = 'podcasts';
 
   static String podcastById(int id) => 'podcasts/$id';
+
+  // transcript endpoints
+  static String transcriptsStreamSse(int episodeId) =>
+      'transcripts/stream/sse?episode_id=$episodeId';
 }

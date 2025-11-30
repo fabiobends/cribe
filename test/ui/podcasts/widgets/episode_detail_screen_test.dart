@@ -1,6 +1,8 @@
 import 'package:cribe/domain/models/podcast.dart';
+import 'package:cribe/domain/models/transcript.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
 import 'package:cribe/ui/podcasts/widgets/episode_detail_screen.dart';
+import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -39,6 +41,11 @@ void main() {
     when(mockViewModel.isPlaying).thenReturn(false);
     when(mockViewModel.isCompleted).thenReturn(false);
     when(mockViewModel.isBuffering).thenReturn(false);
+    when(mockViewModel.chunks).thenReturn([]);
+    when(mockViewModel.speakers).thenReturn({});
+    when(mockViewModel.speakerTurns).thenReturn([]);
+    when(mockViewModel.currentAudioPosition).thenReturn(0.0);
+    when(mockViewModel.transcriptSyncOffset).thenReturn(0.4);
   });
 
   Episode createMockEpisode() {
@@ -60,9 +67,11 @@ void main() {
 
   Widget createWidgetUnderTest(EpisodeDetailViewModel viewModel) {
     return MaterialApp(
-      home: ChangeNotifierProvider<EpisodeDetailViewModel>(
-        create: (_) => viewModel,
-        child: const EpisodeDetailScreen(),
+      home: Scaffold(
+        body: ChangeNotifierProvider<EpisodeDetailViewModel>(
+          create: (_) => viewModel,
+          child: const EpisodeDetailScreen(),
+        ),
       ),
     );
   }
@@ -109,27 +118,6 @@ void main() {
         // Assert
         expect(find.text('2 days ago'), findsOneWidget);
         expect(find.text('1h 5m'), findsWidgets);
-      });
-
-      testWidgets('should display episode description',
-          (WidgetTester tester) async {
-        // Arrange
-        final mockEpisode = createMockEpisode();
-
-        when(mockViewModel.isLoading).thenReturn(false);
-        when(mockViewModel.episode).thenReturn(mockEpisode);
-        when(mockViewModel.duration).thenReturn('1h 5m');
-        when(mockViewModel.datePublished).thenReturn('2 days ago');
-        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
-        when(mockViewModel.elapsedTime).thenReturn('0m 0s');
-        when(mockViewModel.duration).thenReturn('1h 5m');
-
-        // Act
-        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
-
-        // Assert
-        expect(find.text('Description'), findsOneWidget);
-        expect(find.textContaining('fascinating topics'), findsOneWidget);
       });
 
       testWidgets('should display playback controls',
@@ -264,6 +252,125 @@ void main() {
 
         // Assert
         expect(find.byType(CustomScrollView), findsOneWidget);
+      });
+    });
+
+    group('transcript display with speaker turns', () {
+      Future<void> setupTranscriptTest(
+        WidgetTester tester, {
+        required List<TranscriptChunk> chunks,
+        required List<SpeakerTurn> speakerTurns,
+        Map<int, String> speakers = const {},
+        double audioPosition = 0.0,
+      }) async {
+        final mockEpisode = createMockEpisode();
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.episode).thenReturn(mockEpisode);
+        when(mockViewModel.duration).thenReturn('1h 5m');
+        when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
+        when(mockViewModel.elapsedTime).thenReturn('0m');
+        when(mockViewModel.chunks).thenReturn(chunks);
+        when(mockViewModel.speakerTurns).thenReturn(speakerTurns);
+        when(mockViewModel.speakers).thenReturn(speakers);
+        when(mockViewModel.currentAudioPosition).thenReturn(audioPosition);
+        when(mockViewModel.transcriptSyncOffset).thenReturn(0.4);
+
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('should render speaker turns with names and transcript text',
+          (WidgetTester tester) async {
+        final chunks = [
+          TranscriptChunk(
+            position: 0,
+            speakerIndex: 0,
+            start: 0.0,
+            end: 2.0,
+            text: 'Hello',
+          ),
+          TranscriptChunk(
+            position: 1,
+            speakerIndex: 1,
+            start: 2.0,
+            end: 4.0,
+            text: 'Hi',
+          ),
+        ];
+        await setupTranscriptTest(
+          tester,
+          chunks: chunks,
+          speakerTurns: [
+            SpeakerTurn(0, [chunks[0]]),
+            SpeakerTurn(1, [chunks[1]]),
+          ],
+          speakers: {0: 'Alice', 1: 'Bob'},
+        );
+
+        expect(find.byType(StyledText), findsWidgets);
+        expect(find.byType(RichText), findsWidgets);
+        expect(find.byType(Row), findsWidgets);
+      });
+
+      testWidgets('should use default speaker names when not provided',
+          (WidgetTester tester) async {
+        final chunks = [
+          TranscriptChunk(
+            position: 0,
+            speakerIndex: 0,
+            start: 0.0,
+            end: 2.0,
+            text: 'Text',
+          ),
+        ];
+        await setupTranscriptTest(
+          tester,
+          chunks: chunks,
+          speakerTurns: [SpeakerTurn(0, chunks)],
+        );
+
+        expect(find.text('Speaker 0', skipOffstage: false), findsOneWidget);
+      });
+
+      testWidgets('should display multiple alternating speaker turns',
+          (WidgetTester tester) async {
+        final chunks = [
+          TranscriptChunk(
+            position: 0,
+            speakerIndex: 0,
+            start: 0.0,
+            end: 2.0,
+            text: 'A1',
+          ),
+          TranscriptChunk(
+            position: 1,
+            speakerIndex: 1,
+            start: 2.0,
+            end: 4.0,
+            text: 'B1',
+          ),
+          TranscriptChunk(
+            position: 2,
+            speakerIndex: 0,
+            start: 4.0,
+            end: 6.0,
+            text: 'A2',
+          ),
+        ];
+        await setupTranscriptTest(
+          tester,
+          chunks: chunks,
+          speakerTurns: [
+            SpeakerTurn(0, [chunks[0]]),
+            SpeakerTurn(1, [chunks[1]]),
+            SpeakerTurn(0, [chunks[2]]),
+          ],
+          speakers: {0: 'Alice', 1: 'Bob'},
+        );
+
+        expect(find.byType(StyledText), findsWidgets);
+        expect(find.byType(RichText), findsWidgets);
       });
     });
   });

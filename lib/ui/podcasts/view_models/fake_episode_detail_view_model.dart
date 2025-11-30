@@ -1,4 +1,6 @@
+import 'package:cribe/data/repositories/transcripts/fake_transcript_repository.dart';
 import 'package:cribe/data/services/player_service.dart';
+import 'package:cribe/data/services/transcription_service.dart';
 import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
 
@@ -22,6 +24,9 @@ class FakeEpisodeDetailViewModel extends EpisodeDetailViewModel {
             updatedAt: DateTime.now(),
           ),
           playerService: PlayerService(),
+          transcriptionService: TranscriptionService(
+            repository: FakeTranscriptRepository(),
+          ),
         ) {
     logger.info('FakeEpisodeDetailViewModel initialized');
   }

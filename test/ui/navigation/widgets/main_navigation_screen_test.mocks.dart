@@ -504,6 +504,22 @@ class MockApiService extends _i1.Mock implements _i5.ApiService {
       ) as _i8.Future<void>);
 
   @override
+  dynamic getStream<T>(
+    String? path,
+    T Function(
+      String,
+      Map<String, dynamic>,
+    )? fromJson,
+  ) =>
+      super.noSuchMethod(Invocation.method(
+        #getStream,
+        [
+          path,
+          fromJson,
+        ],
+      ));
+
+  @override
   _i8.Future<_i5.ApiResponse<T>> get<T>(
     String? path,
     T Function(dynamic)? fromJson,
