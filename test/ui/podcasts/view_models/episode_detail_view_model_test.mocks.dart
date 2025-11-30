@@ -7,6 +7,8 @@ import 'dart:async' as _i5;
 
 import 'package:cribe/core/logger/logger_mixins.dart' as _i3;
 import 'package:cribe/data/services/player_service.dart' as _i4;
+import 'package:cribe/data/services/transcription_service.dart' as _i6;
+import 'package:cribe/domain/models/transcript_event.dart' as _i7;
 import 'package:just_audio/just_audio.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
@@ -183,4 +185,24 @@ class MockPlayerService extends _i1.Mock implements _i4.PlayerService {
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
+}
+
+/// A class which mocks [TranscriptionService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockTranscriptionService extends _i1.Mock
+    implements _i6.TranscriptionService {
+  MockTranscriptionService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Stream<_i7.TranscriptEvent> streamTranscript(int? episodeId) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #streamTranscript,
+          [episodeId],
+        ),
+        returnValue: _i5.Stream<_i7.TranscriptEvent>.empty(),
+      ) as _i5.Stream<_i7.TranscriptEvent>);
 }

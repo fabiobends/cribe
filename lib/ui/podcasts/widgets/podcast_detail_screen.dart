@@ -1,6 +1,9 @@
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
+import 'package:cribe/data/repositories/transcripts/transcript_repository.dart';
+import 'package:cribe/data/services/api_service.dart';
 import 'package:cribe/data/services/player_service.dart';
+import 'package:cribe/data/services/transcription_service.dart';
 import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
@@ -223,12 +226,20 @@ class _EpisodeCard extends StatelessWidget {
   });
 
   void _navigateToEpisodeDetail(BuildContext context) {
+    final playerService = PlayerService();
+    final apiService = context.read<ApiService>();
+    final transcriptRepository = TranscriptRepository(
+      apiService: apiService,
+    );
+    final transcriptionService =
+        TranscriptionService(repository: transcriptRepository);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider(
           create: (_) => EpisodeDetailViewModel(
             episode: formattedEpisode.episode,
-            playerService: PlayerService(),
+            playerService: playerService,
+            transcriptionService: transcriptionService,
           ),
           child: const EpisodeDetailScreen(),
         ),

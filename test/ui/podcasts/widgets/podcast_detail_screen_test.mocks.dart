@@ -3,11 +3,16 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:ui' as _i4;
+import 'dart:async' as _i8;
+import 'dart:io' as _i4;
+import 'dart:ui' as _i7;
 
 import 'package:cribe/core/logger/logger_mixins.dart' as _i2;
+import 'package:cribe/data/model/auth/login_response.dart' as _i9;
+import 'package:cribe/data/services/api_service.dart' as _i5;
+import 'package:cribe/data/services/storage_service.dart' as _i3;
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart'
-    as _i3;
+    as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -35,20 +40,52 @@ class _FakeContextualLogger_0 extends _i1.SmartFake
         );
 }
 
+class _FakeStorageService_1 extends _i1.SmartFake
+    implements _i3.StorageService {
+  _FakeStorageService_1(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeHttpClient_2 extends _i1.SmartFake implements _i4.HttpClient {
+  _FakeHttpClient_2(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeApiResponse_3<T1> extends _i1.SmartFake
+    implements _i5.ApiResponse<T1> {
+  _FakeApiResponse_3(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [PodcastDetailViewModel].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockPodcastDetailViewModel extends _i1.Mock
-    implements _i3.PodcastDetailViewModel {
+    implements _i6.PodcastDetailViewModel {
   MockPodcastDetailViewModel() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  List<_i3.FormattedEpisode> get episodes => (super.noSuchMethod(
+  List<_i6.FormattedEpisode> get episodes => (super.noSuchMethod(
         Invocation.getter(#episodes),
-        returnValue: <_i3.FormattedEpisode>[],
-      ) as List<_i3.FormattedEpisode>);
+        returnValue: <_i6.FormattedEpisode>[],
+      ) as List<_i6.FormattedEpisode>);
 
   @override
   bool get isLoading => (super.noSuchMethod(
@@ -105,7 +142,7 @@ class MockPodcastDetailViewModel extends _i1.Mock
       );
 
   @override
-  void addListener(_i4.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -114,7 +151,7 @@ class MockPodcastDetailViewModel extends _i1.Mock
       );
 
   @override
-  void removeListener(_i4.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -139,4 +176,226 @@ class MockPodcastDetailViewModel extends _i1.Mock
         ),
         returnValueForMissingStub: null,
       );
+}
+
+/// A class which mocks [ApiService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockApiService extends _i1.Mock implements _i5.ApiService {
+  MockApiService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.StorageService get storageService => (super.noSuchMethod(
+        Invocation.getter(#storageService),
+        returnValue: _FakeStorageService_1(
+          this,
+          Invocation.getter(#storageService),
+        ),
+      ) as _i3.StorageService);
+
+  @override
+  _i4.HttpClient get httpClient => (super.noSuchMethod(
+        Invocation.getter(#httpClient),
+        returnValue: _FakeHttpClient_2(
+          this,
+          Invocation.getter(#httpClient),
+        ),
+      ) as _i4.HttpClient);
+
+  @override
+  _i2.ContextualLogger get logger => (super.noSuchMethod(
+        Invocation.getter(#logger),
+        returnValue: _FakeContextualLogger_0(
+          this,
+          Invocation.getter(#logger),
+        ),
+      ) as _i2.ContextualLogger);
+
+  @override
+  _i8.Future<void> init() => (super.noSuchMethod(
+        Invocation.method(
+          #init,
+          [],
+        ),
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
+
+  @override
+  dynamic updateBaseUrl(String? newUrl) => super.noSuchMethod(Invocation.method(
+        #updateBaseUrl,
+        [newUrl],
+      ));
+
+  @override
+  _i8.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
+
+  @override
+  _i8.Future<void> setTokens(_i9.LoginResponse? tokens) => (super.noSuchMethod(
+        Invocation.method(
+          #setTokens,
+          [tokens],
+        ),
+        returnValue: _i8.Future<void>.value(),
+        returnValueForMissingStub: _i8.Future<void>.value(),
+      ) as _i8.Future<void>);
+
+  @override
+  dynamic getStream<T>(
+    String? path,
+    T Function(
+      String,
+      Map<String, dynamic>,
+    )? fromJson,
+  ) =>
+      super.noSuchMethod(Invocation.method(
+        #getStream,
+        [
+          path,
+          fromJson,
+        ],
+      ));
+
+  @override
+  _i8.Future<_i5.ApiResponse<T>> get<T>(
+    String? path,
+    T Function(dynamic)? fromJson,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #get,
+          [
+            path,
+            fromJson,
+          ],
+        ),
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #get,
+            [
+              path,
+              fromJson,
+            ],
+          ),
+        )),
+      ) as _i8.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i8.Future<_i5.ApiResponse<T>> post<T>(
+    String? path,
+    T Function(dynamic)? fromJson, {
+    Map<String, dynamic>? body,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #post,
+          [
+            path,
+            fromJson,
+          ],
+          {#body: body},
+        ),
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #post,
+            [
+              path,
+              fromJson,
+            ],
+            {#body: body},
+          ),
+        )),
+      ) as _i8.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i8.Future<_i5.ApiResponse<T>> delete<T>(
+    String? path,
+    T Function(dynamic)? fromJson,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #delete,
+          [
+            path,
+            fromJson,
+          ],
+        ),
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #delete,
+            [
+              path,
+              fromJson,
+            ],
+          ),
+        )),
+      ) as _i8.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i8.Future<_i5.ApiResponse<T>> put<T>(
+    String? path,
+    T Function(dynamic)? fromJson, {
+    Map<String, dynamic>? body,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #put,
+          [
+            path,
+            fromJson,
+          ],
+          {#body: body},
+        ),
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #put,
+            [
+              path,
+              fromJson,
+            ],
+            {#body: body},
+          ),
+        )),
+      ) as _i8.Future<_i5.ApiResponse<T>>);
+
+  @override
+  _i8.Future<_i5.ApiResponse<T>> patch<T>(
+    String? path,
+    T Function(dynamic)? fromJson, {
+    Map<String, dynamic>? body,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #patch,
+          [
+            path,
+            fromJson,
+          ],
+          {#body: body},
+        ),
+        returnValue: _i8.Future<_i5.ApiResponse<T>>.value(_FakeApiResponse_3<T>(
+          this,
+          Invocation.method(
+            #patch,
+            [
+              path,
+              fromJson,
+            ],
+            {#body: body},
+          ),
+        )),
+      ) as _i8.Future<_i5.ApiResponse<T>>);
 }

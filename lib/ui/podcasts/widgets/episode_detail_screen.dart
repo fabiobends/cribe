@@ -119,8 +119,6 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
 
     return Consumer<EpisodeDetailViewModel>(
       builder: (context, viewModel, child) {
-        final episode = viewModel.episode;
-
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(Spacing.medium),
@@ -156,26 +154,144 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                   ],
                 ),
                 const SizedBox(height: Spacing.large),
-
                 // Play button and progress
                 _buildPlaybackControls(context),
                 const SizedBox(height: Spacing.large),
-
-                // Description section
-                StyledText(
-                  text: 'Description',
-                  variant: TextVariant.subtitle,
-                  color: theme.colorScheme.onSurface,
-                ),
+                // Transcript section
                 const SizedBox(height: Spacing.small),
-                StyledText(
-                  text: episode.description,
-                  variant: TextVariant.body,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+                _buildTranscriptView(context),
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTranscriptView(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Consumer<EpisodeDetailViewModel>(
+      builder: (context, vm, child) {
+        // show snackbar on error
+        if (vm.error != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: StyledText(
+                  text: vm.error!,
+                  variant: TextVariant.body,
+                  color: theme.colorScheme.onError,
+                ),
+                backgroundColor: theme.colorScheme.error,
+              ),
+            );
+            vm.setError(null);
+          });
+        }
+
+        final chunks = vm.chunks;
+        final speakers = vm.speakers;
+
+        // Show loading state if no chunks yet
+        if (chunks.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(Spacing.large),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(height: Spacing.medium),
+                  StyledText(
+                    text: 'Transcribing this episode...',
+                    variant: TextVariant.body,
+                    color: theme.colorScheme.onPrimary.withValues(alpha: 0.7),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Get speaker turns from view model
+        final turns = vm.speakerTurns;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: turns.map((turn) {
+            final name =
+                speakers[turn.speakerIndex] ?? 'Speaker ${turn.speakerIndex}';
+
+            // Determine alignment: even -> left, odd -> right
+            final alignLeft = turn.speakerIndex % 2 == 0;
+
+            // Current audio position in seconds
+            final audioPos = vm.currentAudioPosition;
+
+            // Build text spans with proper highlighting based on audio time
+            final textSpans = turn.chunks.map((chunk) {
+              // Word should be highlighted only if audio has passed its start time
+              // Use a small threshold to avoid highlighting words at position 0
+              final isSpokenOrCurrent = audioPos > 0 &&
+                  audioPos >= (chunk.start - vm.transcriptSyncOffset);
+              return TextSpan(
+                text: '${chunk.text} ',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: isSpokenOrCurrent
+                      ? theme.colorScheme
+                          .onPrimary // Already spoken or current: full brightness
+                      : theme.colorScheme.onPrimary
+                          .withValues(alpha: 0.4), // Otherwise dimmed
+                ),
+              );
+            }).toList();
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: Spacing.small),
+              child: Row(
+                mainAxisAlignment:
+                    alignLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: alignLeft
+                          ? CrossAxisAlignment.start
+                          : CrossAxisAlignment.end,
+                      children: [
+                        // Speaker name underlined
+                        StyledText(
+                          text: name,
+                          variant: TextVariant.label,
+                          color: theme.colorScheme.onPrimary
+                              .withValues(alpha: 0.7),
+                        ),
+                        Container(
+                          height: Spacing.tiny,
+                          width: Spacing.large,
+                          color: alignLeft
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.secondary,
+                        ),
+                        const SizedBox(height: Spacing.extraSmall),
+                        // Words with proper highlighting per chunk
+                        RichText(
+                          textAlign:
+                              alignLeft ? TextAlign.left : TextAlign.right,
+                          text: TextSpan(children: textSpans),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
         );
       },
     );

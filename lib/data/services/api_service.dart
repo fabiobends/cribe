@@ -89,6 +89,38 @@ class ApiService extends BaseService {
     );
   }
 
+  getStream<T>(
+    String path,
+    T Function(String eventType, Map<String, dynamic> json) fromJson,
+  ) async* {
+    final uri = _getUri(path);
+    final request = await httpClient.getUrl(uri);
+    _addStreamHeaders(request);
+    final response = await request.close();
+    final lines = utf8.decoder.bind(response).transform(const LineSplitter());
+
+    String lastEvent = '';
+
+    await for (final line in lines) {
+      try {
+        if (line.startsWith('event:')) {
+          lastEvent = line.substring(6).trim();
+          continue;
+        }
+        if (line.startsWith('data:')) {
+          final dataStr = line.substring(5).trim();
+          final data = jsonDecode(dataStr) as Map<String, dynamic>;
+          final event = fromJson(lastEvent, data);
+          if (event != null) {
+            yield event;
+          }
+        }
+      } catch (e) {
+        logger.error('Error parsing stream data: $e');
+      }
+    }
+  }
+
   Future<ApiResponse<T>> get<T>(
     String path,
     T Function(dynamic) fromJson,
@@ -190,6 +222,13 @@ class ApiService extends BaseService {
   void _addHeaders(HttpClientRequest httpRequest) {
     httpRequest.headers.set('Content-Type', 'application/json');
     httpRequest.headers.set('Accept', 'application/json');
+    if (_tokens.accessToken.isNotEmpty) {
+      httpRequest.headers.set('Authorization', 'Bearer ${_tokens.accessToken}');
+    }
+  }
+
+  void _addStreamHeaders(HttpClientRequest httpRequest) {
+    httpRequest.headers.set('Accept', 'text/event-stream');
     if (_tokens.accessToken.isNotEmpty) {
       httpRequest.headers.set('Authorization', 'Bearer ${_tokens.accessToken}');
     }

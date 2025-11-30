@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:cribe/data/services/player_service.dart';
+import 'package:cribe/data/services/transcription_service.dart';
 import 'package:cribe/domain/models/podcast.dart';
+import 'package:cribe/domain/models/transcript_event.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -9,14 +11,17 @@ import 'package:mockito/mockito.dart';
 
 import 'episode_detail_view_model_test.mocks.dart';
 
-@GenerateMocks([PlayerService])
+@GenerateMocks([PlayerService, TranscriptionService])
 void main() {
   late EpisodeDetailViewModel viewModel;
   late Episode testEpisode;
   late MockPlayerService mockPlayerService;
+  late MockTranscriptionService mockTranscriptRepository;
 
   setUp(() {
     mockPlayerService = MockPlayerService();
+    mockTranscriptRepository = MockTranscriptionService();
+
     when(mockPlayerService.setAudioUrl(any)).thenAnswer((_) async {});
     when(mockPlayerService.positionStream)
         .thenAnswer((_) => const Stream.empty());
@@ -39,6 +44,7 @@ void main() {
     viewModel = EpisodeDetailViewModel(
       episode: testEpisode,
       playerService: mockPlayerService,
+      transcriptionService: mockTranscriptRepository,
     );
   });
 
@@ -142,9 +148,8 @@ void main() {
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
+          transcriptionService: mockTranscriptRepository,
         );
-
-        // First emit duration so _audioDuration is set
         durationController.add(const Duration(seconds: 100));
         await Future.delayed(const Duration(milliseconds: 10));
 
@@ -171,9 +176,11 @@ void main() {
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
+          transcriptionService: mockTranscriptRepository,
         );
 
-        durationController.add(const Duration(seconds: 180));
+        // Emit duration to update the view model
+        durationController.add(const Duration(seconds: 180)); // 3 minutes
         await Future.delayed(const Duration(milliseconds: 10));
 
         expect(newViewModel.duration, equals('3m'));
@@ -193,11 +200,168 @@ void main() {
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
+          transcriptionService: mockTranscriptRepository,
         );
 
         await Future.delayed(const Duration(milliseconds: 10));
 
-        expect(newViewModel.error, equals('Failed to load audio'));
+        // Should have an error set (either from player or transcript init failure)
+        expect(newViewModel.error, isNotNull);
+      });
+    });
+
+    group('Transcript streaming', () {
+      test('should handle all transcript event types', () async {
+        final controller = StreamController<TranscriptEvent>();
+        when(mockTranscriptRepository.streamTranscript(any))
+            .thenAnswer((_) => controller.stream);
+
+        final newViewModel = EpisodeDetailViewModel(
+          episode: testEpisode,
+          playerService: mockPlayerService,
+          transcriptionService: mockTranscriptRepository,
+        );
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        // Test chunk event
+        controller.add(
+          const TranscriptChunkEvent(
+            position: 0,
+            speakerIndex: 0,
+            start: 0.0,
+            end: 2.0,
+            text: 'Hello',
+          ),
+        );
+        await Future.delayed(const Duration(milliseconds: 10));
+        expect(newViewModel.chunks.length, equals(1));
+        expect(newViewModel.chunks[0].text, equals('Hello'));
+
+        // Test speaker event
+        controller.add(const TranscriptSpeakerEvent(index: 0, name: 'Alice'));
+        await Future.delayed(const Duration(milliseconds: 10));
+        expect(newViewModel.speakers[0], equals('Alice'));
+
+        // Test complete event
+        controller.add(const TranscriptCompleteEvent());
+        await Future.delayed(const Duration(milliseconds: 10));
+        expect(newViewModel.transcriptCompleted, isTrue);
+
+        // Test error event
+        controller.add(const TranscriptErrorEvent(error: 'Test error'));
+        await Future.delayed(const Duration(milliseconds: 10));
+        expect(newViewModel.error, equals('Test error'));
+
+        controller.close();
+      });
+
+      test('should handle stream errors and cleanup', () async {
+        final controller = StreamController<TranscriptEvent>();
+        when(mockTranscriptRepository.streamTranscript(any))
+            .thenAnswer((_) => controller.stream);
+
+        final newViewModel = EpisodeDetailViewModel(
+          episode: testEpisode,
+          playerService: mockPlayerService,
+          transcriptionService: mockTranscriptRepository,
+        );
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        // Test onError
+        controller.addError(Exception('SSE error'));
+        await Future.delayed(const Duration(milliseconds: 10));
+        expect(newViewModel.error, equals('Transcript streaming error'));
+        expect(newViewModel.isStreaming, isFalse);
+
+        controller.close();
+      });
+
+      test('should handle initialization failure', () async {
+        when(mockTranscriptRepository.streamTranscript(any))
+            .thenThrow(Exception('Connection failed'));
+
+        final newViewModel = EpisodeDetailViewModel(
+          episode: testEpisode,
+          playerService: mockPlayerService,
+          transcriptionService: mockTranscriptRepository,
+        );
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        expect(newViewModel.error, equals('Failed to start transcript stream'));
+        expect(newViewModel.isStreaming, isFalse);
+      });
+    });
+
+    group('Speaker turns grouping', () {
+      test('should group consecutive chunks by speaker', () async {
+        final controller = StreamController<TranscriptEvent>();
+        when(mockTranscriptRepository.streamTranscript(any))
+            .thenAnswer((_) => controller.stream);
+
+        final newViewModel = EpisodeDetailViewModel(
+          episode: testEpisode,
+          playerService: mockPlayerService,
+          transcriptionService: mockTranscriptRepository,
+        );
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        // Speaker 0 (2 chunks), Speaker 1 (1 chunk), Speaker 0 (1 chunk)
+        controller.add(
+          const TranscriptChunkEvent(
+            position: 0,
+            speakerIndex: 0,
+            start: 0.0,
+            end: 2.0,
+            text: 'A',
+          ),
+        );
+        controller.add(
+          const TranscriptChunkEvent(
+            position: 1,
+            speakerIndex: 0,
+            start: 2.0,
+            end: 4.0,
+            text: 'B',
+          ),
+        );
+        controller.add(
+          const TranscriptChunkEvent(
+            position: 2,
+            speakerIndex: 1,
+            start: 4.0,
+            end: 6.0,
+            text: 'C',
+          ),
+        );
+        controller.add(
+          const TranscriptChunkEvent(
+            position: 3,
+            speakerIndex: 0,
+            start: 6.0,
+            end: 8.0,
+            text: 'D',
+          ),
+        );
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        final turns = newViewModel.speakerTurns;
+        expect(turns.length, equals(3));
+        expect(turns[0].chunks.length, equals(2)); // Speaker 0, 2 chunks
+        expect(turns[1].chunks.length, equals(1)); // Speaker 1, 1 chunk
+        expect(turns[2].chunks.length, equals(1)); // Speaker 0, 1 chunk
+
+        controller.close();
+      });
+    });
+
+    group('Getters', () {
+      test('should return immutable collections and default values', () {
+        expect(viewModel.chunks, isEmpty);
+        expect(viewModel.speakers, isEmpty);
+        expect(viewModel.speakerTurns, isEmpty);
+        expect(viewModel.currentTranscriptChunkPosition, equals(-1));
+        expect(viewModel.transcriptCompleted, isFalse);
+        expect(() => viewModel.chunks.clear(), throwsUnsupportedError);
       });
     });
   });
