@@ -1,3 +1,4 @@
+import 'package:cribe/data/services/api_service.dart';
 import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart';
 import 'package:cribe/ui/podcasts/widgets/podcast_detail_screen.dart';
@@ -9,7 +10,7 @@ import 'package:provider/provider.dart';
 
 import 'podcast_detail_screen_test.mocks.dart';
 
-@GenerateMocks([PodcastDetailViewModel])
+@GenerateMocks([PodcastDetailViewModel, ApiService])
 void main() {
   late MockPodcastDetailViewModel mockViewModel;
   const testPodcastId = 1;
@@ -302,6 +303,98 @@ void main() {
 
         // Assert
         expect(find.byType(CustomScrollView), findsOneWidget);
+      });
+    });
+
+    group('episode navigation', () {
+      testWidgets('should navigate to episode detail when tapping episode card',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisodes = createMockFormattedEpisodes(count: 1);
+        final mockApiService = MockApiService();
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn(mockEpisodes);
+
+        // Suppress image loading errors
+        final originalOnError = FlutterError.onError;
+        addTearDown(() => FlutterError.onError = originalOnError);
+        FlutterError.onError = (details) {
+          if (!details.exception
+              .toString()
+              .contains('NetworkImageLoadException')) {
+            FlutterError.presentError(details);
+          }
+        };
+
+        // Act
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MultiProvider(
+              providers: [
+                ChangeNotifierProvider<PodcastDetailViewModel>(
+                  create: (_) => mockViewModel,
+                ),
+                Provider<ApiService>(
+                  create: (_) => mockApiService,
+                ),
+              ],
+              child: const PodcastDetailScreen(),
+            ),
+          ),
+        );
+
+        // Tap on the episode card
+        await tester.tap(find.byType(Card).first);
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 1));
+      });
+
+      testWidgets(
+          'should create services with proper dependencies when tapping episode',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisodes = createMockFormattedEpisodes(count: 1);
+        final mockApiService = MockApiService();
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn(mockEpisodes);
+
+        // Suppress image loading errors
+        FlutterError.onError = (details) {
+          if (!details.exception
+              .toString()
+              .contains('NetworkImageLoadException')) {
+            FlutterError.presentError(details);
+          }
+        };
+
+        // Act
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MultiProvider(
+              providers: [
+                ChangeNotifierProvider<PodcastDetailViewModel>(
+                  create: (_) => mockViewModel,
+                ),
+                Provider<ApiService>(
+                  create: (_) => mockApiService,
+                ),
+              ],
+              child: const PodcastDetailScreen(),
+            ),
+          ),
+        );
+
+        final cardFinder = find.byType(Card).first;
+        expect(cardFinder, findsOneWidget);
+
+        await tester.tap(cardFinder);
+        await tester.pump();
       });
     });
   });

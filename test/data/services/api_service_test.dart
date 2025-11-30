@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -598,6 +599,113 @@ void main() {
         );
 
         verify(mockHttpClient.deleteUrl(any)).called(1);
+      });
+    });
+
+    group('getStream', () {
+      test('should stream SSE events successfully', () async {
+        // Arrange
+        const path = 'stream/events';
+        final sseData = 'event: message\n'
+            'data: {"id": 1, "text": "Hello"}\n'
+            '\n'
+            'event: message\n'
+            'data: {"id": 2, "text": "World"}\n'
+            '\n';
+
+        // Create a controller for the stream
+        final streamController = StreamController<List<int>>();
+
+        when(mockHttpClient.getUrl(any)).thenAnswer((_) async => mockRequest);
+        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
+        when(mockResponse.statusCode).thenReturn(200);
+
+        // Mock both transform and listen to handle the stream properly
+        when(mockResponse.transform(utf8.decoder))
+            .thenAnswer((_) => streamController.stream.transform(utf8.decoder));
+        when(
+          mockResponse.listen(
+            any,
+            onError: anyNamed('onError'),
+            onDone: anyNamed('onDone'),
+            cancelOnError: anyNamed('cancelOnError'),
+          ),
+        ).thenAnswer((invocation) {
+          return streamController.stream.listen(
+            invocation.positionalArguments[0] as void Function(List<int>),
+            onError: invocation.namedArguments[#onError] as Function?,
+            onDone: invocation.namedArguments[#onDone] as void Function()?,
+            cancelOnError: invocation.namedArguments[#cancelOnError] as bool?,
+          );
+        });
+
+        // Act
+        final stream = apiService.getStream<Map<String, dynamic>>(
+          path,
+          (eventType, json) => json,
+        );
+
+        // Add data to stream after a delay to ensure listener is set up
+        Future.delayed(const Duration(milliseconds: 10), () {
+          streamController.add(sseData.codeUnits);
+          streamController.close();
+        });
+
+        // Assert
+        final events = await stream.toList();
+        expect(events.length, 2);
+        expect(events[0]['id'], 1);
+        expect(events[0]['text'], 'Hello');
+        expect(events[1]['id'], 2);
+        expect(events[1]['text'], 'World');
+
+        verify(mockHttpClient.getUrl(any)).called(1);
+        verify(mockRequest.close()).called(1);
+      });
+
+      test('should throw ApiException on HTTP error status', () async {
+        // Arrange
+        const path = 'stream/events';
+        final streamController = StreamController<List<int>>();
+
+        when(mockHttpClient.getUrl(any)).thenAnswer((_) async => mockRequest);
+        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
+        when(mockResponse.statusCode).thenReturn(404);
+        when(mockResponse.transform(utf8.decoder))
+            .thenAnswer((_) => streamController.stream.transform(utf8.decoder));
+        when(
+          mockResponse.listen(
+            any,
+            onError: anyNamed('onError'),
+            onDone: anyNamed('onDone'),
+            cancelOnError: anyNamed('cancelOnError'),
+          ),
+        ).thenAnswer((invocation) {
+          return streamController.stream.listen(
+            invocation.positionalArguments[0] as void Function(List<int>),
+            onError: invocation.namedArguments[#onError] as Function?,
+            onDone: invocation.namedArguments[#onDone] as void Function()?,
+            cancelOnError: invocation.namedArguments[#cancelOnError] as bool?,
+          );
+        });
+
+        // Add error response
+        Future.delayed(const Duration(milliseconds: 10), () {
+          streamController.add('{"message": "Not found"}'.codeUnits);
+          streamController.close();
+        });
+
+        // Act & Assert
+        await expectLater(
+          apiService.getStream(path, (eventType, json) => json).toList(),
+          throwsA(
+            isA<ApiException>().having(
+              (e) => e.statusCode,
+              'statusCode',
+              404,
+            ),
+          ),
+        );
       });
     });
   });

@@ -3,14 +3,17 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:ui' as _i6;
+import 'dart:async' as _i7;
+import 'dart:ui' as _i9;
 
 import 'package:cribe/core/logger/logger_mixins.dart' as _i3;
+import 'package:cribe/data/services/transcription_service.dart' as _i8;
 import 'package:cribe/domain/models/podcast.dart' as _i2;
+import 'package:cribe/domain/models/transcript.dart' as _i5;
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart'
     as _i4;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
+import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -66,6 +69,54 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       ) as _i2.Episode);
 
   @override
+  List<_i5.TranscriptChunk> get chunks => (super.noSuchMethod(
+        Invocation.getter(#chunks),
+        returnValue: <_i5.TranscriptChunk>[],
+      ) as List<_i5.TranscriptChunk>);
+
+  @override
+  Map<int, String> get speakers => (super.noSuchMethod(
+        Invocation.getter(#speakers),
+        returnValue: <int, String>{},
+      ) as Map<int, String>);
+
+  @override
+  int get currentTranscriptChunkPosition => (super.noSuchMethod(
+        Invocation.getter(#currentTranscriptChunkPosition),
+        returnValue: 0,
+      ) as int);
+
+  @override
+  double get currentAudioPosition => (super.noSuchMethod(
+        Invocation.getter(#currentAudioPosition),
+        returnValue: 0.0,
+      ) as double);
+
+  @override
+  double get transcriptSyncOffset => (super.noSuchMethod(
+        Invocation.getter(#transcriptSyncOffset),
+        returnValue: 0.0,
+      ) as double);
+
+  @override
+  bool get transcriptCompleted => (super.noSuchMethod(
+        Invocation.getter(#transcriptCompleted),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get isStreaming => (super.noSuchMethod(
+        Invocation.getter(#isStreaming),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  List<_i5.SpeakerTurn> get speakerTurns => (super.noSuchMethod(
+        Invocation.getter(#speakerTurns),
+        returnValue: <_i5.SpeakerTurn>[],
+      ) as List<_i5.SpeakerTurn>);
+
+  @override
   double get playbackProgress => (super.noSuchMethod(
         Invocation.getter(#playbackProgress),
         returnValue: 0.0,
@@ -92,7 +143,7 @@ class MockEpisodeDetailViewModel extends _i1.Mock
   @override
   String get duration => (super.noSuchMethod(
         Invocation.getter(#duration),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.getter(#duration),
         ),
@@ -101,7 +152,7 @@ class MockEpisodeDetailViewModel extends _i1.Mock
   @override
   String get datePublished => (super.noSuchMethod(
         Invocation.getter(#datePublished),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.getter(#datePublished),
         ),
@@ -110,7 +161,7 @@ class MockEpisodeDetailViewModel extends _i1.Mock
   @override
   String get elapsedTime => (super.noSuchMethod(
         Invocation.getter(#elapsedTime),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.getter(#elapsedTime),
         ),
@@ -119,7 +170,7 @@ class MockEpisodeDetailViewModel extends _i1.Mock
   @override
   String get remainingTime => (super.noSuchMethod(
         Invocation.getter(#remainingTime),
-        returnValue: _i5.dummyValue<String>(
+        returnValue: _i6.dummyValue<String>(
           this,
           Invocation.getter(#remainingTime),
         ),
@@ -151,6 +202,28 @@ class MockEpisodeDetailViewModel extends _i1.Mock
           Invocation.getter(#logger),
         ),
       ) as _i3.ContextualLogger);
+
+  @override
+  _i7.Future<void> startTranscriptStreamWith(
+          _i8.TranscriptionService? service) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #startTranscriptStreamWith,
+          [service],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> stopTranscriptStream() => (super.noSuchMethod(
+        Invocation.method(
+          #stopTranscriptStream,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void togglePlayPause() => super.noSuchMethod(
@@ -207,7 +280,7 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       );
 
   @override
-  void addListener(_i6.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -216,7 +289,7 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       );
 
   @override
-  void removeListener(_i6.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
