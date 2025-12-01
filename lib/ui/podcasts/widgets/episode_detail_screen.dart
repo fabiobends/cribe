@@ -1,6 +1,7 @@
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
+import 'package:cribe/ui/shared/widgets/conversation_turn.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,8 @@ class EpisodeDetailScreen extends StatefulWidget {
 class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
     with ScreenLogger {
   late EpisodeDetailViewModel _viewModel;
+  final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _chunkKeys = {};
 
   @override
   void initState() {
@@ -25,6 +28,53 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
     logger.info(
       'EpisodeDetailScreen initialized for episode ${_viewModel.episode.id}',
     );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToChunk(int chunkPosition) {
+    if (!_chunkKeys.containsKey(chunkPosition)) return;
+    if (!_scrollController.hasClients) return;
+
+    final key = _chunkKeys[chunkPosition];
+    final context = key?.currentContext;
+    if (context == null) return;
+
+    try {
+      final renderBox = context.findRenderObject() as RenderBox?;
+      if (renderBox == null || !renderBox.hasSize) return;
+
+      final position = renderBox.localToGlobal(Offset.zero);
+      final viewportHeight = MediaQuery.of(context).size.height;
+
+      // Check if chunk is already visible in comfortable viewing area
+      final chunkScreenY = position.dy;
+      final topThreshold =
+          viewportHeight * EpisodeDetailViewModel.scrollTopThreshold;
+      final bottomThreshold =
+          viewportHeight * EpisodeDetailViewModel.scrollBottomThreshold;
+
+      if (chunkScreenY >= topThreshold && chunkScreenY <= bottomThreshold) {
+        return;
+      }
+
+      final scrollOffset = _scrollController.offset;
+      final targetOffset = scrollOffset +
+          position.dy -
+          (viewportHeight * EpisodeDetailViewModel.scrollTargetPosition);
+
+      _scrollController.animateTo(
+        targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      );
+    } catch (e) {
+      logger.debug('Failed to scroll to chunk $chunkPosition: $e');
+    }
   }
 
   void _goBack(BuildContext context) {
@@ -38,6 +88,7 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           _buildSliverAppBar(context),
           _buildEpisodeContent(context),
@@ -219,6 +270,14 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
         // Get speaker turns from view model
         final turns = vm.speakerTurns;
 
+        // Auto-scroll based on the currently highlighted chunk from ViewModel
+        final currentHighlightedChunk = vm.currentHighlightedChunkPosition;
+        if (currentHighlightedChunk != null && vm.isPlaying) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToChunk(currentHighlightedChunk);
+          });
+        }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: turns.map((turn) {
@@ -226,70 +285,36 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                 speakers[turn.speakerIndex] ?? 'Speaker ${turn.speakerIndex}';
 
             // Determine alignment: even -> left, odd -> right
-            final alignLeft = turn.speakerIndex % 2 == 0;
+            final alignment = turn.speakerIndex % 2 == 0
+                ? TurnAlignment.left
+                : TurnAlignment.right;
 
-            // Current audio position in seconds
-            final audioPos = vm.currentAudioPosition;
+            // Build chunk widgets with keys for scrolling
+            final chunkWidgets = turn.chunks.map((chunk) {
+              // Create or reuse key for this chunk
+              _chunkKeys.putIfAbsent(chunk.position, () => GlobalKey());
 
-            // Build text spans with proper highlighting based on audio time
-            final textSpans = turn.chunks.map((chunk) {
-              // Word should be highlighted only if audio has passed its start time
-              // Use a small threshold to avoid highlighting words at position 0
-              final isSpokenOrCurrent = audioPos > 0 &&
-                  audioPos >= (chunk.start - vm.transcriptSyncOffset);
-              return TextSpan(
-                text: '${chunk.text} ',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: isSpokenOrCurrent
-                      ? theme.colorScheme
-                          .onPrimary // Already spoken or current: full brightness
-                      : theme.colorScheme.onPrimary
-                          .withValues(alpha: 0.4), // Otherwise dimmed
+              final isSpokenOrCurrent = vm.currentAudioPosition > 0 &&
+                  vm.currentAudioPosition >=
+                      (chunk.start - vm.transcriptSyncOffset);
+
+              return Container(
+                key: _chunkKeys[chunk.position],
+                child: Text(
+                  '${chunk.text} ',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: isSpokenOrCurrent
+                        ? theme.colorScheme.onPrimary
+                        : theme.colorScheme.onPrimary.withValues(alpha: 0.4),
+                  ),
                 ),
               );
             }).toList();
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: Spacing.small),
-              child: Row(
-                mainAxisAlignment:
-                    alignLeft ? MainAxisAlignment.start : MainAxisAlignment.end,
-                children: [
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.75,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: alignLeft
-                          ? CrossAxisAlignment.start
-                          : CrossAxisAlignment.end,
-                      children: [
-                        // Speaker name underlined
-                        StyledText(
-                          text: name,
-                          variant: TextVariant.label,
-                          color: theme.colorScheme.onPrimary
-                              .withValues(alpha: 0.7),
-                        ),
-                        Container(
-                          height: Spacing.tiny,
-                          width: Spacing.large,
-                          color: alignLeft
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.secondary,
-                        ),
-                        const SizedBox(height: Spacing.extraSmall),
-                        // Words with proper highlighting per chunk
-                        RichText(
-                          textAlign:
-                              alignLeft ? TextAlign.left : TextAlign.right,
-                          text: TextSpan(children: textSpans),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+            return ConversationTurn(
+              speakerName: name,
+              contentWidgets: chunkWidgets,
+              alignment: alignment,
             );
           }).toList(),
         );
