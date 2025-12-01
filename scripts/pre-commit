@@ -25,6 +25,14 @@ echo "📏 Checking file sizes avoiding bloated files..."
 EXCEEDED_FILES=""
 printf "%s\n" "$STAGED_FILES" | while IFS= read -r file; do
     [ -n "$file" ] || continue
+    
+    # Skip .mocks.dart files (generated files)
+    case "$file" in
+        *.mocks.dart)
+            continue
+            ;;
+    esac
+    
     LINE_COUNT=$(wc -l < "$file" | tr -d ' ')
     if [ "$LINE_COUNT" -gt 500 ]; then
         echo "⚠️  $file has $LINE_COUNT lines (exceeds 500 line limit)"
