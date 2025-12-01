@@ -9,6 +9,8 @@ import 'package:cribe/data/model/auth/refresh_token_response.dart';
 import 'package:cribe/data/services/base_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
 
+enum HttpMethod { get, post, delete, put, patch }
+
 class ApiResponse<T> {
   final T data;
   final int statusCode;
@@ -93,32 +95,15 @@ class ApiService extends BaseService {
     String path,
     T Function(String eventType, Map<String, dynamic> json) fromJson,
   ) async* {
-    final uri = _getUri(path);
-    final request = await httpClient.getUrl(uri);
-    _addStreamHeaders(request);
-    final response = await request.close();
-    final lines = utf8.decoder.bind(response).transform(const LineSplitter());
-
-    String lastEvent = '';
-
-    await for (final line in lines) {
-      try {
-        if (line.startsWith('event:')) {
-          lastEvent = line.substring(6).trim();
-          continue;
-        }
-        if (line.startsWith('data:')) {
-          final dataStr = line.substring(5).trim();
-          final data = jsonDecode(dataStr) as Map<String, dynamic>;
-          final event = fromJson(lastEvent, data);
-          if (event != null) {
-            yield event;
-          }
-        }
-      } catch (e) {
-        logger.error('Error parsing stream data: $e');
-      }
-    }
+    yield* _makeStreamRequestWithRetry(
+      () async {
+        final uri = _getUri(path);
+        final request = await httpClient.getUrl(uri);
+        _addStreamHeaders(request);
+        return request;
+      },
+      fromJson,
+    );
   }
 
   Future<ApiResponse<T>> get<T>(
@@ -126,12 +111,7 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson,
   ) async {
     return _makeRequestWithRetry(
-      () async {
-        final uri = _getUri(path);
-        final httpRequest = await httpClient.getUrl(uri);
-        _addHeaders(httpRequest);
-        return httpRequest;
-      },
+      () => _createRequest(HttpMethod.get, path),
       fromJson,
     );
   }
@@ -142,13 +122,7 @@ class ApiService extends BaseService {
     Map<String, dynamic>? body,
   }) async {
     return _makeRequestWithRetry(
-      () async {
-        final uri = _getUri(path);
-        final httpRequest = await httpClient.postUrl(uri);
-        _addHeaders(httpRequest);
-        _addBody(httpRequest, body);
-        return httpRequest;
-      },
+      () => _createRequest(HttpMethod.post, path, body: body),
       fromJson,
     );
   }
@@ -158,12 +132,7 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson,
   ) async {
     return _makeRequestWithRetry(
-      () async {
-        final uri = _getUri(path);
-        final httpRequest = await httpClient.deleteUrl(uri);
-        _addHeaders(httpRequest);
-        return httpRequest;
-      },
+      () => _createRequest(HttpMethod.delete, path),
       fromJson,
     );
   }
@@ -174,13 +143,7 @@ class ApiService extends BaseService {
     Map<String, dynamic>? body,
   }) async {
     return _makeRequestWithRetry(
-      () async {
-        final uri = _getUri(path);
-        final httpRequest = await httpClient.putUrl(uri);
-        _addHeaders(httpRequest);
-        _addBody(httpRequest, body);
-        return httpRequest;
-      },
+      () => _createRequest(HttpMethod.put, path, body: body),
       fromJson,
     );
   }
@@ -191,15 +154,37 @@ class ApiService extends BaseService {
     Map<String, dynamic>? body,
   }) async {
     return _makeRequestWithRetry(
-      () async {
-        final uri = _getUri(path);
-        final httpRequest = await httpClient.patchUrl(uri);
-        _addHeaders(httpRequest);
-        _addBody(httpRequest, body);
-        return httpRequest;
-      },
+      () => _createRequest(HttpMethod.patch, path, body: body),
       fromJson,
     );
+  }
+
+  Future<HttpClientRequest> _createRequest(
+    HttpMethod method,
+    String path, {
+    Map<String, dynamic>? body,
+  }) async {
+    final uri = _getUri(path);
+    final HttpClientRequest request;
+
+    switch (method) {
+      case HttpMethod.get:
+        request = await httpClient.getUrl(uri);
+      case HttpMethod.post:
+        request = await httpClient.postUrl(uri);
+      case HttpMethod.delete:
+        request = await httpClient.deleteUrl(uri);
+      case HttpMethod.put:
+        request = await httpClient.putUrl(uri);
+      case HttpMethod.patch:
+        request = await httpClient.patchUrl(uri);
+    }
+
+    _addHeaders(request);
+    if (body != null) {
+      _addBody(request, body);
+    }
+    return request;
   }
 
   Uri _getUri(String path) {
@@ -278,19 +263,7 @@ class ApiService extends BaseService {
     T Function(dynamic) fromJson,
   ) async {
     try {
-      // Make the initial request
-      HttpClientRequest httpRequest = await createRequest();
-      HttpClientResponse response = await httpRequest.close();
-
-      // Check if we need to refresh the token
-      final hasRefreshed = await _refreshTokenIfNeeded(response);
-
-      if (hasRefreshed) {
-        // Create a new request for the retry
-        httpRequest = await createRequest();
-        response = await httpRequest.close();
-      }
-
+      final response = await _executeRequestWithRetry(createRequest);
       return _processResponse(response, fromJson);
     } catch (e) {
       if (e is ApiException) rethrow;
@@ -298,26 +271,97 @@ class ApiService extends BaseService {
     }
   }
 
+  Stream<T> _makeStreamRequestWithRetry<T>(
+    Future<HttpClientRequest> Function() createRequest,
+    T Function(String eventType, Map<String, dynamic> json) fromJson,
+  ) async* {
+    try {
+      final response = await _executeRequestWithRetry(createRequest);
+
+      // Validate status code for streaming
+      if (response.statusCode >= 400) {
+        final message = await _extractErrorMessage(response);
+        throw ApiException(message, statusCode: response.statusCode);
+      }
+
+      // Stream the SSE data
+      yield* _processStreamResponse(response, fromJson);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException('Network error: $e');
+    }
+  }
+
+  Future<HttpClientResponse> _executeRequestWithRetry(
+    Future<HttpClientRequest> Function() createRequest,
+  ) async {
+    // Make the initial request
+    HttpClientRequest httpRequest = await createRequest();
+    HttpClientResponse response = await httpRequest.close();
+
+    // Check if we need to refresh the token
+    final hasRefreshed = await _refreshTokenIfNeeded(response);
+
+    if (hasRefreshed) {
+      // Create a new request for the retry
+      httpRequest = await createRequest();
+      response = await httpRequest.close();
+    }
+
+    return response;
+  }
+
+  Stream<T> _processStreamResponse<T>(
+    HttpClientResponse response,
+    T Function(String eventType, Map<String, dynamic> json) fromJson,
+  ) async* {
+    final lines = utf8.decoder.bind(response).transform(const LineSplitter());
+    String lastEvent = '';
+
+    await for (final line in lines) {
+      try {
+        if (line.startsWith('event:')) {
+          lastEvent = line.substring(6).trim();
+          continue;
+        }
+        if (line.startsWith('data:')) {
+          final dataStr = line.substring(5).trim();
+          final data = jsonDecode(dataStr) as Map<String, dynamic>;
+          final event = fromJson(lastEvent, data);
+          if (event != null) {
+            yield event;
+          }
+        }
+      } catch (e) {
+        logger.error('Error parsing stream data: $e');
+      }
+    }
+  }
+
+  Future<String> _extractErrorMessage(HttpClientResponse response) async {
+    final responseBody = await response.transform(utf8.decoder).join();
+    String message = 'Request failed';
+    try {
+      final errorData = jsonDecode(responseBody);
+      if (errorData is Map<String, dynamic> && errorData['message'] != null) {
+        message = errorData['message'].toString();
+      }
+    } catch (e) {
+      message = responseBody.isNotEmpty ? responseBody : message;
+    }
+    return message;
+  }
+
   Future<ApiResponse<T>> _processResponse<T>(
     HttpClientResponse response,
     T Function(dynamic) fromJson,
   ) async {
-    final responseBody = await response.transform(utf8.decoder).join();
-
     if (response.statusCode >= 400) {
-      String message = 'Request failed';
-      try {
-        final errorData = jsonDecode(responseBody);
-        if (errorData is Map<String, dynamic> && errorData['message'] != null) {
-          message = errorData['message'].toString();
-        }
-      } catch (e) {
-        // If JSON parsing fails, use the response body as message or default
-        message = responseBody.isNotEmpty ? responseBody : 'Request failed';
-      }
+      final message = await _extractErrorMessage(response);
       throw ApiException(message, statusCode: response.statusCode);
     }
 
+    final responseBody = await response.transform(utf8.decoder).join();
     final data = fromJson(jsonDecode(responseBody));
     return ApiResponse(data: data, statusCode: response.statusCode);
   }
