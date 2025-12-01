@@ -15,6 +15,11 @@ class EpisodeDetailViewModel extends BaseViewModel {
   static const double _transcriptSyncOffset =
       0.4; // seconds to adjust transcript timing
 
+  // Auto-scroll configuration
+  static const double scrollTopThreshold = 0.20; // Threshold from top
+  static const double scrollBottomThreshold = 0.80; // Threshold from bottom
+  static const double scrollTargetPosition = 0.40; // Position from top
+
   final Episode episode;
   final PlayerService _playerService;
   final TranscriptionService _transcriptionService;
@@ -43,6 +48,7 @@ class EpisodeDetailViewModel extends BaseViewModel {
   final List<TranscriptChunk> _chunks = [];
   final Map<int, String> _speakers = {}; // speaker_index -> name
   int _currentTranscriptChunkPosition = -1;
+  int? _currentHighlightedChunkPosition;
   bool _transcriptCompleted = false;
   bool _isStreaming = false;
   StreamSubscription? _sseSubscription;
@@ -51,6 +57,7 @@ class EpisodeDetailViewModel extends BaseViewModel {
   List<TranscriptChunk> get chunks => List.unmodifiable(_chunks);
   Map<int, String> get speakers => Map.unmodifiable(_speakers);
   int get currentTranscriptChunkPosition => _currentTranscriptChunkPosition;
+  int? get currentHighlightedChunkPosition => _currentHighlightedChunkPosition;
   double get currentAudioPosition => _currentAudioPosition;
   double get transcriptSyncOffset => _transcriptSyncOffset;
   bool get transcriptCompleted => _transcriptCompleted;
@@ -217,6 +224,7 @@ class EpisodeDetailViewModel extends BaseViewModel {
         if (position != null && _audioDuration > 0) {
           _currentAudioPosition = position.inSeconds.toDouble();
           _playbackProgress = position.inSeconds / _audioDuration;
+          _updateCurrentHighlightedChunk();
           notifyListeners();
         }
       });
@@ -236,6 +244,24 @@ class EpisodeDetailViewModel extends BaseViewModel {
   Future<void> _initializeTranscript() async {
     logger.info('Initializing transcript stream for episode: ${episode.id}');
     await startTranscriptStreamWith(_transcriptionService);
+  }
+
+  void _updateCurrentHighlightedChunk() {
+    if (_chunks.isEmpty || _currentAudioPosition <= 0) {
+      _currentHighlightedChunkPosition = null;
+      return;
+    }
+
+    // Find the current chunk based on audio position
+    for (var chunk in _chunks) {
+      if (_currentAudioPosition >= (chunk.start - _transcriptSyncOffset) &&
+          _currentAudioPosition <= chunk.end) {
+        if (_currentHighlightedChunkPosition != chunk.position) {
+          _currentHighlightedChunkPosition = chunk.position;
+        }
+        return;
+      }
+    }
   }
 
   void togglePlayPause() {

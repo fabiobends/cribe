@@ -46,6 +46,7 @@ void main() {
     when(mockViewModel.speakerTurns).thenReturn([]);
     when(mockViewModel.currentAudioPosition).thenReturn(0.0);
     when(mockViewModel.transcriptSyncOffset).thenReturn(0.4);
+    when(mockViewModel.currentHighlightedChunkPosition).thenReturn(null);
   });
 
   Episode createMockEpisode() {
@@ -275,6 +276,7 @@ void main() {
         when(mockViewModel.speakers).thenReturn(speakers);
         when(mockViewModel.currentAudioPosition).thenReturn(audioPosition);
         when(mockViewModel.transcriptSyncOffset).thenReturn(0.4);
+        when(mockViewModel.currentHighlightedChunkPosition).thenReturn(null);
 
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
         await tester.pumpAndSettle();
