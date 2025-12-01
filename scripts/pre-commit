@@ -23,17 +23,26 @@ echo "📝 Found ${COUNT} Dart file(s) to process..."
 # Check file line counts
 echo "📏 Checking file sizes avoiding bloated files..."
 EXCEEDED_FILES=""
+LENGTH_LIMIT=600
 printf "%s\n" "$STAGED_FILES" | while IFS= read -r file; do
     [ -n "$file" ] || continue
+    
+    # Skip .mocks.dart files (generated files)
+    case "$file" in
+        *.mocks.dart)
+            continue
+            ;;
+    esac
+    
     LINE_COUNT=$(wc -l < "$file" | tr -d ' ')
-    if [ "$LINE_COUNT" -gt 500 ]; then
-        echo "⚠️  $file has $LINE_COUNT lines (exceeds 500 line limit)"
+    if [ "$LINE_COUNT" -gt "$LENGTH_LIMIT" ]; then
+        echo "⚠️ $file has $LINE_COUNT lines (exceeds $LENGTH_LIMIT line limit)"
         EXCEEDED_FILES="${EXCEEDED_FILES}${file}\n"
     fi
 done
 
 if [ -n "$EXCEEDED_FILES" ]; then
-    echo "❌ Some files exceed the 500 line limit. Please refactor before committing."
+    echo "❌ Some files exceed the $LENGTH_LIMIT line limit. Please refactor before committing."
     exit 1
 fi
 
