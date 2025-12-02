@@ -4,6 +4,7 @@ import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
 import 'package:cribe/ui/shared/widgets/conversation_turn.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 class EpisodeDetailScreen extends StatefulWidget {
@@ -16,10 +17,12 @@ class EpisodeDetailScreen extends StatefulWidget {
 }
 
 class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
-    with ScreenLogger {
+    with ScreenLogger, TickerProviderStateMixin {
   late EpisodeDetailViewModel _viewModel;
   final ScrollController _scrollController = ScrollController();
   final Map<int, GlobalKey> _chunkKeys = {};
+  late AnimationController _scrollButtonAnimationController;
+  late Animation<double> _scrollButtonFadeAnimation;
 
   @override
   void initState() {
@@ -28,12 +31,43 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
     logger.info(
       'EpisodeDetailScreen initialized for episode ${_viewModel.episode.id}',
     );
+
+    // Initialize scroll button fade animation
+    _scrollButtonAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _scrollButtonFadeAnimation = CurvedAnimation(
+      parent: _scrollButtonAnimationController,
+      curve: Curves.easeInOut,
+    );
+
+    // Add scroll listener to detect user scrolling
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _scrollButtonAnimationController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    // User scrolled transcript - disable auto-scroll and show button
+    if (_scrollController.position.userScrollDirection !=
+        ScrollDirection.idle) {
+      _viewModel.setAutoScrollEnabled(false);
+      _scrollButtonAnimationController.forward();
+    }
+  }
+
+  void _enableAutoScroll() {
+    _viewModel.setAutoScrollEnabled(true);
+    _scrollButtonAnimationController.reverse();
   }
 
   void _scrollToChunk(int chunkPosition) {
@@ -93,6 +127,24 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
           _buildSliverAppBar(context),
           _buildEpisodeContent(context),
         ],
+      ),
+      floatingActionButton: Consumer<EpisodeDetailViewModel>(
+        builder: (context, vm, child) {
+          return !vm.autoScrollEnabled && vm.isPlaying && !vm.isCompleted
+              ? FadeTransition(
+                  opacity: _scrollButtonFadeAnimation,
+                  child: FloatingActionButton(
+                    mini: true,
+                    onPressed: _enableAutoScroll,
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    child: Icon(
+                      Icons.read_more,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink();
+        },
       ),
     );
   }
@@ -272,7 +324,9 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
 
         // Auto-scroll based on the currently highlighted chunk from ViewModel
         final currentHighlightedChunk = vm.currentHighlightedChunkPosition;
-        if (currentHighlightedChunk != null && vm.isPlaying) {
+        if (currentHighlightedChunk != null &&
+            vm.isPlaying &&
+            vm.autoScrollEnabled) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _scrollToChunk(currentHighlightedChunk);
           });

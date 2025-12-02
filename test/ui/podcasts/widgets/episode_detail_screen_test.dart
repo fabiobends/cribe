@@ -47,6 +47,7 @@ void main() {
     when(mockViewModel.currentAudioPosition).thenReturn(0.0);
     when(mockViewModel.transcriptSyncOffset).thenReturn(0.4);
     when(mockViewModel.currentHighlightedChunkPosition).thenReturn(null);
+    when(mockViewModel.autoScrollEnabled).thenReturn(true);
   });
 
   Episode createMockEpisode() {
@@ -373,6 +374,75 @@ void main() {
 
         expect(find.byType(StyledText), findsWidgets);
         expect(find.byType(RichText), findsWidgets);
+      });
+    });
+
+    group('auto-scroll control', () {
+      testWidgets('should show scroll button when auto-scroll disabled',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockEpisode = createMockEpisode();
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.episode).thenReturn(mockEpisode);
+        when(mockViewModel.duration).thenReturn('1h 5m');
+        when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
+        when(mockViewModel.elapsedTime).thenReturn('0m 0s');
+        when(mockViewModel.autoScrollEnabled).thenReturn(false);
+        when(mockViewModel.isPlaying).thenReturn(true);
+        when(mockViewModel.isCompleted).thenReturn(false);
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+        await tester.pump(const Duration(milliseconds: 350));
+
+        // Assert
+        expect(find.byType(FloatingActionButton), findsOneWidget);
+        expect(find.byIcon(Icons.read_more), findsOneWidget);
+      });
+
+      testWidgets('should hide scroll button when auto-scroll enabled',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockEpisode = createMockEpisode();
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.episode).thenReturn(mockEpisode);
+        when(mockViewModel.duration).thenReturn('1h 5m');
+        when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
+        when(mockViewModel.elapsedTime).thenReturn('0m 0s');
+        when(mockViewModel.autoScrollEnabled).thenReturn(true);
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+        await tester.pump();
+
+        // Assert
+        expect(find.byType(FloatingActionButton), findsNothing);
+      });
+
+      testWidgets('should re-enable auto-scroll when scroll button is tapped',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockEpisode = createMockEpisode();
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.episode).thenReturn(mockEpisode);
+        when(mockViewModel.duration).thenReturn('1h 5m');
+        when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
+        when(mockViewModel.elapsedTime).thenReturn('0m 0s');
+        when(mockViewModel.isPlaying).thenReturn(true);
+        when(mockViewModel.autoScrollEnabled).thenReturn(false);
+
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+        await tester.pump(const Duration(milliseconds: 350));
+
+        // Act - Tap the scroll button
+        await tester.tap(find.byType(FloatingActionButton));
+        await tester.pump();
+
+        // Assert
+        verify(mockViewModel.setAutoScrollEnabled(true)).called(1);
       });
     });
   });

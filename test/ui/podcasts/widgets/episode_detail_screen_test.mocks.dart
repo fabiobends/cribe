@@ -111,6 +111,12 @@ class MockEpisodeDetailViewModel extends _i1.Mock
       ) as bool);
 
   @override
+  bool get autoScrollEnabled => (super.noSuchMethod(
+        Invocation.getter(#autoScrollEnabled),
+        returnValue: false,
+      ) as bool);
+
+  @override
   List<_i5.SpeakerTurn> get speakerTurns => (super.noSuchMethod(
         Invocation.getter(#speakerTurns),
         returnValue: <_i5.SpeakerTurn>[],
@@ -202,6 +208,15 @@ class MockEpisodeDetailViewModel extends _i1.Mock
           Invocation.getter(#logger),
         ),
       ) as _i3.ContextualLogger);
+
+  @override
+  void setAutoScrollEnabled(bool? enabled) => super.noSuchMethod(
+        Invocation.method(
+          #setAutoScrollEnabled,
+          [enabled],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i7.Future<void> startTranscriptStreamWith(
