@@ -1,8 +1,10 @@
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
+import 'package:cribe/ui/shared/widgets/conversation_turn.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 class EpisodeDetailScreen extends StatefulWidget {
@@ -15,8 +17,12 @@ class EpisodeDetailScreen extends StatefulWidget {
 }
 
 class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
-    with ScreenLogger {
+    with ScreenLogger, TickerProviderStateMixin {
   late EpisodeDetailViewModel _viewModel;
+  final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _chunkKeys = {};
+  late AnimationController _scrollButtonAnimationController;
+  late Animation<double> _scrollButtonFadeAnimation;
 
   @override
   void initState() {
@@ -25,6 +31,84 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
     logger.info(
       'EpisodeDetailScreen initialized for episode ${_viewModel.episode.id}',
     );
+
+    // Initialize scroll button fade animation
+    _scrollButtonAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _scrollButtonFadeAnimation = CurvedAnimation(
+      parent: _scrollButtonAnimationController,
+      curve: Curves.easeInOut,
+    );
+
+    // Add scroll listener to detect user scrolling
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _scrollButtonAnimationController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    // User scrolled transcript - disable auto-scroll and show button
+    if (_scrollController.position.userScrollDirection !=
+        ScrollDirection.idle) {
+      _viewModel.setAutoScrollEnabled(false);
+      _scrollButtonAnimationController.forward();
+    }
+  }
+
+  void _enableAutoScroll() {
+    _viewModel.setAutoScrollEnabled(true);
+    _scrollButtonAnimationController.reverse();
+  }
+
+  void _scrollToChunk(int chunkPosition) {
+    if (!_chunkKeys.containsKey(chunkPosition)) return;
+    if (!_scrollController.hasClients) return;
+
+    final key = _chunkKeys[chunkPosition];
+    final context = key?.currentContext;
+    if (context == null) return;
+
+    try {
+      final renderBox = context.findRenderObject() as RenderBox?;
+      if (renderBox == null || !renderBox.hasSize) return;
+
+      final position = renderBox.localToGlobal(Offset.zero);
+      final viewportHeight = MediaQuery.of(context).size.height;
+
+      // Check if chunk is already visible in comfortable viewing area
+      final chunkScreenY = position.dy;
+      final topThreshold =
+          viewportHeight * EpisodeDetailViewModel.scrollTopThreshold;
+      final bottomThreshold =
+          viewportHeight * EpisodeDetailViewModel.scrollBottomThreshold;
+
+      if (chunkScreenY >= topThreshold && chunkScreenY <= bottomThreshold) {
+        return;
+      }
+
+      final scrollOffset = _scrollController.offset;
+      final targetOffset = scrollOffset +
+          position.dy -
+          (viewportHeight * EpisodeDetailViewModel.scrollTargetPosition);
+
+      _scrollController.animateTo(
+        targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      );
+    } catch (e) {
+      logger.debug('Failed to scroll to chunk $chunkPosition: $e');
+    }
   }
 
   void _goBack(BuildContext context) {
@@ -38,10 +122,29 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           _buildSliverAppBar(context),
           _buildEpisodeContent(context),
         ],
+      ),
+      floatingActionButton: Consumer<EpisodeDetailViewModel>(
+        builder: (context, vm, child) {
+          return !vm.autoScrollEnabled && vm.isPlaying && !vm.isCompleted
+              ? FadeTransition(
+                  opacity: _scrollButtonFadeAnimation,
+                  child: FloatingActionButton(
+                    mini: true,
+                    onPressed: _enableAutoScroll,
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    child: Icon(
+                      Icons.read_more,
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink();
+        },
       ),
     );
   }
@@ -119,8 +222,6 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
 
     return Consumer<EpisodeDetailViewModel>(
       builder: (context, viewModel, child) {
-        final episode = viewModel.episode;
-
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(Spacing.medium),
@@ -156,26 +257,120 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
                   ],
                 ),
                 const SizedBox(height: Spacing.large),
-
                 // Play button and progress
                 _buildPlaybackControls(context),
                 const SizedBox(height: Spacing.large),
-
-                // Description section
-                StyledText(
-                  text: 'Description',
-                  variant: TextVariant.subtitle,
-                  color: theme.colorScheme.onSurface,
-                ),
+                // Transcript section
                 const SizedBox(height: Spacing.small),
-                StyledText(
-                  text: episode.description,
-                  variant: TextVariant.body,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+                _buildTranscriptView(context),
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTranscriptView(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Consumer<EpisodeDetailViewModel>(
+      builder: (context, vm, child) {
+        // show snackbar on error
+        if (vm.error != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: StyledText(
+                  text: vm.error!,
+                  variant: TextVariant.body,
+                  color: theme.colorScheme.onError,
+                ),
+                backgroundColor: theme.colorScheme.error,
+              ),
+            );
+            vm.setError(null);
+          });
+        }
+
+        final chunks = vm.chunks;
+        final speakers = vm.speakers;
+
+        // Show loading state if no chunks yet
+        if (chunks.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(Spacing.large),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(height: Spacing.medium),
+                  StyledText(
+                    text: 'Transcribing this episode...',
+                    variant: TextVariant.body,
+                    color: theme.colorScheme.onPrimary.withValues(alpha: 0.7),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        // Get speaker turns from view model
+        final turns = vm.speakerTurns;
+
+        // Auto-scroll based on the currently highlighted chunk from ViewModel
+        final currentHighlightedChunk = vm.currentHighlightedChunkPosition;
+        if (currentHighlightedChunk != null &&
+            vm.isPlaying &&
+            vm.autoScrollEnabled) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToChunk(currentHighlightedChunk);
+          });
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: turns.map((turn) {
+            final name =
+                speakers[turn.speakerIndex] ?? 'Speaker ${turn.speakerIndex}';
+
+            // Determine alignment: even -> left, odd -> right
+            final alignment = turn.speakerIndex % 2 == 0
+                ? TurnAlignment.left
+                : TurnAlignment.right;
+
+            // Build chunk widgets with keys for scrolling
+            final chunkWidgets = turn.chunks.map((chunk) {
+              // Create or reuse key for this chunk
+              _chunkKeys.putIfAbsent(chunk.position, () => GlobalKey());
+
+              final isSpokenOrCurrent = vm.currentAudioPosition > 0 &&
+                  vm.currentAudioPosition >=
+                      (chunk.start - vm.transcriptSyncOffset);
+
+              return Container(
+                key: _chunkKeys[chunk.position],
+                child: Text(
+                  '${chunk.text} ',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: isSpokenOrCurrent
+                        ? theme.colorScheme.onPrimary
+                        : theme.colorScheme.onPrimary.withValues(alpha: 0.4),
+                  ),
+                ),
+              );
+            }).toList();
+
+            return ConversationTurn(
+              speakerName: name,
+              contentWidgets: chunkWidgets,
+              alignment: alignment,
+            );
+          }).toList(),
         );
       },
     );
