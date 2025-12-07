@@ -16,11 +16,11 @@ void main() {
   late EpisodeDetailViewModel viewModel;
   late Episode testEpisode;
   late MockPlayerService mockPlayerService;
-  late MockTranscriptionService mockTranscriptRepository;
+  late MockTranscriptionService mockTranscriptService;
 
   setUp(() {
     mockPlayerService = MockPlayerService();
-    mockTranscriptRepository = MockTranscriptionService();
+    mockTranscriptService = MockTranscriptionService();
 
     when(mockPlayerService.setAudioUrl(any)).thenAnswer((_) async {});
     when(mockPlayerService.positionStream)
@@ -44,7 +44,7 @@ void main() {
     viewModel = EpisodeDetailViewModel(
       episode: testEpisode,
       playerService: mockPlayerService,
-      transcriptionService: mockTranscriptRepository,
+      transcriptionService: mockTranscriptService,
     );
   });
 
@@ -148,7 +148,7 @@ void main() {
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
-          transcriptionService: mockTranscriptRepository,
+          transcriptionService: mockTranscriptService,
         );
         durationController.add(const Duration(seconds: 100));
         await Future.delayed(const Duration(milliseconds: 10));
@@ -176,7 +176,7 @@ void main() {
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
-          transcriptionService: mockTranscriptRepository,
+          transcriptionService: mockTranscriptService,
         );
 
         // Emit duration to update the view model
@@ -200,7 +200,7 @@ void main() {
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
-          transcriptionService: mockTranscriptRepository,
+          transcriptionService: mockTranscriptService,
         );
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -213,13 +213,13 @@ void main() {
     group('Transcript streaming', () {
       test('should handle all transcript event types', () async {
         final controller = StreamController<TranscriptEvent>();
-        when(mockTranscriptRepository.streamTranscript(any))
+        when(mockTranscriptService.streamTranscript(any))
             .thenAnswer((_) => controller.stream);
 
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
-          transcriptionService: mockTranscriptRepository,
+          transcriptionService: mockTranscriptService,
         );
         await Future.delayed(const Duration(milliseconds: 10));
 
@@ -257,13 +257,13 @@ void main() {
 
       test('should handle stream errors and cleanup', () async {
         final controller = StreamController<TranscriptEvent>();
-        when(mockTranscriptRepository.streamTranscript(any))
+        when(mockTranscriptService.streamTranscript(any))
             .thenAnswer((_) => controller.stream);
 
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
-          transcriptionService: mockTranscriptRepository,
+          transcriptionService: mockTranscriptService,
         );
         await Future.delayed(const Duration(milliseconds: 10));
 
@@ -277,13 +277,13 @@ void main() {
       });
 
       test('should handle initialization failure', () async {
-        when(mockTranscriptRepository.streamTranscript(any))
+        when(mockTranscriptService.streamTranscript(any))
             .thenThrow(Exception('Connection failed'));
 
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
-          transcriptionService: mockTranscriptRepository,
+          transcriptionService: mockTranscriptService,
         );
         await Future.delayed(const Duration(milliseconds: 10));
 
@@ -295,13 +295,13 @@ void main() {
     group('Speaker turns grouping', () {
       test('should group consecutive chunks by speaker', () async {
         final controller = StreamController<TranscriptEvent>();
-        when(mockTranscriptRepository.streamTranscript(any))
+        when(mockTranscriptService.streamTranscript(any))
             .thenAnswer((_) => controller.stream);
 
         final newViewModel = EpisodeDetailViewModel(
           episode: testEpisode,
           playerService: mockPlayerService,
-          transcriptionService: mockTranscriptRepository,
+          transcriptionService: mockTranscriptService,
         );
         await Future.delayed(const Duration(milliseconds: 10));
 
