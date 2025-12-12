@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:cribe/core/constants/feature_flags.dart';
-import 'package:cribe/data/model/auth/login_response.dart';
+import 'package:cribe/data/models/auth/login_response.dart';
 import 'package:cribe/data/providers/feature_flags_provider.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
@@ -81,85 +81,86 @@ void main() {
       expect(find.byType(StyledButton), findsOneWidget);
     });
 
-    testWidgets('should have email field with correct properties',
-        (tester) async {
-      // Arrange
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
+    // Table-driven tests for form field properties
+    final fieldTests = [
+      {
+        'name': 'email',
+        'index': 0,
+        'label': 'Email',
+        'hint': 'Enter your email',
+        'keyboardType': TextInputType.emailAddress,
+        'obscureText': false,
+      },
+      {
+        'name': 'password',
+        'index': 1,
+        'label': 'Password',
+        'hint': 'Enter your password',
+        'obscureText': true,
+      },
+    ];
 
-      // Act - Find the email field (first StyledTextField)
-      final emailFields = find.byType(StyledTextField);
-      final emailField = tester.widget<StyledTextField>(emailFields.first);
+    for (final field in fieldTests) {
+      testWidgets('should have ${field['name']} field with correct properties',
+          (tester) async {
+        await tester.pumpWidget(createTestWidget());
+        await tester.pumpAndSettle();
 
-      // Assert
-      expect(emailField.label, equals('Email'));
-      expect(emailField.hint, equals('Enter your email'));
-      expect(emailField.keyboardType, equals(TextInputType.emailAddress));
-      expect(emailField.obscureText, isFalse);
-    });
+        final textField = tester.widget<StyledTextField>(
+          find.byType(StyledTextField).at(field['index'] as int),
+        );
 
-    testWidgets('should have password field with correct properties',
-        (tester) async {
-      // Arrange
-      await tester.pumpWidget(createTestWidget());
+        expect(textField.label, equals(field['label']));
+        expect(textField.hint, equals(field['hint']));
+        if (field.containsKey('keyboardType')) {
+          expect(textField.keyboardType, equals(field['keyboardType']));
+        }
+        expect(textField.obscureText, equals(field['obscureText']));
+      });
+    }
 
-      // Act - Find the password field (second StyledTextField)
-      final textFields = find.byType(StyledTextField);
-      final passwordField = tester.widget<StyledTextField>(textFields.at(1));
+    // Table-driven validation tests
+    final validationTests = [
+      {
+        'name': 'empty fields',
+        'email': '',
+        'password': '',
+        'expectedErrors': ['Email is required', 'Password is required'],
+      },
+      {
+        'name': 'invalid email',
+        'email': 'invalid-email',
+        'password': '',
+        'expectedErrors': ['Please enter a valid email address'],
+      },
+      {
+        'name': 'short password',
+        'email': 'test@example.com',
+        'password': '123',
+        'expectedErrors': ['Password must be at least 8 characters'],
+      },
+    ];
 
-      // Assert
-      expect(passwordField.label, equals('Password'));
-      expect(passwordField.hint, equals('Enter your password'));
-      expect(passwordField.obscureText, isTrue);
-    });
+    for (final test in validationTests) {
+      testWidgets('should show validation errors for ${test['name']}',
+          (tester) async {
+        await tester.pumpWidget(createTestWidget());
 
-    testWidgets('should show validation errors for empty fields',
-        (tester) async {
-      // Arrange
-      await tester.pumpWidget(createTestWidget());
+        final textFields = find.byType(TextField);
+        if ((test['email'] as String).isNotEmpty) {
+          await tester.enterText(textFields.first, test['email'] as String);
+        }
+        if ((test['password'] as String).isNotEmpty) {
+          await tester.enterText(textFields.at(1), test['password'] as String);
+        }
+        await tester.tap(find.text('Sign In'));
+        await tester.pump();
 
-      // Act - Tap the button without filling fields
-      await tester.tap(find.text('Sign In'));
-      await tester.pump();
-
-      // Assert - Should show validation errors
-      expect(find.text('Email is required'), findsOneWidget);
-      expect(find.text('Password is required'), findsOneWidget);
-    });
-
-    testWidgets('should show email validation error for invalid email',
-        (tester) async {
-      // Arrange
-      await tester.pumpWidget(createTestWidget());
-
-      // Act - Enter invalid email
-      final emailField = find.byType(TextField).first;
-      await tester.enterText(emailField, 'invalid-email');
-      await tester.tap(find.text('Sign In'));
-      await tester.pump();
-
-      // Assert
-      expect(find.text('Please enter a valid email address'), findsOneWidget);
-    });
-
-    testWidgets('should show password validation error for short password',
-        (tester) async {
-      // Arrange
-      await tester.pumpWidget(createTestWidget());
-
-      // Act - Enter valid email and short password
-      final textFields = find.byType(TextField);
-      await tester.enterText(textFields.first, 'test@example.com');
-      await tester.enterText(textFields.at(1), '123');
-      await tester.tap(find.text('Sign In'));
-      await tester.pump();
-
-      // Assert
-      expect(
-        find.text('Password must be at least 8 characters'),
-        findsOneWidget,
-      );
-    });
+        for (final error in test['expectedErrors'] as List<String>) {
+          expect(find.text(error), findsOneWidget);
+        }
+      });
+    }
 
     testWidgets('should call login with valid credentials', (tester) async {
       // Arrange
@@ -378,35 +379,6 @@ void main() {
       expect(find.text('Sign up to get started'), findsOneWidget);
     });
 
-    testWidgets('should handle form validation failure', (tester) async {
-      // Arrange
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
-
-      // Act - Submit form with empty fields
-      await tester.tap(find.byType(StyledButton));
-      await tester.pumpAndSettle();
-
-      // Assert - Should still be on login screen (validation failed)
-      expect(find.text('Sign in to your account'), findsOneWidget);
-    });
-
-    testWidgets('should handle input field interactions', (tester) async {
-      // Arrange
-      await tester.pumpWidget(createTestWidget());
-      await tester.pumpAndSettle();
-
-      // Act - Find and verify text fields exist
-      final textFields = find.byType(StyledTextField);
-
-      // Assert - Should have email and password fields
-      expect(textFields, findsNWidgets(2));
-
-      // Verify we can interact with login button
-      expect(find.byType(StyledButton), findsOneWidget);
-    });
-
-    // Additional tests to cover missing lines based on lcov.info
     group('FeatureFlagsProvider exception handling', () {
       testWidgets('should handle FeatureFlagsProvider exception in initState',
           (tester) async {
@@ -439,57 +411,6 @@ void main() {
         expect(emailController?.text ?? '', equals(''));
         expect(passwordController?.text ?? '', equals(''));
       });
-
-      testWidgets('should handle FeatureFlagsProvider availability gracefully',
-          (tester) async {
-        // This also tests the exception path when context.read<FeatureFlagsProvider>()
-        // throws because the provider is not available
-
-        // Arrange - Widget without provider
-        final widget = MaterialApp(
-          home: Scaffold(
-            body: ChangeNotifierProvider<LoginViewModel>.value(
-              value: loginViewModel,
-              child: const LoginScreen(),
-            ),
-          ),
-        );
-
-        // Act
-        await tester.pumpWidget(widget);
-        await tester.pumpAndSettle();
-
-        // Assert - Should complete initialization without errors
-        expect(find.byType(LoginScreen), findsOneWidget);
-        expect(find.text('Sign in to your account'), findsOneWidget);
-      });
-    });
-
-    group('Error handling coverage', () {
-      testWidgets('should cover error snackbar display and clear error',
-          (tester) async {
-        // Arrange
-        when(mockAuthRepository.login(any, any))
-            .thenThrow(Exception('Login failed'));
-
-        await tester.pumpWidget(createTestWidget());
-
-        // Act - Trigger login to cause error
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.first, 'test@example.com');
-        await tester.enterText(textFields.at(1), 'password123');
-        await tester.tap(find.text('Sign In'));
-        await tester.pump(); // Process the login attempt
-        await tester.pump(); // Process the error state change
-
-        // Assert - Error snackbar should be shown
-        expect(find.byType(SnackBar), findsOneWidget);
-        expect(find.text('Login failed'), findsOneWidget);
-
-        // Verify error was cleared after being shown
-        await tester.pump();
-        expect(loginViewModel.error, isNull);
-      });
     });
 
     group('Widget lifecycle coverage', () {
@@ -505,101 +426,6 @@ void main() {
         expect(find.text('Sign in to your account'), findsOneWidget);
         expect(find.byType(StyledTextField), findsNWidgets(2));
         expect(find.byType(StyledButton), findsOneWidget);
-      });
-
-      testWidgets('should cover dispose method execution', (tester) async {
-        // Arrange
-        await tester.pumpWidget(createTestWidget());
-        await tester.pumpAndSettle();
-
-        // Act - Navigate away to trigger dispose
-        await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(body: Text('Different Screen')),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        // Assert - Widget should be disposed
-        expect(find.byType(LoginScreen), findsNothing);
-        expect(find.text('Different Screen'), findsOneWidget);
-      });
-
-      testWidgets('should handle _togglePasswordVisibility', (tester) async {
-        // This covers the password visibility toggle functionality
-
-        // Arrange
-        await tester.pumpWidget(createTestWidget());
-        await tester.pumpAndSettle();
-
-        // The password field should initially be obscured
-        final passwordFields = find.byType(StyledTextField);
-        final passwordField =
-            tester.widget<StyledTextField>(passwordFields.at(1));
-        expect(passwordField.obscureText, isTrue);
-      });
-    });
-
-    group('Form validation coverage', () {
-      testWidgets('should test all validation scenarios', (tester) async {
-        await tester.pumpWidget(createTestWidget());
-        await tester.pumpAndSettle();
-
-        // Test empty form validation
-        await tester.tap(find.text('Sign In'));
-        await tester.pump();
-        expect(find.text('Email is required'), findsOneWidget);
-        expect(find.text('Password is required'), findsOneWidget);
-
-        // Test invalid email
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.first, 'invalid-email');
-        await tester.tap(find.text('Sign In'));
-        await tester.pump();
-        expect(find.text('Please enter a valid email address'), findsOneWidget);
-
-        // Test short password
-        await tester.enterText(textFields.first, 'test@example.com');
-        await tester.enterText(textFields.at(1), '123');
-        await tester.tap(find.text('Sign In'));
-        await tester.pump();
-        expect(
-          find.text('Password must be at least 8 characters'),
-          findsOneWidget,
-        );
-      });
-
-      testWidgets('should handle form submission on valid input',
-          (tester) async {
-        // Arrange
-        final completer = Completer<ApiResponse<LoginResponse>>();
-        final mockLoginResponse = LoginResponse(
-          accessToken: 'access_token_123',
-          refreshToken: 'refresh_token_123',
-        );
-        final mockApiResponse = ApiResponse<LoginResponse>(
-          data: mockLoginResponse,
-          statusCode: 200,
-        );
-        when(mockAuthRepository.login(any, any))
-            .thenAnswer((_) => completer.future);
-
-        await tester.pumpWidget(createTestWidget());
-
-        // Act - Enter valid credentials
-        final textFields = find.byType(TextField);
-        await tester.enterText(textFields.first, 'test@example.com');
-        await tester.enterText(textFields.at(1), 'validpassword');
-        await tester.tap(find.text('Sign In'));
-        await tester.pump();
-
-        // Assert
-        verify(mockAuthRepository.login('test@example.com', 'validpassword'))
-            .called(1);
-
-        // Complete the future to clean up
-        completer.complete(mockApiResponse);
-        await Future.microtask(() {});
       });
     });
 

@@ -1,4 +1,4 @@
-import 'package:cribe/data/model/podcasts/podcast.dart';
+import 'package:cribe/data/models/podcasts/podcast.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

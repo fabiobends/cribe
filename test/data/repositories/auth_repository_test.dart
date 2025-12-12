@@ -1,8 +1,8 @@
 import 'package:cribe/core/constants/api_path.dart';
-import 'package:cribe/data/model/auth/login_request.dart';
-import 'package:cribe/data/model/auth/login_response.dart';
-import 'package:cribe/data/model/auth/register_request.dart';
-import 'package:cribe/data/model/auth/register_response.dart';
+import 'package:cribe/data/models/auth/login_request.dart';
+import 'package:cribe/data/models/auth/login_response.dart';
+import 'package:cribe/data/models/auth/register_request.dart';
+import 'package:cribe/data/models/auth/register_response.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
 import 'package:flutter_test/flutter_test.dart';
