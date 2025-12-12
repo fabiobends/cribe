@@ -1,4 +1,4 @@
-import 'package:cribe/data/model/auth/refresh_token_response.dart';
+import 'package:cribe/data/models/auth/refresh_token_response.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

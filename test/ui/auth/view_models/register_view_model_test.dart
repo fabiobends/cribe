@@ -1,4 +1,4 @@
-import 'package:cribe/data/model/auth/register_response.dart';
+import 'package:cribe/data/models/auth/register_response.dart';
 import 'package:cribe/data/repositories/auth_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
 import 'package:cribe/ui/auth/view_models/register_view_model.dart';

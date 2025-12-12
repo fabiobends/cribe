@@ -1,4 +1,4 @@
-import 'package:cribe/data/model/podcasts/podcast_with_episodes.dart';
+import 'package:cribe/data/models/podcasts/podcast_with_episodes.dart';
 import 'package:cribe/domain/models/podcast.dart';
 import 'package:flutter_test/flutter_test.dart';
 

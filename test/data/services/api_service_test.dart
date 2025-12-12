@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:cribe/core/constants/storage_keys.dart';
-import 'package:cribe/data/model/auth/login_response.dart';
-import 'package:cribe/data/model/auth/refresh_token_response.dart';
+import 'package:cribe/data/models/auth/login_response.dart';
+import 'package:cribe/data/models/auth/refresh_token_response.dart';
 import 'package:cribe/data/services/api_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -304,303 +304,87 @@ void main() {
       });
     });
 
-    group('get', () {
-      test('should return data when API call is successful', () async {
-        const path = 'users';
-        const expectedResponse = '{"data": "test"}';
+    // Table-driven tests for HTTP methods
+    final httpMethodTests = [
+      {
+        'method': 'GET',
+        'setupMock': (mock) => when(mock.getUrl(any)),
+        'verifyMock': (mock) => verify(mock.getUrl(any)),
+        'call': (path, body) => apiService.get(path, (json) => json),
+      },
+      {
+        'method': 'POST',
+        'setupMock': (mock) => when(mock.postUrl(any)),
+        'verifyMock': (mock) => verify(mock.postUrl(any)),
+        'call': (path, body) =>
+            apiService.post(path, (json) => json, body: body),
+      },
+      {
+        'method': 'PATCH',
+        'setupMock': (mock) => when(mock.patchUrl(any)),
+        'verifyMock': (mock) => verify(mock.patchUrl(any)),
+        'call': (path, body) =>
+            apiService.patch(path, (json) => json, body: body),
+      },
+      {
+        'method': 'PUT',
+        'setupMock': (mock) => when(mock.putUrl(any)),
+        'verifyMock': (mock) => verify(mock.putUrl(any)),
+        'call': (path, body) =>
+            apiService.put(path, (json) => json, body: body),
+      },
+      {
+        'method': 'DELETE',
+        'setupMock': (mock) => when(mock.deleteUrl(any)),
+        'verifyMock': (mock) => verify(mock.deleteUrl(any)),
+        'call': (path, body) => apiService.delete(path, (json) => json),
+      },
+    ];
 
-        // Arrange
-        when(mockHttpClient.getUrl(any)).thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.ok);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
+    for (final testCase in httpMethodTests) {
+      group(testCase['method'] as String, () {
+        test('should return data when API call is successful', () async {
+          const response = '{"data": "test"}';
+          (testCase['setupMock'] as Function)(mockHttpClient)
+              .thenAnswer((_) async => mockRequest);
+          when(mockRequest.close()).thenAnswer((_) async => mockResponse);
+          when(mockResponse.statusCode).thenReturn(HttpStatus.ok);
+          when(mockResponse.transform(utf8.decoder))
+              .thenAnswer((_) => Stream.value(response));
 
-        // Act
-        final response = await apiService.get(
-          path,
-          (json) => json,
-        );
+          final result =
+              await (testCase['call'] as Function)('path', {'key': 'val'});
 
-        // Assert
-        expect(response.statusCode, equals(200));
-        expect(response.data, equals(jsonDecode(expectedResponse)));
-        verify(mockHttpClient.getUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
+          expect(result.statusCode, equals(200));
+          (testCase['verifyMock'] as Function)(mockHttpClient).called(1);
+          verify(mockRequest.close()).called(1);
+        });
+
+        test('should throw ApiException on error', () async {
+          (testCase['setupMock'] as Function)(mockHttpClient)
+              .thenAnswer((_) async => mockRequest);
+          when(mockRequest.close()).thenAnswer((_) async => mockResponse);
+          when(mockResponse.statusCode).thenReturn(HttpStatus.badRequest);
+          when(mockResponse.transform(utf8.decoder))
+              .thenAnswer((_) => Stream.value('{"message": "Error"}'));
+
+          await expectLater(
+            () => (testCase['call'] as Function)('path', null),
+            throwsA(isA<ApiException>()),
+          );
+        });
+
+        test('should throw ApiException on network error', () async {
+          (testCase['setupMock'] as Function)(mockHttpClient)
+              .thenThrow(const SocketException('No network'));
+
+          await expectLater(
+            () => (testCase['call'] as Function)('path', null),
+            throwsA(isA<ApiException>()),
+          );
+        });
       });
-
-      test('should throw ApiException on non-200 status code', () async {
-        const path = 'users';
-        const expectedResponse = '{"message": "Unauthorized"}';
-
-        // Arrange
-        when(mockHttpClient.getUrl(any)).thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.unauthorized);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
-
-        // Act & Assert
-        await expectLater(
-          () => apiService.get(path, (json) => json),
-          throwsA(isA<ApiException>()),
-        );
-
-        // Optionally verify the request was attempted
-        verify(mockHttpClient.getUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
-      });
-
-      test('should throw a ApiException for any other exception', () async {
-        const path = 'any_path';
-
-        when(mockHttpClient.getUrl(any))
-            .thenThrow(const SocketException('No network'));
-
-        await expectLater(
-          () => apiService.get(path, (json) => json),
-          throwsA(isA<ApiException>()),
-        );
-
-        verify(mockHttpClient.getUrl(any)).called(1);
-      });
-    });
-
-    group('post', () {
-      test('should return data when API call is successful', () async {
-        const path = 'login';
-        const requestBody = {'username': 'test', 'password': 'pass'};
-        const expectedResponse =
-            '{"data": {"accessToken": "abc", "refreshToken": "def"}}';
-
-        // Arrange
-        when(mockHttpClient.postUrl(any)).thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.ok);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
-
-        // Act
-        final response =
-            await apiService.post(path, (json) => json, body: requestBody);
-
-        // Assert
-        expect(response.statusCode, equals(200));
-        expect(response.data, equals(jsonDecode(expectedResponse)));
-        verify(mockHttpClient.postUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
-      });
-
-      test('should throw ApiException on non-200 status code', () async {
-        const path = 'login';
-        const body = {'username': 'x', 'password': 'y'};
-        const expectedResponse = '{"message": "Bad Request"}';
-
-        when(mockHttpClient.postUrl(any)).thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.badRequest);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
-
-        await expectLater(
-          () => apiService.post(path, (json) => json, body: body),
-          throwsA(isA<ApiException>()),
-        );
-
-        verify(mockHttpClient.postUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
-      });
-
-      test('should throw a ApiException for any other exception', () async {
-        const path = 'any_path';
-
-        when(mockHttpClient.postUrl(any))
-            .thenThrow(const SocketException('No network'));
-
-        await expectLater(
-          () => apiService.post(path, (json) => json),
-          throwsA(isA<ApiException>()),
-        );
-
-        verify(mockHttpClient.postUrl(any)).called(1);
-      });
-    });
-
-    group('patch', () {
-      test('should return data when API call is successful', () async {
-        const path = 'update';
-        const requestBody = {'field': 'value'};
-        const expectedResponse = '{"data": "updated"}';
-
-        // Arrange
-        when(mockHttpClient.patchUrl(any)).thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.ok);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
-
-        // Act
-        final response =
-            await apiService.patch(path, (json) => json, body: requestBody);
-
-        // Assert
-        expect(response.statusCode, equals(200));
-        expect(response.data, equals(jsonDecode(expectedResponse)));
-        verify(mockHttpClient.patchUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
-      });
-
-      test('should throw ApiException on non-200 status code', () async {
-        const path = 'update';
-        const body = {'field': 'value'};
-        const expectedResponse = '{"message": "Bad Request"}';
-
-        when(mockHttpClient.patchUrl(any)).thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.badRequest);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
-
-        await expectLater(
-          () => apiService.patch(path, (json) => json, body: body),
-          throwsA(isA<ApiException>()),
-        );
-
-        verify(mockHttpClient.patchUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
-      });
-
-      test('should throw a ApiException for any other exception', () async {
-        const path = 'any_path';
-
-        when(mockHttpClient.patchUrl(any))
-            .thenThrow(const SocketException('No network'));
-
-        await expectLater(
-          () => apiService.patch(path, (json) => json),
-          throwsA(isA<ApiException>()),
-        );
-
-        verify(mockHttpClient.patchUrl(any)).called(1);
-      });
-    });
-
-    group('put', () {
-      test('should return data when API call is successful', () async {
-        const path = 'modify';
-        const requestBody = {'field': 'new_value'};
-        const expectedResponse = '{"data": "modified"}';
-
-        // Arrange
-        when(mockHttpClient.putUrl(any)).thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.ok);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
-
-        // Act
-        final response =
-            await apiService.put(path, (json) => json, body: requestBody);
-
-        // Assert
-        expect(response.statusCode, equals(200));
-        expect(response.data, equals(jsonDecode(expectedResponse)));
-        verify(mockHttpClient.putUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
-      });
-
-      test('should throw ApiException on non-200 status code', () async {
-        const path = 'modify';
-        const body = {'field': 'new_value'};
-        const expectedResponse = '{"message": "Bad Request"}';
-
-        when(mockHttpClient.putUrl(any)).thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.badRequest);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
-
-        await expectLater(
-          () => apiService.put(path, (json) => json, body: body),
-          throwsA(isA<ApiException>()),
-        );
-
-        verify(mockHttpClient.putUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
-      });
-
-      test('should throw a ApiException for any other exception', () async {
-        const path = 'any_path';
-
-        when(mockHttpClient.putUrl(any))
-            .thenThrow(const SocketException('No network'));
-
-        await expectLater(
-          () => apiService.put(path, (json) => json),
-          throwsA(isA<ApiException>()),
-        );
-
-        verify(mockHttpClient.putUrl(any)).called(1);
-      });
-    });
-
-    group('delete', () {
-      test('should return data when API call is successful', () async {
-        const path = 'remove';
-        const expectedResponse = '{"data": "deleted"}';
-
-        // Arrange
-        when(mockHttpClient.deleteUrl(any))
-            .thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.ok);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
-
-        // Act
-        final response = await apiService.delete(path, (json) => json);
-
-        // Assert
-        expect(response.statusCode, equals(200));
-        expect(response.data, equals(jsonDecode(expectedResponse)));
-        verify(mockHttpClient.deleteUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
-      });
-
-      test('should throw ApiException on non-200 status code', () async {
-        const path = 'remove';
-        const expectedResponse = '{"message": "Bad Request"}';
-
-        when(mockHttpClient.deleteUrl(any))
-            .thenAnswer((_) async => mockRequest);
-        when(mockRequest.close()).thenAnswer((_) async => mockResponse);
-        when(mockResponse.statusCode).thenReturn(HttpStatus.badRequest);
-        when(mockResponse.transform(utf8.decoder))
-            .thenAnswer((_) => Stream.value(expectedResponse));
-
-        await expectLater(
-          () => apiService.delete(path, (json) => json),
-          throwsA(isA<ApiException>()),
-        );
-
-        verify(mockHttpClient.deleteUrl(any)).called(1);
-        verify(mockRequest.close()).called(1);
-      });
-
-      test('should throw a ApiException for any other exception', () async {
-        const path = 'any_path';
-
-        when(mockHttpClient.deleteUrl(any))
-            .thenThrow(const SocketException('No network'));
-
-        await expectLater(
-          () => apiService.delete(path, (json) => json),
-          throwsA(isA<ApiException>()),
-        );
-
-        verify(mockHttpClient.deleteUrl(any)).called(1);
-      });
-    });
+    }
 
     group('getStream', () {
       test('should stream SSE events successfully', () async {

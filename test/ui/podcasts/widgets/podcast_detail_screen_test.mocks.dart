@@ -8,7 +8,7 @@ import 'dart:io' as _i4;
 import 'dart:ui' as _i7;
 
 import 'package:cribe/core/logger/logger_mixins.dart' as _i2;
-import 'package:cribe/data/model/auth/login_response.dart' as _i9;
+import 'package:cribe/data/models/auth/login_response.dart' as _i9;
 import 'package:cribe/data/services/api_service.dart' as _i5;
 import 'package:cribe/data/services/storage_service.dart' as _i3;
 import 'package:cribe/ui/podcasts/view_models/podcast_detail_view_model.dart'

@@ -10,7 +10,7 @@ import 'dart:ui' as _i9;
 import 'package:cribe/core/constants/feature_flags.dart' as _i12;
 import 'package:cribe/core/constants/storage_keys.dart' as _i15;
 import 'package:cribe/core/logger/logger_mixins.dart' as _i2;
-import 'package:cribe/data/model/auth/login_response.dart' as _i14;
+import 'package:cribe/data/models/auth/login_response.dart' as _i14;
 import 'package:cribe/data/providers/feature_flags_provider.dart' as _i11;
 import 'package:cribe/data/services/api_service.dart' as _i5;
 import 'package:cribe/data/services/storage_service.dart' as _i3;
