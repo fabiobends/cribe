@@ -101,7 +101,6 @@ class _RegisterScreenState extends State<RegisterScreen> with ScreenLogger {
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation: 0,
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,

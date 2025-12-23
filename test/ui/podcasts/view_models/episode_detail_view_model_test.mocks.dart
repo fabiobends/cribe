@@ -197,6 +197,35 @@ class MockTranscriptionService extends _i1.Mock
   }
 
   @override
+  _i3.ContextualLogger get logger => (super.noSuchMethod(
+        Invocation.getter(#logger),
+        returnValue: _FakeContextualLogger_2(
+          this,
+          Invocation.getter(#logger),
+        ),
+      ) as _i3.ContextualLogger);
+
+  @override
+  _i5.Future<void> init() => (super.noSuchMethod(
+        Invocation.method(
+          #init,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> dispose() => (super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
   _i5.Stream<_i7.TranscriptEvent> streamTranscript(int? episodeId) =>
       (super.noSuchMethod(
         Invocation.method(

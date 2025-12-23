@@ -299,6 +299,7 @@ class EpisodeDetailViewModel extends BaseViewModel {
     logger.info('Disposing EpisodeDetailViewModel');
     _positionSubscription?.cancel();
     _durationSubscription?.cancel();
+    _sseSubscription?.cancel();
     _playerService.stop();
     _playerService.dispose();
     super.dispose();

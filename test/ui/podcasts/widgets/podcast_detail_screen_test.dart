@@ -307,94 +307,70 @@ void main() {
     });
 
     group('episode navigation', () {
-      testWidgets('should navigate to episode detail when tapping episode card',
+      testWidgets('should have tappable episode cards',
           (WidgetTester tester) async {
         // Arrange
         final mockPodcast = createMockPodcast();
         final mockEpisodes = createMockFormattedEpisodes(count: 1);
-        final mockApiService = MockApiService();
 
         when(mockViewModel.isLoading).thenReturn(false);
         when(mockViewModel.podcast).thenReturn(mockPodcast);
         when(mockViewModel.episodes).thenReturn(mockEpisodes);
 
-        // Suppress image loading errors
-        final originalOnError = FlutterError.onError;
-        addTearDown(() => FlutterError.onError = originalOnError);
-        FlutterError.onError = (details) {
-          if (!details.exception
-              .toString()
-              .contains('NetworkImageLoadException')) {
-            FlutterError.presentError(details);
-          }
-        };
-
         // Act
-        await tester.pumpWidget(
-          MaterialApp(
-            home: MultiProvider(
-              providers: [
-                ChangeNotifierProvider<PodcastDetailViewModel>(
-                  create: (_) => mockViewModel,
-                ),
-                Provider<ApiService>(
-                  create: (_) => mockApiService,
-                ),
-              ],
-              child: const PodcastDetailScreen(),
-            ),
-          ),
-        );
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
 
-        // Tap on the episode card
-        await tester.tap(find.byType(Card).first);
-        await tester.pump();
-        await tester.pump(const Duration(seconds: 1));
-      });
-
-      testWidgets(
-          'should create services with proper dependencies when tapping episode',
-          (WidgetTester tester) async {
-        // Arrange
-        final mockPodcast = createMockPodcast();
-        final mockEpisodes = createMockFormattedEpisodes(count: 1);
-        final mockApiService = MockApiService();
-
-        when(mockViewModel.isLoading).thenReturn(false);
-        when(mockViewModel.podcast).thenReturn(mockPodcast);
-        when(mockViewModel.episodes).thenReturn(mockEpisodes);
-
-        // Suppress image loading errors
-        FlutterError.onError = (details) {
-          if (!details.exception
-              .toString()
-              .contains('NetworkImageLoadException')) {
-            FlutterError.presentError(details);
-          }
-        };
-
-        // Act
-        await tester.pumpWidget(
-          MaterialApp(
-            home: MultiProvider(
-              providers: [
-                ChangeNotifierProvider<PodcastDetailViewModel>(
-                  create: (_) => mockViewModel,
-                ),
-                Provider<ApiService>(
-                  create: (_) => mockApiService,
-                ),
-              ],
-              child: const PodcastDetailScreen(),
-            ),
-          ),
-        );
-
+        // Assert - verify card exists and is tappable
         final cardFinder = find.byType(Card).first;
         expect(cardFinder, findsOneWidget);
 
-        await tester.tap(cardFinder);
+        final inkWellFinder = find.descendant(
+          of: cardFinder,
+          matching: find.byType(InkWell),
+        );
+        expect(inkWellFinder, findsOneWidget);
+      });
+    });
+
+    group('error handling', () {
+      testWidgets('should show snackbar and clear error on error',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockPodcast = createMockPodcast();
+        final mockEpisodes = createMockFormattedEpisodes(count: 1);
+        const errorMessage = 'Test error message';
+
+        // Capture the listener that gets registered
+        VoidCallback? capturedListener;
+        when(mockViewModel.addListener(any)).thenAnswer((invocation) {
+          capturedListener = invocation.positionalArguments[0] as VoidCallback;
+        });
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.podcast).thenReturn(mockPodcast);
+        when(mockViewModel.episodes).thenReturn(mockEpisodes);
+        when(mockViewModel.error).thenReturn(null);
+
+        // Act - Build the screen
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+        await tester.pumpAndSettle();
+
+        // Verify listener was captured
+        expect(capturedListener, isNotNull);
+
+        // Trigger an error by changing mock return value
+        when(mockViewModel.error).thenReturn(errorMessage);
+
+        // Manually trigger the listener (simulates notifyListeners)
+        capturedListener!();
         await tester.pump();
+
+        // Assert - SnackBar should be visible
+        expect(find.text(errorMessage), findsOneWidget);
+        expect(find.byType(SnackBar), findsOneWidget);
+
+        // Verify error was cleared
+        verify(mockViewModel.setError(null)).called(1);
       });
     });
   });

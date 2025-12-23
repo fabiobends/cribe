@@ -79,5 +79,15 @@ void main() {
       expect(events, isEmpty);
       verify(mockRepository.streamTranscript(episodeId)).called(1);
     });
+
+    test('should call init', () async {
+      await service.init();
+      // No assertion needed
+    });
+
+    test('should call dispose', () async {
+      await service.dispose();
+      // No assertion needed
+    });
   });
 }

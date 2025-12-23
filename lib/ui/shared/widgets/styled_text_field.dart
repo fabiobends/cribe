@@ -3,7 +3,7 @@ import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
 
 class StyledTextField extends StatelessWidget {
-  final String label;
+  final String? label;
   final String? hint;
   final bool obscureText;
   final TextEditingController controller;
@@ -18,11 +18,12 @@ class StyledTextField extends StatelessWidget {
   final VoidCallback? onPressedSuffixIcon;
   final VoidCallback? onPressedPrefixIcon;
   final String? helperText;
+  final int? maxLines;
 
   const StyledTextField({
     super.key,
-    required this.label,
     required this.controller,
+    this.label,
     this.hint,
     this.validator,
     this.obscureText = false,
@@ -36,6 +37,7 @@ class StyledTextField extends StatelessWidget {
     this.onPressedSuffixIcon,
     this.onPressedPrefixIcon,
     this.helperText,
+    this.maxLines = 1,
   });
 
   @override
@@ -45,11 +47,13 @@ class StyledTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        StyledText(
-          text: label,
-          variant: TextVariant.label,
-        ),
-        const SizedBox(height: Spacing.extraSmall),
+        if (label != null) ...[
+          StyledText(
+            text: label!,
+            variant: TextVariant.label,
+          ),
+          const SizedBox(height: Spacing.extraSmall),
+        ],
         FormField<String>(
           validator: validator,
           autovalidateMode: AutovalidateMode.disabled,
@@ -82,6 +86,7 @@ class StyledTextField extends StatelessWidget {
                       textInputAction: textInputAction,
                       onSubmitted: onFieldSubmitted,
                       onChanged: (v) => formFieldState.didChange(v),
+                      maxLines: maxLines,
                       decoration: InputDecoration(
                         hintText: hint,
                         prefixIcon: prefixIcon,

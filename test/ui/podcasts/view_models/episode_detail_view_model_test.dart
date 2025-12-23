@@ -49,27 +49,28 @@ void main() {
   });
 
   group('EpisodeDetailViewModel', () {
-    group('initialization', () {
+    group('General', () {
       test('should initialize with correct episode', () {
         expect(viewModel.episode, isNotNull);
-        expect(viewModel.episode.id, equals(1));
-      });
-
-      test('should load episode data on initialization', () {
-        expect(viewModel.episode, isNotNull);
         expect(viewModel.episode.name, equals('Test Episode 1'));
-      });
-
-      test('should initialize playback progress to 0.0', () {
+        expect(viewModel.episode, isNotNull);
+        expect(viewModel.episode.id, equals(1));
         expect(viewModel.playbackProgress, equals(0.0));
+        expect(viewModel.isPlaying, isFalse);
+        expect(viewModel.chunks, isEmpty);
+        expect(viewModel.speakers, isEmpty);
+        expect(viewModel.speakerTurns, isEmpty);
+        expect(viewModel.currentTranscriptChunkPosition, equals(-1));
+        expect(viewModel.transcriptCompleted, isFalse);
+        expect(() => viewModel.chunks.clear(), throwsUnsupportedError);
       });
 
-      test('should initialize as not playing', () {
-        expect(viewModel.isPlaying, isFalse);
+      test('should dispose without errors', () {
+        expect(() => viewModel.dispose(), returnsNormally);
       });
     });
 
-    group('playback controls', () {
+    group('Playback controls', () {
       test('togglePlayPause should call play/pause on service', () {
         when(mockPlayerService.play()).thenAnswer((_) async {});
         when(mockPlayerService.pause()).thenAnswer((_) async {});
@@ -112,7 +113,7 @@ void main() {
       });
     });
 
-    group('computed properties', () {
+    group('Computed properties', () {
       test('duration should return formatted duration', () {
         expect(viewModel.duration, equals('1h 0m'));
       });
@@ -134,7 +135,7 @@ void main() {
       });
     });
 
-    group('player stream handling', () {
+    group('Player stream handling', () {
       test('should update progress when position stream emits', () async {
         final positionController = StreamController<Duration?>();
         final durationController = StreamController<Duration?>();
@@ -351,17 +352,6 @@ void main() {
         expect(turns[2].chunks.length, equals(1)); // Speaker 0, 1 chunk
 
         controller.close();
-      });
-    });
-
-    group('Getters', () {
-      test('should return immutable collections and default values', () {
-        expect(viewModel.chunks, isEmpty);
-        expect(viewModel.speakers, isEmpty);
-        expect(viewModel.speakerTurns, isEmpty);
-        expect(viewModel.currentTranscriptChunkPosition, equals(-1));
-        expect(viewModel.transcriptCompleted, isFalse);
-        expect(() => viewModel.chunks.clear(), throwsUnsupportedError);
       });
     });
   });

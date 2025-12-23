@@ -14,6 +14,7 @@ class StyledButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
   final bool isEnabled;
+  final IconData? leftIcon;
 
   const StyledButton({
     super.key,
@@ -22,6 +23,7 @@ class StyledButton extends StatelessWidget {
     required this.variant,
     this.isLoading = false,
     this.isEnabled = true,
+    this.leftIcon,
   });
 
   @override
@@ -73,26 +75,38 @@ class StyledButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(Spacing.small),
         ),
       ),
-      child: Stack(
-        alignment: Alignment.center,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: Spacing.small,
         children: [
-          StyledText(
-            text: text,
-            variant: TextVariant.label,
-            color: isLoading ? Colors.transparent : getForegroundColor(),
-          ),
-          Visibility(
-            visible: isLoading,
-            child: SizedBox(
-              height: Spacing.medium,
-              width: Spacing.medium,
-              child: CircularProgressIndicator(
-                strokeWidth: Spacing.tiny,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  getForegroundColor(),
+          if (leftIcon != null)
+            Icon(
+              leftIcon,
+              size: Spacing.medium,
+              color: isLoading ? Colors.transparent : getForegroundColor(),
+            ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              StyledText(
+                text: text,
+                variant: TextVariant.label,
+                color: isLoading ? Colors.transparent : getForegroundColor(),
+              ),
+              Visibility(
+                visible: isLoading,
+                child: SizedBox(
+                  height: Spacing.medium,
+                  width: Spacing.medium,
+                  child: CircularProgressIndicator(
+                    strokeWidth: Spacing.tiny,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      getForegroundColor(),
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
