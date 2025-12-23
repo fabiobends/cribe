@@ -41,6 +41,7 @@ void main() {
     when(mockViewModel.isPlaying).thenReturn(false);
     when(mockViewModel.isCompleted).thenReturn(false);
     when(mockViewModel.isBuffering).thenReturn(false);
+    when(mockViewModel.transcriptCompleted).thenReturn(false);
     when(mockViewModel.chunks).thenReturn([]);
     when(mockViewModel.speakers).thenReturn({});
     when(mockViewModel.speakerTurns).thenReturn([]);
@@ -397,7 +398,6 @@ void main() {
         await tester.pump(const Duration(milliseconds: 350));
 
         // Assert
-        expect(find.byType(FloatingActionButton), findsOneWidget);
         expect(find.byIcon(Icons.read_more), findsOneWidget);
       });
 
@@ -417,8 +417,14 @@ void main() {
         await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
         await tester.pump();
 
-        // Assert
-        expect(find.byType(FloatingActionButton), findsNothing);
+        // Assert - Button exists but should have opacity 0 (hidden via FadeTransition)
+        final fadeTransition = tester.widget<FadeTransition>(
+          find.ancestor(
+            of: find.byIcon(Icons.read_more),
+            matching: find.byType(FadeTransition),
+          ),
+        );
+        expect(fadeTransition.opacity.value, 0.0);
       });
 
       testWidgets('should re-enable auto-scroll when scroll button is tapped',
@@ -438,11 +444,101 @@ void main() {
         await tester.pump(const Duration(milliseconds: 350));
 
         // Act - Tap the scroll button
-        await tester.tap(find.byType(FloatingActionButton));
+        await tester.tap(find.byIcon(Icons.read_more));
         await tester.pump();
 
         // Assert
         verify(mockViewModel.setAutoScrollEnabled(true)).called(1);
+      });
+
+      testWidgets(
+          'should handle scroll when chunk is highlighted during playback',
+          (WidgetTester tester) async {
+        // Arrange - Set up with actual chunks and highlighted state
+        final mockEpisode = createMockEpisode();
+        final chunks = [
+          TranscriptChunk(
+            position: 0,
+            speakerIndex: 0,
+            start: 0.0,
+            end: 2.0,
+            text: 'First chunk',
+          ),
+          TranscriptChunk(
+            position: 1,
+            speakerIndex: 0,
+            start: 2.0,
+            end: 4.0,
+            text: 'Second chunk',
+          ),
+        ];
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.episode).thenReturn(mockEpisode);
+        when(mockViewModel.duration).thenReturn('1h 5m');
+        when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
+        when(mockViewModel.elapsedTime).thenReturn('0m 0s');
+        when(mockViewModel.chunks).thenReturn(chunks);
+        when(mockViewModel.speakerTurns).thenReturn([
+          SpeakerTurn(0, chunks),
+        ]);
+        when(mockViewModel.speakers).thenReturn({0: 'Speaker'});
+        when(mockViewModel.currentHighlightedChunkPosition).thenReturn(1);
+        when(mockViewModel.autoScrollEnabled).thenReturn(true);
+        when(mockViewModel.isPlaying).thenReturn(true);
+
+        // Act - Build widget with conditions that trigger _scrollToChunk
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+        await tester.pumpAndSettle();
+
+        // Assert - Widget builds successfully and _scrollToChunk executes without error
+        expect(find.byType(EpisodeDetailScreen), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    });
+
+    group('quiz button', () {
+      testWidgets('should show quiz button when transcript is complete',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockEpisode = createMockEpisode();
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.episode).thenReturn(mockEpisode);
+        when(mockViewModel.duration).thenReturn('1h 5m');
+        when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
+        when(mockViewModel.elapsedTime).thenReturn('0m 0s');
+        when(mockViewModel.transcriptCompleted).thenReturn(true);
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+        await tester.pump();
+
+        // Assert
+        expect(find.text('Test Knowledge'), findsOneWidget);
+      });
+
+      testWidgets('should hide quiz button when transcript is not complete',
+          (WidgetTester tester) async {
+        // Arrange
+        final mockEpisode = createMockEpisode();
+
+        when(mockViewModel.isLoading).thenReturn(false);
+        when(mockViewModel.episode).thenReturn(mockEpisode);
+        when(mockViewModel.duration).thenReturn('1h 5m');
+        when(mockViewModel.datePublished).thenReturn('2 days ago');
+        when(mockViewModel.remainingTime).thenReturn('-1h 5m');
+        when(mockViewModel.elapsedTime).thenReturn('0m 0s');
+        when(mockViewModel.transcriptCompleted).thenReturn(false);
+
+        // Act
+        await tester.pumpWidget(createWidgetUnderTest(mockViewModel));
+        await tester.pump();
+
+        // Assert
+        expect(find.text('Test Knowledge'), findsNothing);
       });
     });
   });

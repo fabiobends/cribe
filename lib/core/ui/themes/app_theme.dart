@@ -1,5 +1,4 @@
 import 'package:cribe/core/constants/spacing.dart';
-import 'package:cribe/core/ui/themes/app_colors.dart';
 import 'package:cribe/core/ui/themes/app_typography.dart';
 import 'package:cribe/core/ui/themes/color_utils.dart';
 import 'package:cribe/core/ui/themes/theme_config.dart';
@@ -7,8 +6,8 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // Get the base colors
-  static Color get _basePrimary => AppColors.basePrimary;
-  static Color get _baseSecondary => AppColors.baseSecondary;
+  static Color get _basePrimary => ThemeConfig.primaryColor;
+  static Color get _baseSecondary => ThemeConfig.secondaryColor;
 
   // Get theme configuration values
   static double get _borderRadius => ThemeConfig.borderRadius;

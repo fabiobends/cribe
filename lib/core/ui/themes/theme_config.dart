@@ -5,10 +5,14 @@ import 'package:flutter/material.dart';
 /// Just modify the values in this class to update the entire app's color scheme.
 class ThemeConfig {
   // Primary brand color - Change this to update the entire theme
-  static const Color primaryColor = Color(0xFF2196F3); // Blue
+  static const Color primaryColor = Color(0xFF2196F3);
 
   // Secondary brand color - Change this to update secondary elements
-  static const Color secondaryColor = Color(0xFF03DAC6); // Teal
+  static const Color secondaryColor = Color(0xFF03DAC6);
+
+  static Color get success => Colors.green;
+  static Color get warning => Colors.orange;
+  static Color get info => primaryColor.withValues(alpha: 0.8);
 
   // Font family - Change this to update the entire app's font
   static const String fontFamily = 'Roboto';

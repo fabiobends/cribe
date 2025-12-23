@@ -1,11 +1,11 @@
 class Spacing {
-  static const ratio = 2.0;
-  static const base = 2.0;
-  static const double tiny = base;
-  static const double extraSmall = tiny * ratio;
-  static const double small = extraSmall * ratio;
-  static const double medium = small * ratio;
-  static const double large = medium * ratio;
-  static const double extraLarge = large * ratio;
-  static const double huge = extraLarge * ratio;
+  static const _ratio = 2.0;
+  static const _base = 2.0;
+  static const double tiny = _base;
+  static const double extraSmall = tiny * _ratio;
+  static const double small = extraSmall * _ratio;
+  static const double medium = small * _ratio;
+  static const double large = medium * _ratio;
+  static const double extraLarge = large * _ratio;
+  static const double huge = extraLarge * _ratio;
 }

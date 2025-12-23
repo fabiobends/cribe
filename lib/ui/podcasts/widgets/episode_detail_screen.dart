@@ -1,7 +1,13 @@
 import 'package:cribe/core/constants/spacing.dart';
 import 'package:cribe/core/logger/logger_mixins.dart';
+import 'package:cribe/data/repositories/quizzes/quiz_repository.dart';
+import 'package:cribe/data/services/api_service.dart';
+import 'package:cribe/data/services/quiz_service.dart';
 import 'package:cribe/ui/podcasts/view_models/episode_detail_view_model.dart';
+import 'package:cribe/ui/quiz/view_models/quiz_view_model.dart';
+import 'package:cribe/ui/quiz/widgets/quiz_screen.dart';
 import 'package:cribe/ui/shared/widgets/conversation_turn.dart';
+import 'package:cribe/ui/shared/widgets/styled_button.dart';
 import 'package:cribe/ui/shared/widgets/styled_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -23,6 +29,8 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
   final Map<int, GlobalKey> _chunkKeys = {};
   late AnimationController _scrollButtonAnimationController;
   late Animation<double> _scrollButtonFadeAnimation;
+  late AnimationController _quizButtonAnimationController;
+  late Animation<double> _quizButtonFadeAnimation;
 
   @override
   void initState() {
@@ -42,15 +50,38 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
       curve: Curves.easeInOut,
     );
 
+    // Initialize quiz button fade animation
+    _quizButtonAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _quizButtonFadeAnimation = CurvedAnimation(
+      parent: _quizButtonAnimationController,
+      curve: Curves.easeInOut,
+    );
+
     // Add scroll listener to detect user scrolling
     _scrollController.addListener(_onScroll);
+
+    // Listen to transcript completion changes
+    _viewModel.addListener(_onTranscriptStatusChanged);
+  }
+
+  void _onTranscriptStatusChanged() {
+    if (_viewModel.transcriptCompleted) {
+      _quizButtonAnimationController.forward();
+    } else {
+      _quizButtonAnimationController.reverse();
+    }
   }
 
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
+    _viewModel.removeListener(_onTranscriptStatusChanged);
     _scrollController.dispose();
     _scrollButtonAnimationController.dispose();
+    _quizButtonAnimationController.dispose();
     super.dispose();
   }
 
@@ -115,6 +146,26 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
     Navigator.of(context).pop();
   }
 
+  void _navigateToQuiz(BuildContext context) {
+    logger.info('Navigating to quiz for episode ${_viewModel.episode.id}');
+
+    final apiService = context.read<ApiService>();
+    final quizRepository = QuizRepository(apiService: apiService);
+    final quizService = QuizService(repository: quizRepository);
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => QuizViewModel(
+            quizService: quizService,
+            episodeId: _viewModel.episode.id,
+          ),
+          child: const QuizScreen(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -130,20 +181,41 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
       ),
       floatingActionButton: Consumer<EpisodeDetailViewModel>(
         builder: (context, vm, child) {
-          return !vm.autoScrollEnabled && vm.isPlaying && !vm.isCompleted
-              ? FadeTransition(
-                  opacity: _scrollButtonFadeAnimation,
-                  child: FloatingActionButton(
-                    mini: true,
-                    onPressed: _enableAutoScroll,
-                    backgroundColor: theme.colorScheme.primaryContainer,
-                    child: Icon(
-                      Icons.read_more,
-                      color: theme.colorScheme.onPrimaryContainer,
-                    ),
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Quiz button - only show when transcript is complete
+              Visibility(
+                visible: vm.transcriptCompleted,
+                maintainState: true,
+                child: FadeTransition(
+                  opacity: _quizButtonFadeAnimation,
+                  child: StyledButton(
+                    text: 'Test Knowledge',
+                    variant: ButtonVariant.secondary,
+                    onPressed: () => _navigateToQuiz(context),
+                    leftIcon: Icons.quiz,
                   ),
-                )
-              : const SizedBox.shrink();
+                ),
+              ),
+              const SizedBox(height: Spacing.small),
+              // Auto-scroll button
+              FadeTransition(
+                opacity: _scrollButtonFadeAnimation,
+                child: FloatingActionButton(
+                  mini: true,
+                  heroTag: 'autoscroll_fab',
+                  onPressed: _enableAutoScroll,
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                  child: Icon(
+                    Icons.read_more,
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ),
+            ],
+          );
         },
       ),
     );
@@ -382,7 +454,6 @@ class _EpisodeDetailScreenState extends State<EpisodeDetailScreen>
     return Consumer<EpisodeDetailViewModel>(
       builder: (context, viewModel, child) {
         return Card(
-          elevation: 2,
           child: Padding(
             padding: const EdgeInsets.all(Spacing.medium),
             child: Column(

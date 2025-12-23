@@ -22,7 +22,6 @@ echo "📝 Found ${COUNT} Dart file(s) to process..."
 
 # Check file line counts
 echo "📏 Checking file sizes avoiding bloated files..."
-EXCEEDED_FILES=""
 LENGTH_LIMIT=600
 
 # Use a temporary file to store exceeded files (avoids subshell variable scope issue)
