@@ -87,12 +87,12 @@ void main() {
       expect(find.byType(IndexedStack), findsOneWidget);
     });
 
-    testWidgets('should display two navigation items', (tester) async {
+    testWidgets('should display navigation items', (tester) async {
       await tester.pumpWidget(createTestWidget());
 
       final bottomNav =
           tester.widget<BottomNavigationBar>(find.byType(BottomNavigationBar));
-      expect(bottomNav.items.length, equals(2));
+      expect(bottomNav.items.length, equals(3));
     });
 
     testWidgets('should have Home and Settings tabs', (tester) async {
@@ -121,7 +121,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       // Tap on Settings tab
-      await tester.tap(find.text('Settings'));
+      await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
 
       // Verify currentIndex changed
@@ -134,7 +134,7 @@ void main() {
       await tester.pumpWidget(createTestWidget());
 
       // Switch to Settings
-      await tester.tap(find.text('Settings'));
+      await tester.tap(find.text('History'));
       await tester.pumpAndSettle();
 
       // Switch back to Home

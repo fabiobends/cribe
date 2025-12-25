@@ -20,8 +20,10 @@ import 'package:cribe/ui/podcasts/view_models/podcast_list_view_model.dart';
 import 'package:cribe/ui/podcasts/widgets/episode_detail_screen.dart';
 import 'package:cribe/ui/podcasts/widgets/podcast_detail_screen.dart';
 import 'package:cribe/ui/podcasts/widgets/podcasts_list_screen.dart';
+import 'package:cribe/ui/quiz/view_models/quiz_sessions_view_model.dart';
 import 'package:cribe/ui/quiz/view_models/quiz_view_model.dart';
 import 'package:cribe/ui/quiz/widgets/quiz_screen.dart';
+import 'package:cribe/ui/quiz/widgets/quiz_sessions_screen.dart';
 import 'package:cribe/ui/settings/view_models/fake_settings_view_model.dart';
 import 'package:cribe/ui/settings/view_models/settings_view_model.dart';
 import 'package:cribe/ui/settings/widgets/settings_screen.dart';
@@ -54,6 +56,7 @@ class StorybookView extends StatelessWidget {
     'MainNavigationScreen',
     'PodcastListScreen',
     'QuizScreen',
+    'QuizSessionsScreen',
     'PodcastDetailScreen',
     'EpisodeDetailScreen',
     'SettingsScreen',
@@ -390,25 +393,21 @@ class StorybookView extends StatelessWidget {
           body: ChangeNotifierProvider(
             create: (_) => QuizViewModel(
               quizService: QuizService(repository: FakeQuizRepository()),
-              episode: Episode(
-                id: 1,
-                externalId: 'fake-episode-1',
-                podcastId: 1,
-                name: 'An Update from Ira',
-                description:
-                    '<p>Ira Glass shares some news about This American Life</p>',
-                audioUrl:
-                    'https://www.thisamericanlife.org/sites/default/files/audio/upload/extra/life_partners_standalone_promo_10_15_2025_v2.mp3',
-                imageUrl: 'https://picsum.photos/400/400?random=1',
-                datePublished: DateTime.now()
-                    .subtract(const Duration(days: 7))
-                    .toIso8601String(),
-                duration: 3600,
-                createdAt: DateTime.now().subtract(const Duration(days: 7)),
-                updatedAt: DateTime.now(),
-              ),
+              episodeId: 1,
             ),
             child: const QuizScreen(),
+          ),
+        );
+
+      case 'QuizSessionsScreen':
+        return Scaffold(
+          appBar:
+              AppBar(title: StyledText(text: name, variant: TextVariant.title)),
+          body: ChangeNotifierProvider(
+            create: (_) => QuizSessionsViewModel(
+              service: QuizService(repository: FakeQuizRepository()),
+            ),
+            child: const QuizSessionsScreen(),
           ),
         );
 

@@ -1,9 +1,13 @@
 import 'package:cribe/core/logger/logger_mixins.dart';
 import 'package:cribe/data/repositories/podcasts/podcast_repository.dart';
+import 'package:cribe/data/repositories/quizzes/quiz_repository.dart';
 import 'package:cribe/data/services/api_service.dart';
+import 'package:cribe/data/services/quiz_service.dart';
 import 'package:cribe/data/services/storage_service.dart';
 import 'package:cribe/ui/podcasts/view_models/podcast_list_view_model.dart';
 import 'package:cribe/ui/podcasts/widgets/podcasts_list_screen.dart';
+import 'package:cribe/ui/quiz/view_models/quiz_sessions_view_model.dart';
+import 'package:cribe/ui/quiz/widgets/quiz_sessions_screen.dart';
 import 'package:cribe/ui/settings/view_models/settings_view_model.dart';
 import 'package:cribe/ui/settings/widgets/settings_screen.dart';
 import 'package:flutter/material.dart';
@@ -57,6 +61,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
             ),
           ),
           Builder(
+            builder: (context) => ChangeNotifierProvider<QuizSessionsViewModel>(
+              create: (_) => QuizSessionsViewModel(
+                service: QuizService(
+                  repository:
+                      QuizRepository(apiService: context.read<ApiService>()),
+                ),
+              ),
+              child: const QuizSessionsScreen(),
+            ),
+          ),
+          Builder(
             builder: (context) => ChangeNotifierProvider<SettingsViewModel>(
               create: (_) => SettingsViewModel(
                 storageService: context.read<StorageService>(),
@@ -77,6 +92,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

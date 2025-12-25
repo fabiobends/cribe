@@ -1,21 +1,23 @@
 import 'package:cribe/data/services/quiz_service.dart';
-import 'package:cribe/domain/models/podcast.dart';
 import 'package:cribe/domain/models/quiz.dart';
 import 'package:cribe/ui/shared/view_models/base_view_model.dart';
 
 class QuizViewModel extends BaseViewModel {
   final QuizService _quizService;
-  final Episode _episode;
+  final int _episodeId;
 
   QuizViewModel({
     required QuizService quizService,
-    required Episode episode,
+    required int episodeId,
+    QuizData? quizData,
   })  : _quizService = quizService,
-        _episode = episode {
+        _episodeId = episodeId,
+        _quizData = quizData {
     _initialize();
   }
+  int get episodeId => _episodeId;
 
-  Episode get episode => _episode;
+  String get episodeName => _quizData?.session.episodeName ?? '';
 
   QuizData? _quizData;
   QuizData? get quizData => _quizData;
@@ -97,13 +99,40 @@ class QuizViewModel extends BaseViewModel {
   }
 
   Future<void> _initialize() async {
-    logger.info('Initializing quiz for episode ${_episode.id}');
+    if (_quizData != null) {
+      // Quiz data already provided, no need to load
+      logger.info('QuizViewModel initialized with existing quiz data');
+
+      // If quiz is already completed, start from first question for review
+      if (_quizData!.session.isCompleted) {
+        logger.info('Quiz already completed - showing review mode');
+        _currentQuestionIndex = 0;
+        _loadCurrentQuestionAnswer();
+        notifyListeners();
+        return;
+      }
+
+      // Find first unanswered question
+      _currentQuestionIndex = _quizData!.questions.indexWhere(
+        (q) => !_quizData!.isQuestionAnswered(q.id),
+      );
+
+      if (_currentQuestionIndex == -1) {
+        _currentQuestionIndex = 0;
+      }
+
+      _loadCurrentQuestionAnswer();
+      notifyListeners();
+      return;
+    }
+
+    logger.info('Initializing quiz for episode $_episodeId');
     setLoading(true);
     setError(null);
 
     try {
       // Backend returns existing session if found, or creates new one
-      _quizData = await _quizService.startQuiz(_episode.id);
+      _quizData = await _quizService.startQuiz(_episodeId);
       logger.info('Quiz session ${_quizData!.session.id} loaded');
 
       // If quiz is already completed, start from first question for review
@@ -192,6 +221,8 @@ class QuizViewModel extends BaseViewModel {
           id: _quizData!.session.id,
           userId: _quizData!.session.userId,
           episodeId: _quizData!.session.episodeId,
+          episodeName: _quizData!.session.episodeName,
+          podcastName: _quizData!.session.podcastName,
           status: _quizData!.session.status,
           totalQuestions: _quizData!.session.totalQuestions,
           answeredQuestions: _quizData!.session.answeredQuestions + 1,
